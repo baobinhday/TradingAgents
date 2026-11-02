@@ -93,6 +93,17 @@ def test_backtest_stop_when_idle(client):
 
 
 @pytest.mark.unit
+def test_backtest_reset(client):
+    backtest_manager.status = "stopped"
+    backtest_manager.active_run_id = "test_run_123"
+    response = client.post("/api/backtest/reset")
+    assert response.status_code == 200
+    assert response.json()["status"] == "idle"
+    assert backtest_manager.status == "idle"
+    assert backtest_manager.active_run_id is None
+
+
+@pytest.mark.unit
 def test_list_runs(client, tmp_path, monkeypatch):
     backtest_dir = tmp_path / "backtest"
     backtest_dir.mkdir(parents=True)

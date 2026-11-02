@@ -105,6 +105,10 @@ class BacktestManager:
     def start_run(self, req: BacktestRunRequest) -> tuple[str, int]:
         """Start a new backtest run in a background thread."""
         with self._lock:
+            # Sync status if active_thread is finished
+            if self.active_thread and not self.active_thread.is_alive() and self.status == "running":
+                self.status = "idle"
+
             if self.status == "running":
                 raise RuntimeError("A backtest is already running. Please stop it or wait for completion.")
 
@@ -139,11 +143,12 @@ class BacktestManager:
                 clean_analysts = [a for a in clean_analysts if a != "fundamentals"]
 
             def target():
+                this_run_id = run_id
                 try:
                     self.publish_sync(
                         "start",
                         {
-                            "run_id": run_id,
+                            "run_id": this_run_id,
                             "tickers": tickers,
                             "dates": dates,
                             "total_cells": total_cells,
@@ -152,7 +157,7 @@ class BacktestManager:
                     )
 
                     def progress(done: int, total: int, ticker: str, date: str):
-                        if self.stop_requested.is_set():
+                        if self.stop_requested.is_set() or self.active_run_id != this_run_id:
                             raise InterruptedError("Backtest stopped by user.")
                         percent = round((done / total) * 100, 1)
                         self.publish_sync(
@@ -173,22 +178,27 @@ class BacktestManager:
                         asset_type=req.asset_type,
                         portfolio=req.portfolio,
                         selected_analysts=clean_analysts,
-                        run_id=run_id,
+                        run_id=this_run_id,
                         progress=progress,
                     )
+
+                    # If stopped or replaced by another run, exit early
+                    if self.stop_requested.is_set() or self.active_run_id != this_run_id:
+                        return
 
                     summary_raw = summarize(result)
                     summary_resp = self._format_summary(summary_raw)
 
                     with self._lock:
-                        self.latest_result = result
-                        self.latest_summary = summary_resp
-                        self.status = "completed"
+                        if self.active_run_id == this_run_id:
+                            self.latest_result = result
+                            self.latest_summary = summary_resp
+                            self.status = "completed"
 
                     self.publish_sync(
                         "complete",
                         {
-                            "run_id": run_id,
+                            "run_id": this_run_id,
                             "cells_run": result.cells_run,
                             "skipped": result.skipped,
                             "summary": summary_resp.model_dump(),
@@ -199,29 +209,47 @@ class BacktestManager:
 
                 except InterruptedError as exc:
                     with self._lock:
-                        self.status = "stopped"
-                        self.latest_error = str(exc)
-                    self.publish_sync("stopped", {"run_id": run_id, "message": str(exc)})
+                        if self.active_run_id == this_run_id:
+                            self.status = "stopped"
+                            self.latest_error = str(exc)
+                    self.publish_sync("stopped", {"run_id": this_run_id, "message": str(exc)})
                 except Exception as exc:
-                    logger.exception("Backtest run %s failed: %s", run_id, exc)
+                    logger.exception("Backtest run %s failed: %s", this_run_id, exc)
                     with self._lock:
-                        self.status = "failed"
-                        self.latest_error = str(exc)
-                    self.publish_sync("error", {"run_id": run_id, "error": str(exc)})
+                        if self.active_run_id == this_run_id:
+                            self.status = "failed"
+                            self.latest_error = str(exc)
+                    self.publish_sync("error", {"run_id": this_run_id, "error": str(exc)})
 
             self.active_thread = threading.Thread(target=target, daemon=True)
             self.active_thread.start()
             return run_id, total_cells
 
     def stop_run(self, run_id: str | None = None) -> bool:
-        """Signal the running backtest to halt."""
+        """Signal the running backtest to halt immediately."""
         with self._lock:
             if self.status != "running":
                 return False
             if run_id and self.active_run_id != run_id:
                 return False
             self.stop_requested.set()
+            self.status = "stopped"
+            self.latest_error = "Backtest stopped by user."
+            stopped_id = self.active_run_id or run_id or ""
+            self.publish_sync(
+                "stopped",
+                {"run_id": stopped_id, "message": "Backtest stopped by user."},
+            )
             return True
+
+    def reset_state(self) -> None:
+        """Force reset the backtest manager to idle state."""
+        with self._lock:
+            self.stop_requested.set()
+            self.status = "idle"
+            self.active_run_id = None
+            self.latest_error = None
+            self.publish_sync("reset", {"status": "idle"})
 
     def _format_summary(self, summary_raw) -> BacktestSummaryResponse:
         by_rating = {}

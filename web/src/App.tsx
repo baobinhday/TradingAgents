@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
 import {
   fetchConfig,
   fetchRunDetail,
+  resetBacktest,
   startBacktest,
   stopBacktest,
 } from "./lib/api";
@@ -25,7 +26,8 @@ export function App() {
   const [activeTab, setActiveTab] = useState("config");
   const [config, setConfig] = useState<ConfigResponse | null>(null);
   const [status, setStatus] = useState("idle");
-  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const [runningRunId, setRunningRunId] = useState<string | null>(null);
+  const [viewingRunId, setViewingRunId] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [logs, setLogs] = useState<LogMessage[]>([]);
   const [summary, setSummary] = useState<BacktestSummary | null>(null);
@@ -47,7 +49,10 @@ export function App() {
       try {
         const data = JSON.parse(e.data);
         if (data.status) setStatus(data.status);
-        if (data.run_id) setActiveRunId(data.run_id);
+        if (data.run_id) {
+          setRunningRunId(data.run_id);
+          if (!viewingRunId) setViewingRunId(data.run_id);
+        }
         if (data.recent_logs && Array.isArray(data.recent_logs)) {
           setLogs(data.recent_logs);
         }
@@ -60,7 +65,8 @@ export function App() {
       try {
         const data = JSON.parse(e.data);
         setStatus("running");
-        setActiveRunId(data.run_id);
+        setRunningRunId(data.run_id);
+        setViewingRunId(data.run_id);
         setLogs([]);
         setProgress({
           done: 0,
@@ -101,6 +107,7 @@ export function App() {
         setFailures(data.failures || []);
         // Load details for cell breakdown
         if (data.run_id) {
+          setViewingRunId(data.run_id);
           fetchRunDetail(data.run_id)
             .then((detail) => {
               setCells(detail.cells);
@@ -121,15 +128,21 @@ export function App() {
       setStatus("failed");
     });
 
+    eventSource.addEventListener("reset", () => {
+      setStatus("idle");
+      setRunningRunId(null);
+    });
+
     return () => {
       eventSource.close();
     };
-  }, []);
+  }, [viewingRunId]);
 
   const handleStart = async (req: BacktestRunRequest) => {
     try {
       const res = await startBacktest(req);
-      setActiveRunId(res.run_id);
+      setRunningRunId(res.run_id);
+      setViewingRunId(res.run_id);
       setStatus("running");
       setActiveTab("monitor");
     } catch (err: any) {
@@ -146,10 +159,20 @@ export function App() {
     }
   };
 
+  const handleReset = async () => {
+    try {
+      await resetBacktest();
+      setStatus("idle");
+      setRunningRunId(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to reset backtest engine");
+    }
+  };
+
   const handleSelectRun = async (runId: string) => {
     try {
       const detail = await fetchRunDetail(runId);
-      setActiveRunId(runId);
+      setViewingRunId(runId);
       setSummary(detail.summary);
       setCells(detail.cells);
       setFailures(detail.failures);
@@ -161,7 +184,10 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header status={status} activeRunId={activeRunId} />
+      <Header
+        status={status}
+        activeRunId={status === "running" ? runningRunId : viewingRunId}
+      />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -200,17 +226,18 @@ export function App() {
           <TabsContent value="monitor">
             <LiveMonitor
               isRunning={status === "running"}
-              activeRunId={activeRunId}
+              activeRunId={runningRunId}
               progress={progress}
               logs={logs}
               onStop={handleStop}
+              onReset={handleReset}
               onViewResults={() => setActiveTab("results")}
             />
           </TabsContent>
 
           <TabsContent value="results">
             <ResultsPanel
-              runId={activeRunId}
+              runId={viewingRunId}
               summary={summary}
               cells={cells}
               failures={failures}
@@ -220,7 +247,9 @@ export function App() {
           <TabsContent value="history">
             <HistoryPanel
               onSelectRun={handleSelectRun}
-              activeRunId={activeRunId}
+              runningRunId={runningRunId}
+              viewingRunId={viewingRunId}
+              status={status}
             />
           </TabsContent>
         </Tabs>

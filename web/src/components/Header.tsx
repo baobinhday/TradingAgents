@@ -41,9 +41,17 @@ export const Header: React.FC<HeaderProps> = ({ status, activeRunId }) => {
               <Badge variant="default" className="bg-amber-500/15 text-amber-400 border border-amber-500/30 animate-pulse">
                 <Activity className="w-3 h-3 mr-1.5 animate-spin" /> Running
               </Badge>
+            ) : status === "stopped" ? (
+              <Badge variant="destructive" className="bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                Stopped
+              </Badge>
+            ) : status === "failed" ? (
+              <Badge variant="destructive">
+                Failed
+              </Badge>
             ) : status === "completed" ? (
               <Badge variant="success" className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                <ShieldCheck className="w-3 h-3 mr-1" /> Idle / Ready
+                <ShieldCheck className="w-3 h-3 mr-1" /> Idle / Completed
               </Badge>
             ) : (
               <Badge variant="outline" className="text-zinc-400">

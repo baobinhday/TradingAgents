@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Activity, Square, Terminal, CheckCircle2, Clock } from "lucide-react";
+import { Activity, Square, Terminal, CheckCircle2, Clock, RotateCcw } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
@@ -11,6 +11,7 @@ interface LiveMonitorProps {
   progress: ProgressData | null;
   logs: LogMessage[];
   onStop: () => void;
+  onReset?: () => void;
   onViewResults: () => void;
 }
 
@@ -20,6 +21,7 @@ export const LiveMonitor: React.FC<LiveMonitorProps> = ({
   progress,
   logs,
   onStop,
+  onReset,
   onViewResults,
 }) => {
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -77,9 +79,16 @@ export const LiveMonitor: React.FC<LiveMonitorProps> = ({
                   <Square className="w-3.5 h-3.5 mr-1.5 fill-current" /> Stop Sweep
                 </Button>
               ) : (
-                <Button variant="default" size="sm" onClick={onViewResults} className="h-8">
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> View Results
-                </Button>
+                <div className="flex items-center space-x-2">
+                  {onReset && (
+                    <Button variant="outline" size="sm" onClick={onReset} className="h-8">
+                      <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Reset Engine
+                    </Button>
+                  )}
+                  <Button variant="default" size="sm" onClick={onViewResults} className="h-8">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> View Results
+                  </Button>
+                </div>
               )}
             </div>
           </div>

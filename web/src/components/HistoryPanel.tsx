@@ -8,10 +8,17 @@ import { RunListItem } from "../types";
 
 interface HistoryPanelProps {
   onSelectRun: (runId: string) => void;
-  activeRunId: string | null;
+  runningRunId: string | null;
+  viewingRunId: string | null;
+  status: string;
 }
 
-export const HistoryPanel: React.FC<HistoryPanelProps> = ({ onSelectRun, activeRunId }) => {
+export const HistoryPanel: React.FC<HistoryPanelProps> = ({
+  onSelectRun,
+  runningRunId,
+  viewingRunId,
+  status,
+}) => {
   const [runs, setRuns] = useState<RunListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,20 +71,35 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ onSelectRun, activeR
             </div>
           ) : (
             runs.map((run) => {
-              const isCurrent = activeRunId === run.run_id;
+              const isRunningThis = status === "running" && runningRunId === run.run_id;
+              const isStoppedThis = status === "stopped" && runningRunId === run.run_id;
+              const isViewingThis = viewingRunId === run.run_id;
+
               return (
                 <div
                   key={run.run_id}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
+                  className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
+                    isViewingThis ? "bg-primary/5 border-l-2 border-primary" : "hover:bg-muted/20"
+                  }`}
                 >
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2.5">
                       <span className="font-mono font-bold text-sm text-foreground">
                         {run.run_id}
                       </span>
-                      {isCurrent && (
-                        <Badge variant="default" className="text-[10px] py-0 px-1.5 bg-primary/20 text-primary border-primary/30">
-                          Active
+                      {isRunningThis && (
+                        <Badge variant="default" className="text-[10px] py-0 px-1.5 bg-emerald-500/20 text-emerald-400 border-emerald-500/30 animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-ping" /> Running
+                        </Badge>
+                      )}
+                      {isStoppedThis && (
+                        <Badge variant="destructive" className="text-[10px] py-0 px-1.5 bg-amber-500/20 text-amber-400 border-amber-500/30">
+                          Stopped
+                        </Badge>
+                      )}
+                      {isViewingThis && !isRunningThis && (
+                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-primary border-primary/30">
+                          Viewing
                         </Badge>
                       )}
                       {run.has_log ? (
@@ -102,12 +124,12 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ onSelectRun, activeR
 
                   <div className="flex items-center space-x-2">
                     <Button
-                      variant="secondary"
+                      variant={isViewingThis ? "default" : "secondary"}
                       size="sm"
                       onClick={() => onSelectRun(run.run_id)}
                       className="h-8 text-xs"
                     >
-                      <Eye className="w-3.5 h-3.5 mr-1.5" /> Inspect Results
+                      <Eye className="w-3.5 h-3.5 mr-1.5" /> {isViewingThis ? "Viewing Results" : "Inspect Results"}
                     </Button>
                   </div>
                 </div>

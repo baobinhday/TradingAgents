@@ -63,7 +63,14 @@ def stop_backtest(run_id: str | None = None) -> dict[str, Any]:
             status_code=400,
             detail="No active backtest matching the criteria is currently running to stop.",
         )
-    return {"status": "stopping", "message": "Stop signal sent to active backtest."}
+    return {"status": "stopped", "message": "Backtest run stopped."}
+
+
+@router.post("/reset")
+def reset_backtest() -> dict[str, Any]:
+    """Force reset the backtest state to idle."""
+    backtest_manager.reset_state()
+    return {"status": "idle", "message": "Backtest engine state reset to idle."}
 
 
 @router.get("/status")

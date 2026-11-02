@@ -43,6 +43,15 @@ export async function stopBacktest(run_id?: string): Promise<{ status: string }>
   return res.json();
 }
 
+export async function resetBacktest(): Promise<{ status: string; message: string }> {
+  const res = await fetch(`${BASE_URL}/backtest/reset`, { method: "POST" });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Failed to reset backtest engine");
+  }
+  return res.json();
+}
+
 export async function fetchRuns(): Promise<RunListItem[]> {
   const res = await fetch(`${BASE_URL}/backtest/runs`);
   if (!res.ok) throw new Error("Failed to fetch run history");
