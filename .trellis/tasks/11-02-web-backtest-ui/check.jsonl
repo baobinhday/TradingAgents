@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Lint and test standards verification"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Verify endpoint error responses and recovery"}

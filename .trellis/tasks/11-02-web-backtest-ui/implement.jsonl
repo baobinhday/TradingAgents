@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Follow package layering and module organization"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Graceful error handling without crashing API"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Ruff linting and test isolation rules"}

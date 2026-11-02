@@ -194,5 +194,34 @@ def logout(plan: Annotated[Plan, typer.Argument(help="The plan to sign out of")]
         console.print("Not signed in to ChatGPT.")
 
 
+@app.command()
+def web(
+    host: str = typer.Option("127.0.0.1", "--host", help="Host address to bind to"),
+    port: int = typer.Option(8000, "--port", help="Port to bind to"),
+    open_browser: bool = typer.Option(True, "--open/--no-open", help="Open web browser automatically"),
+    dev: bool = typer.Option(False, "--dev", help="Enable reload mode for API development"),
+):
+    """Launch the TradingAgents web configuration and backtest interface."""
+    import contextlib
+    import threading
+    import time
+    import webbrowser
+
+    import uvicorn
+
+    url = f"http://{host}:{port}"
+    console.print(f"[bold green]Starting TradingAgents Web Console at[/bold green] [cyan underline]{url}[/cyan underline]")
+
+    if open_browser:
+        def _open():
+            time.sleep(1.2)
+            with contextlib.suppress(Exception):
+                webbrowser.open(url)
+        threading.Thread(target=_open, daemon=True).start()
+
+    from tradingagents.api.app import app as api_app
+    uvicorn.run(api_app, host=host, port=port, reload=dev)
+
+
 if __name__ == "__main__":
     app()

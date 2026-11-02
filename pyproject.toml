@@ -36,6 +36,11 @@ dev = [
     "pytest>=8.0",
     "pytest-subtests>=0.13",
 ]
+web = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "sse-starlette>=2.1.0",
+]
 # Amazon Bedrock support (AWS SigV4 auth + boto3). Optional so the core install
 # stays lean: pip install "tradingagents[bedrock]".
 bedrock = [

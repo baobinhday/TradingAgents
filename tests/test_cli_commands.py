@@ -53,6 +53,17 @@ def test_backtest_does_not_also_run_an_analysis(runner, monkeypatch, tmp_path):
 
 
 @pytest.mark.unit
+def test_web_command_invokes_uvicorn(runner, monkeypatch):
+    invoked = []
+    import uvicorn
+    monkeypatch.setattr(uvicorn, "run", lambda app, host, port, reload: invoked.append((host, port, reload)))
+
+    result = runner.invoke(m.app, ["web", "--no-open", "--port", "9000", "--host", "0.0.0.0", "--dev"])
+    assert result.exit_code == 0
+    assert invoked == [("0.0.0.0", 9000, True)]
+
+
+@pytest.mark.unit
 def test_backtest_reports_a_bad_date_instead_of_a_traceback(runner):
     result = runner.invoke(m.app, ["backtest", "NVDA", "--start", "June", "--end", "2026-06-15"])
     assert result.exit_code == 1
