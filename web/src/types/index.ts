@@ -32,6 +32,7 @@ export interface ConfigResponse {
   provider_details: ProviderDetail[];
   available_analysts: AnalystInfo[];
   available_asset_types: string[];
+  available_markets?: string[];
 }
 
 export interface BacktestRunRequest {
@@ -40,6 +41,7 @@ export interface BacktestRunRequest {
   end_date: string;
   every_n_days: number;
   asset_type: string;
+  market?: string;
   selected_analysts: string[];
   config_overrides: Record<string, any>;
   run_id?: string | null;

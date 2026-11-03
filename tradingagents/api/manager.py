@@ -16,7 +16,13 @@ from tradingagents.api.schemas import (
     RunDetailResponse,
     RunListItem,
 )
-from tradingagents.backtest import BacktestResult, iter_grid, run_backtest, summarize
+from tradingagents.backtest import (
+    BacktestResult,
+    iter_grid,
+    run_backtest,
+    summarize,
+    validate_backtest_dates,
+)
 from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.memory import TradingMemoryLog
 
@@ -122,6 +128,14 @@ class BacktestManager:
             total_cells = len(tickers) * len(dates)
             run_id = req.run_id or datetime.now().strftime("%Y%m%d_%H%M%S")
 
+            # Merge config overrides and validate date boundaries
+            run_config = DEFAULT_CONFIG.copy()
+            run_config.update(req.config_overrides)
+            if req.market:
+                run_config["market"] = req.market.strip().upper()
+
+            validate_backtest_dates(dates, run_config)
+
             self.active_run_id = run_id
             self.status = "running"
             self.stop_requested.clear()
@@ -129,12 +143,6 @@ class BacktestManager:
             self.latest_error = None
             self.latest_summary = None
             self.log_buffer.clear()
-
-            # Merge config overrides
-            run_config = DEFAULT_CONFIG.copy()
-            run_config.update(req.config_overrides)
-            if req.market:
-                run_config["market"] = req.market.strip().upper()
 
             # Normalize analyst keys: "sentiment" is the UX display name, core key is "social"
             clean_analysts = [

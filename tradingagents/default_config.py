@@ -23,6 +23,7 @@ _ENV_OVERRIDES = {
     "TRADINGAGENTS_CHECKPOINT_ENABLED":   "checkpoint_enabled",
     "TRADINGAGENTS_BENCHMARK_TICKER":     "benchmark_ticker",
     "TRADINGAGENTS_MARKET":               "market",
+    "TRADINGAGENTS_VN_DATA_WINDOW_DAYS":  "vn_data_window_days",
     "TRADINGAGENTS_TEMPERATURE":          "temperature",
     "TRADINGAGENTS_LLM_MAX_RETRIES":      "llm_max_retries",
     "TRADINGAGENTS_MAX_TOKENS":           "max_tokens",
@@ -182,6 +183,8 @@ def build_default_config() -> dict:
             "prediction_markets": "none",
         },
         "vn_tool_vendors": {},
+        # Vietnam market data window in days (default: 730 days, matching SSI historical coverage limit)
+        "vn_data_window_days": 730,
         # Benchmark for alpha calculation in the reflection layer.
         # ``benchmark_ticker`` (when set) overrides the suffix map for all
         # tickers; leave it None to use ``benchmark_map`` for auto-detection

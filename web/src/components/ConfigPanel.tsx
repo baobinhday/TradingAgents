@@ -12,11 +12,18 @@ interface ConfigPanelProps {
   onStart: (req: BacktestRunRequest) => void;
 }
 
-const PRESET_TICKERS = [
+const US_PRESET_TICKERS = [
   { label: "Tech Giants", tickers: "NVDA, AAPL, MSFT, GOOGL" },
   { label: "Semiconductors", tickers: "NVDA, AMD, TSM, AVGO" },
   { label: "Gold & Commodities", tickers: "XAUUSD, SILVER, WTI" },
   { label: "Crypto Top", tickers: "BTC, ETH, SOL" },
+];
+
+const VN_PRESET_TICKERS = [
+  { label: "VN30 Core", tickers: "VNM, FPT, HPG, VCB, SSI, MWG" },
+  { label: "Banking", tickers: "VCB, BID, CTG, TCB, MBB, ACB" },
+  { label: "Securities & Tech", tickers: "SSI, VND, VCI, HCM, FPT" },
+  { label: "Real Estate & Steel", tickers: "VHM, VIC, KDH, HPG, HSG" },
 ];
 
 export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onStart }) => {
@@ -29,12 +36,16 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
   const [endDate, setEndDate] = useState(today);
   const [everyNDays, setEveryNDays] = useState(7);
   const [assetType, setAssetType] = useState("stock");
+  const [market, setMarket] = useState("US");
   const [selectedAnalysts, setSelectedAnalysts] = useState<string[]>([
     "market",
     "social",
     "news",
     "fundamentals",
   ]);
+
+  const vnWindowDays = config?.default_config?.vn_data_window_days || 730;
+  const earliestVnDate = new Date(Date.now() - vnWindowDays * 24 * 3600 * 1000).toISOString().split("T")[0];
 
   // Model & Agent overrides
   const [llmProvider, setLlmProvider] = useState("nvidia");
@@ -84,6 +95,12 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
       if (config.default_config.quick_think_llm) {
         setQuickThinkLlm(config.default_config.quick_think_llm);
       }
+      if (config.default_config.market) {
+        setMarket(config.default_config.market);
+        if (config.default_config.market === "VN") {
+          setTickers("VNM, FPT");
+        }
+      }
     } else if (config?.provider_details && config.provider_details.length > 0) {
       const active = config.provider_details.find((d) => d.has_key) || config.provider_details[0];
       setLlmProvider(active.id);
@@ -103,6 +120,21 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
     setCustomQuick(false);
   };
 
+  const handleMarketChange = (newMarket: string) => {
+    setMarket(newMarket);
+    setError(null);
+    if (newMarket === "VN") {
+      if (tickers === "NVDA, AAPL" || !tickers.trim()) {
+        setTickers("VNM, FPT");
+      }
+      if (new Date(startDate) < new Date(earliestVnDate)) {
+        setStartDate(earliestVnDate);
+      }
+    } else if (tickers === "VNM, FPT") {
+      setTickers("NVDA, AAPL");
+    }
+  };
+
   const toggleAnalyst = (id: string) => {
     setSelectedAnalysts((prev) =>
       prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
@@ -111,7 +143,11 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
 
   const setDuration = (days: number) => {
     const end = new Date();
-    const start = new Date(Date.now() - days * 24 * 3600 * 1000);
+    let startDays = days;
+    if (market === "VN" && days > vnWindowDays) {
+      startDays = vnWindowDays;
+    }
+    const start = new Date(Date.now() - startDays * 24 * 3600 * 1000);
     setEndDate(end.toISOString().split("T")[0]);
     setStartDate(start.toISOString().split("T")[0]);
   };
@@ -145,12 +181,20 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
       return;
     }
 
+    if (market === "VN" && new Date(startDate) < new Date(earliestVnDate)) {
+      setError(
+        `Date '${startDate}' is outside the supported Vietnam market data window (configured limit: ${vnWindowDays} days, earliest supported date: ${earliestVnDate}). Please choose a start date on or after ${earliestVnDate}.`
+      );
+      return;
+    }
+
     const req: BacktestRunRequest = {
       tickers: tickerList,
       start_date: startDate,
       end_date: endDate,
       every_n_days: Number(everyNDays) || 7,
       asset_type: assetType,
+      market: market,
       selected_analysts: selectedAnalysts,
       config_overrides: {
         llm_provider: llmProvider,
@@ -158,6 +202,8 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
         deep_think_llm: deepThinkLlm,
         max_debate_rounds: Number(maxDebateRounds),
         max_risk_discuss_rounds: Number(maxRiskRounds),
+        market: market,
+        ...(market === "VN" ? { benchmark_ticker: "VNINDEX" } : {}),
       },
       run_id: runId.trim() ? runId.trim() : null,
     };
@@ -199,7 +245,7 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
             />
             <div className="flex flex-wrap gap-1.5 mt-2">
               <span className="text-[11px] text-muted-foreground self-center mr-1">Presets:</span>
-              {PRESET_TICKERS.map((preset) => (
+              {(market === "VN" ? VN_PRESET_TICKERS : US_PRESET_TICKERS).map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
@@ -213,7 +259,19 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">Market</label>
+              <select
+                value={market}
+                onChange={(e) => handleMarketChange(e.target.value)}
+                disabled={isRunning}
+                className="w-full h-9 rounded-md border border-input bg-background/50 px-2.5 text-xs focus:outline-none text-foreground"
+              >
+                <option value="US" className="bg-card text-foreground">United States (US)</option>
+                <option value="VN" className="bg-card text-foreground">Vietnam (VN)</option>
+              </select>
+            </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground block mb-1.5">Asset Type</label>
               <select
@@ -223,13 +281,15 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
                 className="w-full h-9 rounded-md border border-input bg-background/50 px-2.5 text-xs focus:outline-none text-foreground"
               >
                 <option value="stock" className="bg-card text-foreground">Stock</option>
-                <option value="crypto" className="bg-card text-foreground">Crypto</option>
+                {market !== "VN" && <option value="crypto" className="bg-card text-foreground">Crypto</option>}
               </select>
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground block mb-1.5">Start Date</label>
               <Input
                 type="date"
+                min={market === "VN" ? earliestVnDate : undefined}
+                max={today}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 disabled={isRunning}
@@ -240,6 +300,8 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
               <label className="text-xs font-medium text-muted-foreground block mb-1.5">End Date</label>
               <Input
                 type="date"
+                min={market === "VN" ? earliestVnDate : undefined}
+                max={today}
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 disabled={isRunning}

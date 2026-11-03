@@ -63,6 +63,35 @@ def _canonical(date: str) -> datetime:
     return parsed
 
 
+def validate_backtest_dates(dates: list[str], config: dict | None = None) -> None:
+    """Validate that backtest dates fall within the supported window for the target market.
+
+    For Vietnam equities (market="VN"), historical coverage is bounded by
+    config["vn_data_window_days"] (default 730 days). Dates prior to the cutoff
+    are rejected with a clear, actionable error.
+    """
+    if not dates or not config:
+        return
+
+    market = (config.get("market") or "US").upper()
+    if market != "VN":
+        return
+
+    window_days = int(config.get("vn_data_window_days", 730))
+    today_dt = datetime.strptime(get_current_date(), "%Y-%m-%d")
+    earliest_dt = today_dt - timedelta(days=window_days)
+    earliest_str = earliest_dt.strftime("%Y-%m-%d")
+
+    for d_str in dates:
+        d_dt = _canonical(d_str)
+        if d_dt < earliest_dt:
+            raise ValueError(
+                f"Date {d_str!r} is outside the supported Vietnam market data window "
+                f"(configured limit: {window_days} days, earliest supported date: {earliest_str}). "
+                f"Please choose dates on or after {earliest_str}."
+            )
+
+
 def _alpha(entry: dict) -> float | None:
     """Alpha return of a settled entry, or None when it has not settled.
 
@@ -157,6 +186,8 @@ def run_backtest(
     interrupted sweep resumes by being run again. ``progress(done, total,
     ticker, date)`` is called before each cell that runs.
     """
+    validate_backtest_dates(dates, config)
+
     runs = Path(config["results_dir"]) / "backtest"
     if run_id:
         # run_id becomes a path segment, so it is validated like a ticker: an
