@@ -172,3 +172,23 @@ Integrated Vietnam equity market into backtest simulation engine, CLI backtest r
 ### Next Steps
 
 - Verify all subtasks of the parent epic 11-02-vietnam-market-support are complete and ready for final review
+
+
+## Session 7: Fix AlgoLab/SSI news co-sourcing & add Web MCP auth management
+<!-- trellis-session: v=2 fp=8f3fcc6203ea02a2 -->
+
+**Date**: 2026-11-03
+**Task**: Fix AlgoLab/SSI news co-sourcing & add Web MCP auth management
+**Branch**: `dev`
+
+### Summary
+
+Fixed AlgoLab slice error in get_global_news by normalizing columnar recap items, resolved Cloudflare WAF 403 blocks and pageSize validation errors in SSI MCP by setting browser User-Agent and clamping pageSize, and added a dedicated Data & MCP management tab on the web console with 1-click SSI OAuth PKCE and key management.
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**
