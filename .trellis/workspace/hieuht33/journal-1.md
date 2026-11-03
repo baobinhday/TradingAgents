@@ -192,3 +192,25 @@ Fixed AlgoLab slice error in get_global_news by normalizing columnar recap items
 ### Status
 
 [OK] **Completed**
+
+
+## Session 8: Show comprehensive multi-agent reasoning in ResultsPanel
+<!-- trellis-session: v=2 fp=61b0df3d1e012710 -->
+
+**Date**: 2026-11-03
+**Task**: Show comprehensive multi-agent reasoning in ResultsPanel
+**Branch**: `dev`
+
+### Summary
+
+Extended backend schemas and get_run_detail to read full_states_log_{date}.json and provide full agent reports and debate transcripts. Redesigned frontend ResultsPanel modal with ReasoningModal component supporting tabs for PM Decision, Market Analyst, Fundamentals, News & Sentiment, Research Debate (Bull vs Bear), Trader, Risk Management, and Settlement Reflection.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3cc5915` | feat(web): show comprehensive multi-agent reasoning in ResultsPanel modal |
+
+### Status
+
+[OK] **Completed**

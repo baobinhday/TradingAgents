@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 7
+- **Total Sessions**: 8
 - **Last Active**: 2026-11-03
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~194 | Active |
+| `journal-1.md` | ~216 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 8 | 2026-11-03 | Show comprehensive multi-agent reasoning in ResultsPanel | `3cc5915` | `dev` |
 | 7 | 2026-11-03 | Fix AlgoLab/SSI news co-sourcing & add Web MCP auth management | `214bc98` | `dev` |
 | 6 | 2026-11-03 | Vietnam Backtest Simulation & Web UI Integration | `f786bd2` | `dev` |
 | 5 | 2026-11-03 | Vietnam Agent Context, Market Rules, Reporting Lag & Social Placeholder | `3088b67` | `dev` |
