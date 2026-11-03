@@ -1,0 +1,1 @@
+"""SSI MCP Vendor package."""

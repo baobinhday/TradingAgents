@@ -8,6 +8,25 @@ from tradingagents.dataflows.errors import (
     VendorNotConfiguredError,
     VendorUnavailableError,
 )
+from tradingagents.dataflows.vendors.algolab.fundamentals import (
+    get_balance_sheet as get_algolab_balance_sheet,
+    get_cashflow as get_algolab_cashflow,
+    get_company_profile as get_algolab_company_profile,
+    get_fundamentals as get_algolab_fundamentals,
+    get_income_statement as get_algolab_income_statement,
+)
+from tradingagents.dataflows.vendors.algolab.macro import (
+    get_macro_indicators as get_algolab_macro_indicators,
+)
+from tradingagents.dataflows.vendors.algolab.market import (
+    get_closes as get_algolab_closes,
+    get_stock_data as get_algolab_stock,
+)
+from tradingagents.dataflows.vendors.algolab.news import (
+    get_global_news as get_algolab_global_news,
+    get_insider_transactions as get_algolab_insider_transactions,
+    get_news as get_algolab_news,
+)
 from tradingagents.dataflows.vendors.alpha_vantage import (
     get_balance_sheet as get_alpha_vantage_balance_sheet,
     get_cashflow as get_alpha_vantage_cashflow,
@@ -28,6 +47,27 @@ from tradingagents.dataflows.vendors.sec_edgar import (
     get_cashflow as get_sec_edgar_cashflow,
     get_income_statement as get_sec_edgar_income_statement,
 )
+from tradingagents.dataflows.vendors.ssi.fundamentals import (
+    get_balance_sheet as get_ssi_balance_sheet,
+    get_cashflow as get_ssi_cashflow,
+    get_company_profile as get_ssi_company_profile,
+    get_fundamentals as get_ssi_fundamentals,
+    get_income_statement as get_ssi_income_statement,
+)
+from tradingagents.dataflows.vendors.ssi.market import (
+    get_closes as get_ssi_closes,
+    get_stock_data as get_ssi_stock,
+)
+from tradingagents.dataflows.vendors.ssi.news import (
+    get_global_news as get_ssi_global_news,
+    get_insider_transactions as get_ssi_insider_transactions,
+    get_news as get_ssi_news,
+)
+from tradingagents.dataflows.vendors.vn_indicators import (
+    build_vn_verified_market_snapshot,
+    get_algolab_indicators,
+    get_ssi_indicators,
+)
 from tradingagents.dataflows.vendors.yahoo.fundamentals import (
     get_balance_sheet as get_yfinance_balance_sheet,
     get_cashflow as get_yfinance_cashflow,
@@ -47,17 +87,6 @@ from tradingagents.dataflows.vendors.yahoo.snapshot import (
 )
 
 logger = logging.getLogger(__name__)
-
-def _vn_vendor_stub(*args, **kwargs):
-    """Stub placeholder for Vietnam market MCP vendors (AlgoLab and SSI).
-
-    Raises VendorUnavailableError so fallback and failure handling operate cleanly
-    without touching Yahoo Finance.
-    """
-    raise VendorUnavailableError(
-        "Vietnam market vendor (AlgoLab / SSI) is not yet mounted in foundation phase."
-    )
-
 
 # Tools organized by category
 TOOLS_CATEGORIES = {
@@ -111,74 +140,85 @@ TOOLS_CATEGORIES = {
 # categories (prices, fundamentals, news) still raise so a broken primary is loud.
 OPTIONAL_CATEGORIES = {"macro_data", "prediction_markets"}
 
+CO_SOURCED_METHODS = {
+    "get_fundamentals",
+    "get_balance_sheet",
+    "get_cashflow",
+    "get_income_statement",
+    "get_news",
+    "get_global_news",
+    "get_insider_transactions",
+    "get_macro_indicators",
+}
+
 # Mapping of methods to their vendor-specific implementations
 VENDOR_METHODS = {
     # core_stock_apis
     "get_stock_data": {
         "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_stock,
+        "ssi": get_ssi_stock,
     },
     # technical_indicators
     "get_indicators": {
         "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_indicators,
+        "ssi": get_ssi_indicators,
     },
     # fundamental_data
     "get_fundamentals": {
         "alpha_vantage": get_alpha_vantage_fundamentals,
         "yfinance": get_yfinance_fundamentals,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_fundamentals,
+        "ssi": get_ssi_fundamentals,
     },
     "get_balance_sheet": {
         "alpha_vantage": get_alpha_vantage_balance_sheet,
         "sec_edgar": get_sec_edgar_balance_sheet,
         "yfinance": get_yfinance_balance_sheet,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_balance_sheet,
+        "ssi": get_ssi_balance_sheet,
     },
     "get_cashflow": {
         "alpha_vantage": get_alpha_vantage_cashflow,
         "sec_edgar": get_sec_edgar_cashflow,
         "yfinance": get_yfinance_cashflow,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_cashflow,
+        "ssi": get_ssi_cashflow,
     },
     "get_income_statement": {
         "alpha_vantage": get_alpha_vantage_income_statement,
         "sec_edgar": get_sec_edgar_income_statement,
         "yfinance": get_yfinance_income_statement,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_income_statement,
+        "ssi": get_ssi_income_statement,
     },
     # news_data
     "get_news": {
         "alpha_vantage": get_alpha_vantage_news,
         "yfinance": get_news_yfinance,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_news,
+        "ssi": get_ssi_news,
     },
     "get_global_news": {
         "yfinance": get_global_news_yfinance,
         "alpha_vantage": get_alpha_vantage_global_news,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_news if False else get_algolab_global_news,
+        "ssi": get_ssi_global_news,
     },
     "get_insider_transactions": {
         "alpha_vantage": get_alpha_vantage_insider_transactions,
         "yfinance": get_yfinance_insider_transactions,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_insider_transactions,
+        "ssi": get_ssi_insider_transactions,
     },
     # macro_data
     "get_macro_indicators": {
         "fred": get_fred_macro_data,
-        "algolab": _vn_vendor_stub,
-        "ssi": _vn_vendor_stub,
+        "algolab": get_algolab_macro_indicators,
+        "ssi": get_algolab_macro_indicators,
     },
     # prediction_markets
     "get_prediction_markets": {
@@ -247,6 +287,94 @@ def no_data_available(error: NoMarketDataError) -> str:
     )
 
 
+def _deduplicate_news_markdown(primary_md: str, secondary_md: str) -> str:
+    """Remove articles from secondary_md whose title or link is in primary_md."""
+    seen_titles = set()
+    seen_links = set()
+    for line in primary_md.splitlines():
+        line = line.strip()
+        if line.startswith("### "):
+            title = line[4:].split(" (source:")[0].strip().lower()
+            if title:
+                seen_titles.add(title)
+        elif line.startswith("Link: "):
+            link = line[6:].strip().lower()
+            if link:
+                seen_links.add(link)
+
+    blocks = secondary_md.split("### ")
+    kept_blocks = [blocks[0]]
+    for block in blocks[1:]:
+        lines = block.splitlines()
+        first_line = lines[0].strip()
+        title = first_line.split(" (source:")[0].strip().lower()
+        block_link = ""
+        for bl in lines:
+            if bl.strip().startswith("Link: "):
+                block_link = bl.strip()[6:].strip().lower()
+                break
+        if (title and title in seen_titles) or (block_link and block_link in seen_links):
+            continue
+        kept_blocks.append(block)
+
+    return "### ".join(kept_blocks)
+
+
+def _co_source_vn_vendors(method: str, vendor_chain: list[str], *args, **kwargs) -> str:
+    """Side-by-side multi-source aggregation for non-price Vietnam market data."""
+    results: dict[str, str] = {}
+    errors: dict[str, Exception] = {}
+
+    for vendor in vendor_chain:
+        vendor_dict = VENDOR_METHODS.get(method, {})
+        impl = vendor_dict.get(vendor)
+        if not impl:
+            continue
+        try:
+            res = impl(*args, **kwargs)
+            if res and isinstance(res, str):
+                results[vendor] = res
+        except (VendorUnavailableError, VendorNotConfiguredError, NoMarketDataError) as exc:
+            logger.warning("Vendor %r in co-sourcing for %s failed: %s", vendor, method, exc)
+            errors[vendor] = exc
+        except Exception as exc:
+            logger.warning("Vendor %r in co-sourcing for %s unexpected failure: %s", vendor, method, exc)
+            errors[vendor] = exc
+
+    if not results:
+        if any(isinstance(e, NoMarketDataError) for e in errors.values()):
+            first_no_data = next(e for e in errors.values() if isinstance(e, NoMarketDataError))
+            return no_data_available(first_no_data)
+        if errors:
+            first_err = next(iter(errors.values()))
+            category = get_category_for_method(method)
+            if category in OPTIONAL_CATEGORIES:
+                return (
+                    f"DATA_UNAVAILABLE: optional {category} could not be retrieved "
+                    f"({first_err}). Proceed without it; do not fabricate values."
+                )
+            return vendor_unavailable(method, first_err)
+        raise VendorUnavailableError(f"No configured vendor succeeded for co-sourced {method}")
+
+    if len(results) == 1 and not errors:
+        return next(iter(results.values()))
+
+    # Apply news deduplication if both succeeded
+    if method in ("get_news", "get_global_news") and "algolab" in results and "ssi" in results:
+        results["ssi"] = _deduplicate_news_markdown(results["algolab"], results["ssi"])
+
+    output_parts = []
+    for vendor, text in results.items():
+        v_title = "AlgoLab" if vendor == "algolab" else "SSI" if vendor == "ssi" else vendor.upper()
+        output_parts.append(f"### [Source: {v_title}]\n{text}")
+
+    for vendor, err in errors.items():
+        v_title = "AlgoLab" if vendor == "algolab" else "SSI" if vendor == "ssi" else vendor.upper()
+        output_parts.append(f"> [!NOTE]\n> Source '{v_title}' unavailable: {err}")
+
+    return "\n\n".join(output_parts)
+
+
 def route_to_vendor(method: str, *args, **kwargs):
     """Route method calls to appropriate vendor implementation with fallback support."""
     config = get_config()
@@ -293,6 +421,10 @@ def route_to_vendor(method: str, *args, **kwargs):
         vendor_chain = [v for v in vendor_chain if v not in ("yfinance", "yahoo")]
         if not vendor_chain:
             vendor_chain = [v for v in ("algolab", "ssi") if v in VENDOR_METHODS[method]]
+
+    # Multi-source co-sourcing for Vietnam non-price categories
+    if market == "VN" and method in CO_SOURCED_METHODS and len(vendor_chain) > 1:
+        return _co_source_vn_vendors(method, vendor_chain, *args, **kwargs)
 
     last_no_data: NoMarketDataError | None = None
     last_unavailable: VendorUnavailableError | None = None
@@ -371,14 +503,24 @@ def get_closes(symbol: str, start_date: str, end_date: str, market: str | None =
     """Daily closes from start_date up to, not including, end_date.
 
     Market-aware: When market is 'VN' (or symbol ends with '.VN'), routes to VN vendors
-    and never calls Yahoo Finance.
+    (AlgoLab primary -> SSI fallback) and never calls Yahoo Finance.
     """
     config = get_config()
     target_market = (market or config.get("market", "US")).upper()
     if target_market == "VN" or symbol.upper().endswith(".VN"):
-        raise VendorUnavailableError(
-            "Vietnam market vendor (AlgoLab / SSI) is not yet mounted in foundation phase."
-        )
+        try:
+            s = get_algolab_closes(symbol, start_date, end_date)
+            if s is not None and not s.empty:
+                return s
+        except Exception as e:
+            logger.warning("AlgoLab get_closes failed for %s: %s; trying SSI fallback", symbol, e)
+        try:
+            s = get_ssi_closes(symbol, start_date, end_date)
+            if s is not None and not s.empty:
+                return s
+        except Exception as e:
+            logger.warning("SSI get_closes failed for %s: %s", symbol, e)
+        raise VendorUnavailableError(f"Vietnam market vendor (AlgoLab / SSI) could not provide closes for {symbol}")
     return get_yfinance_closes(symbol, start_date, end_date)
 
 
@@ -386,12 +528,24 @@ def get_company_profile(ticker: str, market: str | None = None) -> dict:
     """Resolve company identity metadata via configured vendor.
 
     Market-aware: When market is 'VN' (or ticker ends with '.VN'), routes to VN vendors
-    and never calls Yahoo Finance.
+    (AlgoLab primary -> SSI fallback) and never calls Yahoo Finance.
     """
     config = get_config()
     target_market = (market or config.get("market", "US")).upper()
     if target_market == "VN" or ticker.upper().endswith(".VN"):
-        return {}
+        try:
+            p = get_algolab_company_profile(ticker)
+            if p:
+                return p
+        except Exception as e:
+            logger.warning("AlgoLab get_company_profile failed for %s: %s; trying SSI fallback", ticker, e)
+        try:
+            p = get_ssi_company_profile(ticker)
+            if p:
+                return p
+        except Exception as e:
+            logger.warning("SSI get_company_profile failed for %s: %s", ticker, e)
+        raise VendorUnavailableError(f"Vietnam market vendor (AlgoLab / SSI) could not resolve profile for {ticker}")
     return get_yfinance_company_profile(ticker)
 
 
@@ -405,8 +559,8 @@ def get_verified_market_snapshot(symbol: str, as_of_date: str, look_back_days: i
     config = get_config()
     target_market = (config.get("market") or "US").upper()
     if target_market == "VN" or symbol.upper().endswith(".VN"):
-        return vendor_unavailable(
-            "get_verified_market_snapshot",
-            VendorUnavailableError("Vietnam market vendor (AlgoLab / SSI) is not yet mounted in foundation phase."),
-        )
+        try:
+            return build_vn_verified_market_snapshot(symbol, as_of_date, look_back_days)
+        except Exception as exc:
+            return vendor_unavailable("get_verified_market_snapshot", exc)
     return get_yfinance_snapshot(symbol, as_of_date, look_back_days)

@@ -1,0 +1,1 @@
+"""AlgoLab MCP Vendor package."""
