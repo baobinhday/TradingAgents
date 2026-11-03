@@ -1,0 +1,56 @@
+[
+  {
+    "name": "date_range_caps",
+    "uri": "ssi://marketdata/reference/date-range-caps",
+    "description": "Giá trị range hợp lệ và giới hạn to_field (max_lookback) của từng tool marketdata có tham số range + đến-ngày — tra trước khi gọi để tránh bị reject",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "exchanges",
+    "uri": "ssi://marketdata/reference/exchanges",
+    "description": "Danh sách mã sàn giao dịch được các tool MCP hỗ trợ (tham số 'exchange')",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "fundamental_financial_data_notes",
+    "uri": "ssi://fundamental/reference/financial-data-notes",
+    "description": "Ghi chú đọc dữ liệu tài chính của tool fundamental_*: kỳ báo cáo, chọn kỳ mới nhất, kiểm toán, giá trị 0 theo loại hình doanh nghiệp, thang đo chỉ số, lịch sử định giá",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "prompt_catalog",
+    "uri": "ssi://marketdata/reference/prompt-catalog",
+    "description": "Danh mục prompt hiện có (nhóm ssi.marketdata.*, ssi.fundamental.*, ssi.research.*; tên + mục đích + tham số) — tham khảo trước khi gọi prompts/get",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "research_rating_guide",
+    "uri": "ssi://research/reference/rating-guide",
+    "description": "Hướng dẫn đọc điểm FA và TA của SSI Research: ý nghĩa điểm phân vị, các điểm thành phần, thang TA, cách đọc từng field của tool research_*",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "resource_catalog",
+    "uri": "ssi://marketdata/reference/resource-catalog",
+    "description": "Danh mục resource hiện có (URI + tên + mục đích + khi nào nên đọc) — tham khảo trước khi gọi resources/read",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "sort_criteria",
+    "uri": "ssi://marketdata/reference/sort-criteria",
+    "description": "Giá trị hợp lệ cho field sắp xếp/xếp hạng (order, criteria) ở các tool marketdata — tra trước khi gọi tool để tránh bị reject tham số",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "term_glossary",
+    "uri": "ssi://marketdata/reference/term-glossary",
+    "description": "Định nghĩa chuẩn hoá các thuật ngữ tài chính thường gặp — dùng để giải thích cho người dùng không rành thuật ngữ, tránh AI tự bịa định nghĩa",
+    "mimeType": "application/json"
+  },
+  {
+    "name": "tool_catalog",
+    "uri": "ssi://marketdata/reference/tool-catalog",
+    "description": "Danh mục tool đang published (nhóm marketdata, fundamental, research) và khả dụng cho tier standard (tên + mô tả) — tham khảo trước khi gọi tools/list",
+    "mimeType": "application/json"
+  }
+]

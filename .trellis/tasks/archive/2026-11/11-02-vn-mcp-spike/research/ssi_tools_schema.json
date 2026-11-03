@@ -1,0 +1,2512 @@
+[
+  {
+    "name": "marketdata_list_fundamental_ratio_history",
+    "description": "Lịch sử chỉ số định giá P/E và P/B theo ngày của MỘT mã, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi xu hướng P/E, P/B của một mã theo thời gian. KHÔNG DÙNG KHI: cần P/E, P/B ở kỳ báo cáo gần nhất -> marketdata_list_corp_finance_finance_indicator; cần báo cáo tài chính -> marketdata_list_finance_balance_sheet, marketdata_list_finance_income_statement, marketdata_list_finance_cash_flow; cần điểm FA -> marketdata_list_fundamental_analysis_index. Dữ liệu cập nhật THƯA (không phải mỗi ngày) nên khung ngắn có thể trả rỗng — vì vậy tool chỉ có khung từ 6m trở lên. Có thể có nhiều dòng cùng trading_date với P/E, P/B khác nhau (quan sát thực tế): trading_date không phải khoá duy nhất, không coi mỗi dòng là một ngày giao dịch. TRẢ VỀ `history`: pe, pb (lần); trading_date dạng MM/dd/yyyy HH:mm:ss (VD '08/20/2026 00:00:00' = ngày 20/08/2026). VÍ DỤ: \"xu hướng P/E của SSI một năm qua\" -> symbol=SSI, range=1y. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, 1 mã mỗi lần (VD SSI), bắt buộc. Chỉ dùng mã cổ phiếu: mã chỉ số (VD VNINDEX) chưa xác nhận được."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài lịch sử P/E, P/B, tính lùi từ toDate: 6m = 180 ngày (nhỏ nhất); 1y = 365; max_range = 730 (lớn nhất, nên dùng để xem xu hướng nhiều năm; không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng; cần giai đoạn dài hơn khung đã chọn thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn (trading_date muộn nhất của chuỗi P/E, P/B), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Số dòng mỗi trang, từ 1 đến 200. Khung 1y trở lên nên đặt 200 để lấy đủ chuỗi, rồi tăng pageIndex nếu số dòng nhận được bằng pageSize. Bỏ trống = số dòng mặc định của hệ thống (chưa xác nhận)."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_company_in_same_industry",
+    "description": "Danh sách các công ty CÙNG NGÀNH ICB với MỘT mã cổ phiếu, kèm giá và khối lượng của phiên gần nhất. DÙNG KHI: so sánh cổ phiếu với nhóm cùng ngành, tìm các mã cùng ngành. KHÔNG DÙNG KHI: cần chỉ số tài chính bình quân của ngành -> marketdata_list_icb_industry; cần danh sách công ty theo mã ngành ICB -> marketdata_list_sectors_data. TRẢ VỀ `companies`: symbol, company_name, exchange, icb_level (cấp độ ngành); current_price, floor_price, ceiling_price, reference_price (VND); price_change (VND); price_change_percent (PHÂN SỐ: 0.05 = 5%, nhân 100 khi trình bày %); match_volume (cổ phiếu). Mã chưa có giao dịch có thể thiếu current_price, price_change, match_volume. Kết quả không trả tổng số trang: nếu số dòng bằng pageSize thì có thể còn trang sau. VÍ DỤ: \"các công ty cùng ngành với SSI\" -> symbol=SSI, pageSize=20. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        },
+        "similarLevel": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "default": 1,
+          "description": "Cấp ngành ICB dùng để xác định 'cùng ngành', nhận 1, 2, 3 hoặc 4 (mặc định 1): cấp càng cao càng chi tiết, 1 là nhóm ngành rộng nhất, 4 chi tiết nhất. Hỏi chung 'cùng ngành' -> bỏ trống."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "default": "VN",
+          "description": "Ngôn ngữ tên công ty: VN = tiếng Việt, EN = tiếng Anh (mặc định VN)."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "default": 10,
+          "description": "Số dòng mỗi trang, chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống). Cần nhiều dòng -> chọn 50 hoặc 100 rồi duyệt thêm trang."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1,
+          "description": "Trang thứ mấy, bắt đầu từ 1 (mặc định 1). Kết quả không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_bank_interest_rate",
+    "description": "Tra lịch sử lãi suất tiền gửi của MỘT ngân hàng theo từng ngày cập nhật, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi lãi suất tiền gửi hiện tại hoặc diễn biến lãi suất của một ngân hàng. KHÔNG DÙNG KHI: hỏi tỷ giá ngoại tệ -> marketdata_list_foreign_currency_converter. TRẢ VỀ `rates` (mỗi dòng 1 ngày cập nhật, thường 1 bản ghi mỗi ngày nên khung càng dài càng nhiều dòng): bank_name; update_date (dạng MM/dd/yyyy HH:mm:ss, VD '10/05/2026 00:00:00' = ngày 05/10/2026); `interests` = 10 kỳ hạn, mỗi kỳ gồm interest_term ('NoFixTerm' = không kỳ hạn; '1','3','6','9','12','13','18','24','36' = số tháng) và value (mức lãi suất theo kỳ hạn; đơn vị có vẻ là %/năm khi đối chiếu lãi suất tiền gửi thực tế nhưng chưa có tài liệu xác nhận — nêu giá trị như trả về kèm lưu ý này). Dữ liệu có thể dừng ở ngày cũ (không cập nhật hằng ngày): luôn nêu update_date của bản ghi mới nhất đang dùng. Mỗi lần gọi chỉ 1 ngân hàng; so sánh nhiều ngân hàng thì gọi lần lượt từng ngân hàng, rồi lấy dòng có update_date mới nhất của mỗi ngân hàng. VÍ DỤ: \"lãi suất gửi 12 tháng của BIDV hiện nay\" -> bankName=BIDV, range=1w (rỗng thì tăng dần 1m, 3m, 1y), đọc bản ghi có update_date mới nhất, kỳ hạn '12'; \"lãi suất Vietcombank quý 1/2026\" -> bankName=Vietcombank, range=3m, toDate=31/03/2026. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bankName": {
+          "type": "string",
+          "description": "Tên ngân hàng, bắt buộc, phải ĐÚNG như hệ thống lưu. Đã xác nhận có dữ liệu: BIDV, Vietcombank, VietinBank, Agribank, MB, VPBank, TPBank, OCB, MSB, VIB, SeABank (danh sách có thể chưa đầy đủ). Các tên VCB, CTG, TCB, Techcombank, ACB, Sacombank, HDBank, SHB, Eximbank trả rỗng (không lỗi) - đừng dùng. Đổi cách gọi tắt: VCB -> Vietcombank, CTG -> VietinBank. Kết quả rỗng với tên ngoài danh sách đã xác nhận = chưa có dữ liệu của ngân hàng đó (hoặc sai tên), không thử lại bằng tên khác ngẫu nhiên."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài lịch sử lãi suất, tính lùi từ toDate. 1w = 7 ngày (đủ lấy mức lãi suất đang áp dụng; nếu rỗng thì tăng dần 1m, 3m, 1y); 1m = 30 ngày; 3m = 90 ngày; 6m = 180 ngày; 1y = 365 ngày; max_range = 730 ngày (lớn nhất; dữ liệu thực tế có thể chỉ bắt đầu từ một thời điểm gần đây nên 1y và max_range có thể ra cùng kết quả). 'Hiện tại/mới nhất' -> 1w; 'tháng qua' -> 1m; 'quý qua' -> 3m; 'cả năm' -> 1y. Chọn khung NHỎ NHẤT đủ dùng. Hỏi khoảng dài hơn max_range thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Hỏi lãi suất tại một thời điểm trong quá khứ thì toDate=ngày đó rồi đọc bản ghi update_date gần toDate nhất."
+        }
+      },
+      "required": [
+        "bankName",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_vn_index_performance",
+    "description": "Hiệu suất chỉ số VNINDEX theo THÁNG trong khoảng [toDate - range tháng, toDate]. DÙNG KHI: hỏi VNINDEX từng tháng tăng/giảm bao nhiêu %, điểm mở/đóng từng tháng, hiệu suất cả năm. KHÔNG DÙNG KHI: cần VNINDEX hoặc chỉ số khác theo NGÀY -> marketdata_list_index_daily_data; cần chỉ số thế giới -> marketdata_list_world_index. TRẢ VỀ `performance_by_month`: year, month; percent_change_month (%, so với tháng trước); vnindex_open, vnindex_close (điểm mở/đóng của tháng); absolute_change_month (thay đổi điểm trong tháng); percent_change_year, absolute_change_year (biến động CẢ NĂM tính đến thời điểm hiện tại nên cùng một giá trị ở mọi tháng của cùng một năm, KHÔNG phải biến động riêng từng tháng); trading_date (ngày dữ liệu được tính, DD/MM/YYYY). Kết quả gồm cả tháng đầu và tháng cuối nên số dòng thường là range + 1 (range=3m ra 4 tháng). VÍ DỤ: \"VNINDEX 6 tháng gần đây theo tháng\" -> range=6m; \"VNINDEX 1 năm tính đến tháng 03/2026\" -> range=1y, toDate=03/2026. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Số THÁNG cần lấy, tính lùi từ toDate: 3m = 3 tháng; 6m = 6 tháng; 1y = 12 tháng; max_range = 24 tháng (lớn nhất, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng. \"quý gần đây\" -> 3m; \"nửa năm\" -> 6m; \"năm nay/1 năm\" -> 1y."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Tháng cuối cùng cần xem, định dạng MM/YYYY (VD 09/2026). Bỏ trống = tháng này. Chỉ nhận tháng trong 24 tháng gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_stock_statistics",
+    "description": "Thống kê chỉ số tài chính và biến động giá hiện hành của cổ phiếu (P/E, P/B, ROE, ROA, vốn hoá, biến động giá), lọc theo mã, ngành ICB hoặc sàn. DÙNG KHI: hỏi P/E, P/B, ROE, ROA, vốn hoá hiện tại của một mã, hoặc so sánh các mã trong một ngành. KHÔNG DÙNG KHI: cần P/E, P/B theo ngày -> marketdata_list_fundamental_ratio_history; cần chỉ số theo kỳ báo cáo (EPS, biên lợi nhuận...) -> marketdata_list_finance_indicator; cần xếp hạng top tăng/giảm/thanh khoản của sàn -> marketdata_list_top_stocks; cần % biến động giá hoặc đỉnh/đáy giá trong khoảng tối đa 1 tháng -> marketdata_list_stock_statistic_by_range (tool này chỉ có mức đổi giá tuyệt đối 1 tuần/1 tháng/1 năm, không có % thay đổi, không có đỉnh/đáy 52 tuần). TRẢ VỀ `statistics`: symbol, company_name, industry_name, exchange; market_cap (VND); pe, pb (lần); roe, roa (phân số, 0.11 = 11%; nhân 100 khi trình bày %); price_change_1w, price_change_1m, price_change_1y (mức đổi giá tuyệt đối trong 1 tuần/1 tháng/1 năm, VND); avg_volume_1m (khối lượng bình quân 1 tháng, cổ phiếu); beta (hệ số beta, không có đơn vị); dividend_yield (tỷ suất cổ tức; chưa xác nhận thang đo 3.5 = 3,5% hay 0.035, không tự quy đổi). Phải truyền ít nhất một trong symbol, industryCode, exchange; chỉ truyền exchange có thể trả rỗng — nên truyền symbol hoặc industryCode. Một mã có thể trả NHIỀU dòng với market_cap/pe/pb/roe/roa khác nhau và không có field kỳ để phân biệt (đã gặp với SSI): trình bày đủ các dòng, nêu rõ chưa xác định dòng nào là hiện hành, không tự chọn một dòng. VÍ DỤ: \"P/E và ROE của SSI\" -> symbol=SSI; \"các mã cùng một ngành ICB\" -> industryCode=<mã ngành>, pageSize=50. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, viết hoa (VD SSI). Tuỳ chọn, nhưng cần ít nhất một trong symbol/industryCode/exchange (bỏ trống symbol thì phải truyền industryCode hoặc exchange); có thể kết hợp với industryCode/exchange để thu hẹp."
+        },
+        "industryCode": {
+          "type": "string",
+          "description": "Mã ngành ICB (lấy từ marketdata_list_sectors_data). Tuỳ chọn, nhưng cần ít nhất một trong symbol/industryCode/exchange (bỏ trống symbol thì phải truyền industryCode hoặc exchange); có thể kết hợp với symbol/exchange để thu hẹp."
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch: HOSE, HNX hoặc UPCOM. Tuỳ chọn, nhưng cần ít nhất một trong symbol/industryCode/exchange (bỏ trống symbol thì phải truyền industryCode hoặc exchange); có thể kết hợp với symbol/industryCode để thu hẹp; chỉ truyền exchange có thể trả rỗng."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ tên công ty/ngành: VN = tiếng Việt, EN = tiếng Anh (mặc định VN)."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Response không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống)."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "research_get_ssi100_stock_recommendation",
+    "description": "Lấy khuyến nghị đầu tư do SSI Research công bố cho MỘT mã trong rổ SSI100, nguyên văn từ SSI Research. DÙNG KHI: người dùng hỏi trực tiếp SSI Research đang khuyến nghị gì, giá mục tiêu bao nhiêu hoặc trạng thái kỹ thuật theo SSI Research của một mã SSI100. KHÔNG DÙNG KHI: chỉ cần nhận định bằng văn bản -> research_get_ssi100_stock_commentary; cần điểm FA/TA -> research_get_ssi100_stock_ratings; hỏi bạn nên mua hay bán -> không dùng tool này để tự đưa ra lời khuyên. TRẢ VỀ `industries` (thường 1 phần tử): icb_code, icb_name và `stocks`: symbol; company_name; exchange; fa_type (phân loại FA theo SSI Research, là nhãn khuyến nghị dạng chữ, VD \"MUA\"); investment_opinion (luận điểm đầu tư của SSI Research, văn bản dài); target_price (giá mục tiêu, số, đơn vị đồng; nếu giá trị có dấu thập phân thì đơn vị là nghìn đồng, VD 32.7 = 32.700 đồng; luôn trình bày quy về đồng); technical_status (trạng thái kỹ thuật theo SSI Research, chữ, là nhãn theo thang TA: > 80 Vượt trội; 61-80 Khả quan; 41-60 Trung lập; 21-40 Thận trọng; <= 20 Hạn chế - xem resource `ssi://research/reference/rating-guide`); ssi_index (SSI Index, điểm thang 100); relation_stock (mã so sánh, chuỗi nhiều mã cách nhau bằng dấu cách). Field nào trống thì bỏ qua, không bịa. QUY TẮC TRÌNH BÀY: đây là khuyến nghị của SSI Research, không phải ý kiến của trợ lý. Trích nguyên văn từng field, ghi rõ nguồn \"SSI Research\", KHÔNG diễn giải thành lời khuyên mua/bán/giữ của riêng bạn, KHÔNG tự thêm ngày hiệu lực hay mức tăng/giảm, KHÔNG nêu ngày cụ thể (response không kèm ngày; dữ liệu cập nhật hằng ngày, mặc định là bản ghi của ngày hiện tại). Nếu người dùng muốn quyết định đầu tư, nhắc họ tham khảo thêm báo cáo gốc của SSI Research và tự chịu trách nhiệm quyết định. Chỉ lấy phần tử có symbol đúng mã được hỏi; kết quả rỗng nghĩa là mã không thuộc SSI100. VÍ DỤ: \"SSI Research khuyến nghị gì về FPT\" -> symbol=FPT. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc. Chỉ có dữ liệu nếu mã thuộc rổ SSI100."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_finance_balance_sheet",
+    "description": "Bảng cân đối kế toán của MỘT mã theo kỳ báo cáo (275 chỉ tiêu), lọc theo khoảng ngày [to - range, to] hoặc theo đúng một kỳ (yearReport + lengthReport). DÙNG KHI: hỏi tài sản, nợ phải trả, vốn chủ sở hữu theo quý/năm. KHÔNG DÙNG KHI: kết quả kinh doanh (doanh thu, lợi nhuận) -> marketdata_list_finance_income_statement; lưu chuyển tiền tệ -> marketdata_list_finance_cash_flow; ROE/ROA/EPS/P/E -> marketdata_list_finance_indicator. TRẢ VỀ `balance_sheets`: company_type_code, ticker, year_report, length_report (1-4 = quý, 5 = cả năm), is_audit (1 = đã kiểm toán, 0 = chưa), cùng 275 chỉ tiêu (đơn vị VND, nguồn chưa ghi rõ đơn vị). Output chia 4 nhóm chỉ tiêu song song cho 4 loại hình doanh nghiệp (công ty thường, ngân hàng, bảo hiểm, chứng khoán), phân biệt qua company_type_code: thường chỉ nhóm khớp có giá trị, các nhóm còn lại null — bỏ qua field null khi trình bày. LUÔN đọc company_type_code trước và chỉ diễn giải field của nhóm tương ứng. Nghĩa của từng field theo mẫu báo cáo gộp của nguồn, có thể lệch theo loại hình doanh nghiệp: chỉ nêu các chỉ tiêu tổng hợp (tổng tài sản, nợ phải trả, vốn chủ sở hữu) khi tên field khớp rõ; field có hậu tố _2/_3 là dòng lặp tên trong nguồn, không chắc khác gì dòng gốc; field bank_other_field_* chưa có mô tả, không diễn giải — nếu không chắc thì nói \"nghĩa theo mẫu báo cáo, cần đối chiếu báo cáo tài chính gốc\". Khoảng ngày lọc theo ngày công bố báo cáo (mặc định); nguồn không công bố thứ tự các kỳ trả về, đọc year_report/length_report của từng dòng. Muốn đúng một kỳ (VD quý 2/2026) truyền yearReport + lengthReport kèm range=1y; nếu kỳ đó công bố cách hôm nay hơn 365 ngày thì dùng range=max_range hoặc đặt `to` gần ngày công bố; công bố cách quá 730 ngày thì tool không lấy được. VÍ DỤ: \"bảng cân đối kế toán quý 2/2026 của SSI\" -> symbol=SSI, yearReport=2026, lengthReport=2, range=1y. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, 1 mã mỗi lần (VD SSI), bắt buộc.",
+          "maxLength": 20
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = không lọc theo năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày báo cáo, tính lùi từ `to`: 1y = 365 ngày (khoảng 4 quý gần nhất); max_range = 730 ngày (lớn nhất, khoảng 8 quý; không có khung lớn hơn). Chọn 1y trừ khi cần nhiều kỳ hơn; cần xa hơn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày muộn nhất của khoảng báo cáo cần lấy. Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "isAudit": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Lọc theo kiểm toán: 1 = đã kiểm toán; 0 = chưa kiểm toán. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_daily_stock_infor",
+    "description": "Dữ liệu giao dịch cổ phiếu theo ngày, bản ĐẦY ĐỦ, của MỘT mã hoặc cả MỘT sàn, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi giá trần/sàn/tham chiếu, khớp lệnh vs thỏa thuận, khối ngoại, giá đã điều chỉnh của một mã/sàn theo ngày. KHÔNG DÙNG KHI: chỉ cần OHLCV gọn -> marketdata_list_stock_daily_data; cần % thay đổi theo giai đoạn -> marketdata_list_stock_performance. Phải truyền ĐÚNG MỘT trong `symbol` hoặc `exchange` (không truyền cả hai, không bỏ cả hai). Cả sàn nhiều ngày cần pageSize lớn và duyệt nhiều trang. range=1d trả về 2 ngày (toDate và ngày liền trước): khi hỏi đúng một phiên, chỉ đọc dòng có trading_date đúng ngày cần hỏi, bỏ dòng còn lại. TRẢ VỀ `stocks`: symbol; trading_date (DD/MM/YYYY); open, high, low, close, volume, ceiling_price, floor_price, ref_price, avg_price (VND; riêng volume là cổ phiếu); close_price_adjusted = giá đóng cửa đã điều chỉnh theo sự kiện quyền; open_raw, high_raw, low_raw, close_raw = giá OHLC chưa điều chỉnh tại phiên có sự kiện quyền (nguồn không nói rõ open/high/low/close có điều chỉnh hay không — khi cần so sánh giá qua sự kiện quyền thì nói rõ giới hạn này); price_changed (VND); per_price_change (%, 1.5 = 1,5%); khớp lệnh total_match_volume/total_match_value (VND) và thỏa thuận total_deal_volume/total_deal_value (VND); khối ngoại khi nguồn có dữ liệu (foreign_buy_volume_total, foreign_sell_volume_total, foreign_buy_value_total, foreign_sell_value_total, foreign_current_room, foreign_buy_volume_matched, foreign_buy_volume_deal; không có khối nội); total_buy_trade, total_sell_trade (số lệnh đặt mua/bán), total_buy_trade_volume, total_sell_trade_volume (khối lượng ĐẶT mua/bán, không phải khối lượng khớp), net_buy_sell_volume, net_buy_sell_value. VÍ DỤ: \"giá trần sàn tham chiếu của SSI phiên hôm qua\" -> symbol=SSI, range=1d, toDate=<ngày hôm qua>. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu (VD SSI). Phải truyền ĐÚNG 1 trong 2: symbol hoặc exchange; bỏ trống khi đã truyền exchange."
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch (viết hoa): HOSE, HNX hoặc UPCOM. Phải truyền ĐÚNG 1 trong 2: symbol hoặc exchange; bỏ trống khi đã truyền symbol."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài giai đoạn, tính lùi từ toDate: 1d = toDate và ngày liền trước (hỏi chi tiết 1 phiên: đặt toDate = ngày đó); 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng; cần giai đoạn dài hơn khung đã chọn thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày giao dịch cuối cùng cần lấy. Hỏi 'phiên gần nhất' thì bỏ trống; hỏi một ngày cụ thể thì toDate = ngày đó với range=1d. Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Số dòng mỗi trang, từ 1 đến 200 (bỏ trống = số dòng mặc định của hệ thống, tài liệu nguồn không ghi con số). Cả sàn hoặc nhiều ngày cần pageSize lớn và duyệt thêm trang."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "research_list_ssi100_stocks",
+    "description": "Liệt kê các mã thuộc rổ SSI100 của MỘT ngành kèm điểm tóm tắt từng mã (để so sánh, xếp hạng trong ngành); hoặc truyền một mã để xem mã đó có thuộc SSI100 không. DÙNG KHI: hỏi mã nào thuộc SSI100 trong một ngành; so sánh các mã SSI100 cùng ngành theo điểm hoặc thanh khoản; hỏi một mã có trong SSI100 không. KHÔNG DÙNG KHI: cần nhận định về ngành -> research_get_ssi100_industry_assessment; cần đủ các điểm thành phần của một mã -> research_get_ssi100_stock_ratings; cần lời nhận định về một mã -> research_get_ssi100_stock_commentary. TRẢ VỀ `industries`, mỗi ngành có icb_code (mã ngành), icb_name (tên ngành) và `stocks`: symbol; company_name (tên công ty); exchange (sàn); industry_l2, industry_l3 (ngành ICB cấp 2, cấp 3); total_list_shares (số cổ phiếu niêm yết, cổ phiếu); avg_match_value (giá trị khớp lệnh trung bình 6 tháng, đơn vị đồng); rating_ta (điểm phân tích kỹ thuật, thang 100); rate (đánh giá kỹ thuật, số sao); fa_rating_score (điểm phân tích cơ bản, thang 100); fa_rating (đánh giá cơ bản, số sao). CÁCH ĐỌC ĐIỂM (theo hướng dẫn FA/TA của SSI Research; chi tiết: resource `ssi://research/reference/rating-guide`): rating_ta và fa_rating_score là điểm 0-100; rate và fa_rating là số sao (1-5); không phải %. Điểm là phân vị tương đối trong tập cổ phiếu được chấm cùng ngày: điểm thấp không có nghĩa doanh nghiệp yếu tuyệt đối, điểm cao không đảm bảo giá tăng hay hết rủi ro; sao là nhãn phân nhóm tương đối, không phải xác suất sinh lời. Chỉ so sánh các mã cùng ngày chấm. Giữ nguyên giá trị, không tự quy đổi. Trường trống thì bỏ qua. Khi truyền `symbol`, chỉ lấy phần tử có symbol đúng mã được hỏi; không có phần tử nào = mã không thuộc SSI100. Dữ liệu cập nhật hằng ngày (mặc định là bản ghi của ngày hiện tại); response không kèm ngày nên không nêu ngày cụ thể. VÍ DỤ: \"SSI100 ngành ngân hàng có mã nào, mã nào điểm cao\" -> industry=8300; \"FPT có trong SSI100 không\" -> symbol=FPT. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "industry": {
+          "type": "string",
+          "enum": [
+            "5300",
+            "500",
+            "2357",
+            "2300",
+            "5700",
+            "6500",
+            "7573",
+            "7577",
+            "7500",
+            "8300",
+            "8500",
+            "8600",
+            "9999",
+            "8700",
+            "9500",
+            "4500",
+            "5500",
+            "3300",
+            "3500",
+            "3530",
+            "3573",
+            "3763",
+            "3760",
+            "2700",
+            "2730",
+            "2720",
+            "2770",
+            "1357",
+            "1353",
+            "1700",
+            "1770",
+            "1730",
+            "1300"
+          ],
+          "description": "Mã ngành ICB cấp 2 (chỉ nhận mã, không nhận tên). Đổi tên ngành người dùng nói sang mã: 5300 = Bán lẻ; 500 = Dầu khí; 2357 = Xây dựng; 2300 = Vật liệu xây dựng; 5700 = Du lịch và Giải trí; 6500 = Viễn thông; 7573 = Phân phối xăng dầu, khí đốt; 7577 = Nước; 7500 = Sản xuất, phân phối Điện; 8300 = Ngân hàng; 8500 = Bảo hiểm; 8600 = Bất động sản; 9999 = Bất động sản KCN; 8700 = Dịch vụ tài chính; 9500 = Công nghệ Thông tin; 4500 = Y tế; 5500 = Truyền thông; 3300 = Ô tô và phụ tùng; 3500 = Thực phẩm; 3530 = Đồ uống; 3573 = Nuôi trồng nông hải sản; 3763 = May mặc; 3760 = Hàng gia dụng, hàng giải trí, hàng cá nhân khác; 2700 = Công nghiệp nặng; 2730 = Điện tử, thiết bị điện; 2720 = Hàng công nghiệp; 2770 = Vận tải; 1357 = Sản phẩm hóa dầu, nông dược, hóa chất; 1353 = Nhựa, cao su, sợi; 1700 = Kim loại; 1770 = Khai khoáng; 1730 = Lâm nghiệp và Giấy; 1300 = Hóa chất. Bắt buộc truyền `industry` HOẶC `symbol` (một trong hai, không cả hai). Không truyền cùng `symbol`."
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa (VD FPT) để kiểm tra mã có thuộc SSI100 không. Không truyền cùng `industry`."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "marketdata_list_finance_cash_flow",
+    "description": "Báo cáo lưu chuyển tiền tệ của MỘT mã theo kỳ báo cáo (220 chỉ tiêu), lọc theo khoảng ngày [to - range, to] hoặc theo đúng một kỳ (yearReport + lengthReport). DÙNG KHI: hỏi dòng tiền hoạt động kinh doanh/đầu tư/tài chính theo quý/năm. KHÔNG DÙNG KHI: bảng cân đối kế toán -> marketdata_list_finance_balance_sheet; kết quả kinh doanh -> marketdata_list_finance_income_statement; ROE/ROA/EPS/P/E -> marketdata_list_finance_indicator. TRẢ VỀ `cash_flows`: company_type_code, ticker, is_direct (phương pháp trực tiếp hay gián tiếp), year_report, length_report (1-4 = quý, 5 = cả năm; tài liệu nguồn còn nêu giá trị 6 và 9 nhưng không giải nghĩa), is_audit (1 = đã kiểm toán, 0 = chưa), cùng 220 chỉ tiêu (VND). Output chia 4 nhóm chỉ tiêu song song cho 4 loại hình doanh nghiệp (công ty thường, ngân hàng, bảo hiểm, chứng khoán), phân biệt qua company_type_code: chỉ nhóm khớp có giá trị, 3 nhóm còn lại null — bỏ qua field null khi trình bày. Khoảng ngày lọc theo NGÀY CÔNG BỐ báo cáo (không phải ngày cuối kỳ). Muốn đúng một kỳ (VD quý 2/2026) truyền yearReport + lengthReport kèm range=1y; kỳ cũ hơn 1 năm thì đặt `to` sau ngày công bố của kỳ đó và dùng range=max_range. Thứ tự dòng không đảm bảo (có cả báo cáo đã/chưa kiểm toán của cùng kỳ): hỏi nhiều kỳ thì đặt pageSize=50 hoặc 100, rồi tự sắp theo year_report/length_report. VÍ DỤ: \"lưu chuyển tiền tệ quý 2/2026 của SSI\" -> symbol=SSI, yearReport=2026, lengthReport=2, range=1y. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, 1 mã mỗi lần (VD SSI), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = không lọc theo năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày báo cáo, tính lùi từ `to`: 1y = 365 ngày (khoảng 4 quý gần nhất); max_range = 730 ngày (lớn nhất, khoảng 8 quý; không có khung lớn hơn). Chọn 1y trừ khi cần nhiều kỳ hơn; cần xa hơn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày CÔNG BỐ muộn nhất của báo cáo cần lấy (cuối khoảng lọc), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "isAudit": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Lọc theo kiểm toán: 1 = đã kiểm toán; 0 = chưa kiểm toán. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_covered_warrant_information",
+    "description": "Lấy thông tin chi tiết của MỘT chứng quyền có đảm bảo (CW) còn hiệu lực tại thời điểm hiện tại. DÙNG KHI: hỏi giá thực hiện, tỷ lệ thực hiện quyền, ngày đáo hạn, tổ chức phát hành, giá CW và giá chào mua/bán tốt nhất của một mã CW. KHÔNG DÙNG KHI: cần danh sách CW theo ngày phát hành/đáo hạn -> marketdata_list_corporate_cw; giao dịch tự doanh CW -> marketdata_list_cw_proprietary_trading. TRẢ VỀ `covered_warrant_info`: symbol, underlying_symbol (mã cơ sở), underlying_price (giá khớp gần nhất của chứng khoán cơ sở, VND), listed_share (khối lượng CW niêm yết), issuer_name, maturity_date, exercise_price (giá thực hiện, VND), conversion_ratio (tỷ lệ thực hiện quyền), cw_price (giá khớp gần nhất của CW, VND), bid_price_1 / ask_price_1 (giá kê mua / kê bán gần nhất, VND), close_price_1st_trade_date (giá cuối ngày của ngày giao dịch đầu tiên, VND), highest_close_price / highest_high_price (giá đóng cửa cao nhất / giá cao nhất từ trước đến nay, VND), latest_close_price (giá đóng cửa gần nhất, VND), avg_volume_20_sessions (khối lượng bình quân 20 phiên gần nhất), effective_date (nguồn không mô tả, chỉ trích dẫn nguyên văn). Chỉ có CW còn hiệu lực; có thể trả rỗng khi CW không có dữ liệu (kể cả CW đã đáo hạn). symbol bắt buộc, 1 CW mỗi lần. range/toDate chỉ là khoảng lấy mẫu của nguồn (tài liệu nguồn không mô tả tác dụng), tra thông tin hiện tại thì dùng range=1d, không cần toDate. Nếu tool báo 'Downstream service unavailable' thì gọi lại đúng yêu cầu 1 lần. VÍ DỤ: \"thông tin CW CACB2515\" -> symbol=CACB2515, range=1d. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã chứng quyền, bắt buộc, 1 mã mỗi lần (VD CACB2515). Không truyền thì trả toàn bộ CW còn hiệu lực (quá lớn), nên luôn truyền."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1w",
+            "1m"
+          ],
+          "description": "Độ dài khoảng dữ liệu, tính lùi từ toDate. 1d = toDate và ngày liền trước (khuyến nghị để tra thông tin hiện tại của 1 CW); 1w = 7 ngày; 1m = 30 ngày (lớn nhất; khung dài hơn từng bị quá thời gian chờ 15 giây). 'Hiện tại' -> 1d. Nếu rỗng thì tăng lên 1w hoặc 1m, hoặc lùi toDate. Chọn khung NHỎ NHẤT đủ dùng."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_corporate_actions",
+    "description": "Danh sách sự kiện doanh nghiệp (chia cổ tức, họp ĐHCĐ, giao dịch nội bộ, niêm yết/chuyển sàn...) của MỘT mã, MỘT sàn hoặc toàn thị trường, trong khoảng [toDate - range, toDate] tính theo loại ngày dateType. DÙNG KHI: hỏi các sự kiện ĐÃ diễn ra/đã công bố (đến hết hôm nay) như cổ tức, ngày giao dịch không hưởng quyền (GDKHQ), ngày chốt quyền, ĐHCĐ, giao dịch nội bộ, niêm yết/chuyển sàn của một mã hoặc một sàn. KHÔNG DÙNG KHI: cần hệ số điều chỉnh giá -> marketdata_list_adjusted_rate; cần đợt phát hành thêm/quyền mua -> marketdata_list_share_issue; cần tin tức -> marketdata_list_company_news. Chỉ truyền MỘT trong `symbol` hoặc `exchange`; bỏ cả hai = toàn thị trường (rất nhiều dòng — nên thu hẹp bằng eventCode). Giới hạn: toDate không được ở tương lai nên tool không tra được lịch sự kiện sắp diễn ra (VD ngày GDKHQ chưa tới) — nếu người dùng hỏi lịch sắp tới, báo rõ giới hạn này, không suy đoán. TRẢ VỀ `corporate_actions`: symbol; event_code, event_list_code, event_name, event_title, event_description; exright_date (ngày GDKHQ); record_date (ngày đăng ký cuối cùng); issue_date (ngày thực hiện); public_date (ngày công bố) — các ngày dạng DD/MM/YYYY; exchange; ratio, value (nguồn dữ liệu ghi là tỷ lệ / giá trị cổ tức, trả về dạng chuỗi nguyên văn; đơn vị và ý nghĩa theo từng event_code chưa được xác nhận — chỉ trích dẫn nguyên văn, không tự quy đổi hay gắn đơn vị). VÍ DỤ: \"lịch cổ tức tiền mặt của SSI năm qua\" -> symbol=SSI, eventCode=DIV, range=1y, dateType=Publicdate. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eventCode": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Mã loại sự kiện; truyền 1 hoặc nhiều mã cách nhau dấu phẩy, không khoảng trắng (VD DIV,TS). Bỏ trống = mọi loại. Giá trị: AGME = Đại hội đồng cổ đông thường niên; AGMR = Nghị quyết ĐHCĐ thường niên; AIS = Niêm yết thêm; AMEN = Đổi tên/ticker; BALLOT = Lấy ý kiến cổ đông bằng văn bản; BCHA = Thay đổi ban lãnh đạo; BOME = Họp HĐQT; DDALL = Giao dịch nội bộ (tất cả); DDIND = Giao dịch nội bộ - cá nhân; DDINS = Giao dịch nội bộ - tổ chức; DDRP = Giao dịch nội bộ - người liên quan; DIV = Trả cổ tức bằng tiền mặt; EGME = ĐHCĐ bất thường; ISS = Phát hành cổ phiếu; KQCT = Kết quả kinh doanh năm chính thức; KQQY = Kết quả kinh doanh quý; KQSB = Kết quả kinh doanh năm sơ bộ; LIQUI = Thanh lý, giải thể quỹ; MA = Mua bán và sáp nhập; MOVE = Chuyển sàn; NLIS = Niêm yết mới; OTHE = Sự kiện khác; RETU = Niêm yết trở lại; SUSP = Tạm dừng niêm yết; TS = Giao dịch cổ phiếu quỹ."
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu (VD SSI). CHỈ truyền 1 trong 2: symbol hoặc exchange; bỏ cả hai = toàn thị trường. Bỏ trống = không lọc theo mã."
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch (viết hoa): HOSE, HNX hoặc UPCOM. CHỈ truyền 1 trong 2: symbol hoặc exchange. Bỏ trống = không lọc theo sàn."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài giai đoạn, tính lùi từ toDate: 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng; cần giai đoạn dài hơn khung đã chọn thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối của khoảng lọc (tính theo loại ngày ở dateType), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay; không được ở tương lai. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "dateType": {
+          "type": "string",
+          "enum": [
+            "Publicdate",
+            "Exrightdate"
+          ],
+          "description": "Loại ngày dùng để lọc khoảng [toDate - range, toDate]: Publicdate = ngày công bố tin (mặc định); Exrightdate = ngày giao dịch không hưởng quyền (GDKHQ). Hỏi 'GDKHQ/ngày chốt quyền trong giai đoạn ...' -> Exrightdate."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "PublicDate",
+            "ExrightDate"
+          ],
+          "description": "Cột sắp xếp: PublicDate = ngày công bố (mặc định); ExrightDate = ngày giao dịch không hưởng quyền."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "description": "Thứ tự sắp xếp: ASC = tăng dần; DESC = giảm dần. Mặc định DESC nếu bỏ trống."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ trả về: VN = tiếng Việt; EN = tiếng Anh. Mặc định VN nếu bỏ trống."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "research_get_ssi100_stock_commentary",
+    "description": "Lấy lời nhận định bằng văn bản của SSI Research về MỘT mã trong rổ SSI100. DÙNG KHI: hỏi SSI Research nhận định, đánh giá gì về một mã SSI100 (tổng quan, kết quả kinh doanh, sức khỏe tài chính, triển vọng). KHÔNG DÙNG KHI: cần các điểm dạng số -> research_get_ssi100_stock_ratings; cần nhận định về cả ngành -> research_get_ssi100_industry_assessment. TRẢ VỀ `industries` (thường 1 phần tử): icb_code, icb_name và `stocks`: symbol; company_name; exchange; company_overview (tổng quan công ty); description (diễn biến kết quả kinh doanh gần nhất); fa_description (nhận định phân tích cơ bản, nêu điểm FA và so sánh với trung bình 3 tháng); prospect_industry (triển vọng ngành của mã); business_result (kết quả kinh doanh); text_effective (hiệu quả hoạt động); text_profit_margin (biên lợi nhuận); text_asset (tài sản); text_valuation (định giá). Thường chỉ có company_overview, description, fa_description; các field còn lại chỉ có với một số mã - trống thì bỏ qua, không bịa. Mọi field là văn bản tiếng Việt của SSI Research, có thể dùng viết tắt (svck = so với cùng kỳ, svqt = so với quý trước, LNTT = lợi nhuận trước thuế): trình bày nguyên văn, ghi nguồn \"SSI Research\", chỉ giải nghĩa viết tắt, không diễn giải hay bổ sung ý kiến. Chỉ lấy phần tử có symbol đúng mã được hỏi. Dữ liệu cập nhật hằng ngày (mặc định là bản ghi của ngày hiện tại); response không kèm ngày nên không nêu ngày cụ thể. VÍ DỤ: \"SSI Research nhận định gì về FPT\" -> symbol=FPT. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc. Chỉ có dữ liệu nếu mã thuộc rổ SSI100."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_cw_proprietary_trading",
+    "description": "Giao dịch tự doanh chứng quyền (CW) của tổ chức phát hành theo từng ngày, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi hoạt động tự doanh CW của tổ chức phát hành (mua/bán, khớp lệnh/thỏa thuận). KHÔNG DÙNG KHI: cần thông tin chi tiết của một CW (giá thực hiện, đáo hạn...) -> marketdata_list_covered_warrant_information; cần danh sách CW đã phát hành -> marketdata_list_corporate_cw. Dữ liệu thưa: khoảng ngắn có thể trả rỗng — thử range lớn hơn. Range nhỏ nhất là 3m; nguồn không công bố thứ tự sắp xếp và tool không có tham số order: muốn dòng mới nhất, đặt toDate = ngày cần xem, rồi duyệt các trang (số dòng nhận được = pageSize thì còn trang sau) và đọc trading_date của từng dòng. TRẢ VỀ `trades`: symbol (mã CW), trading_date (nguồn không ghi định dạng, trích nguyên văn); tổng khối lượng mua/bán (total_buy_trade_volume, total_sell_trade_volume; nguồn không ghi đơn vị khối lượng), giá trị mua/bán (total_buy_trade_value, total_sell_trade_value; VND) và tỷ lệ tương ứng (percent_*, nguồn không ghi đơn vị — không mặc định là %); cùng bộ chỉ tiêu tách riêng khớp lệnh (total_match_*, percent_match_*) và thỏa thuận (total_deal_*, percent_deal_*); nguồn dữ liệu (source_name, source_link, source_url, note, en_source_name, en_source_url; các field nguồn này thường null — không dựa vào chúng). percent_* có thể bằng 0 dù total_* khác 0 — không dùng percent_* để kết luận, tự tính từ total_* nếu cần. VÍ DỤ: \"hoạt động tự doanh CW trong 6 tháng qua\" -> range=6m (mã CW lấy từ symbol của marketdata_list_corporate_cw nếu cần lọc theo một CW). (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã chứng quyền (lấy từ symbol của marketdata_list_corporate_cw), tuỳ chọn. Bỏ trống = mọi CW."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài giai đoạn, tính lùi từ toDate: 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng; cần giai đoạn dài hơn khung đã chọn thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày giao dịch muộn nhất cần xem (trading_date). Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_icb_industry",
+    "description": "Chỉ số tài chính BÌNH QUÂN theo ngành ICB (theo từng sàn/rổ chỉ số). DÙNG KHI: hỏi P/E, P/B, ROE, ROA, biên lợi nhuận... bình quân của một ngành hoặc so sánh các ngành. KHÔNG DÙNG KHI: cần danh sách công ty thuộc ngành -> marketdata_list_sectors_data; cần các công ty cùng ngành với một mã -> marketdata_list_company_in_same_industry. Không lọc thì trả tất cả; mỗi ngành có thể có nhiều dòng, mỗi dòng ứng với một sàn/rổ chỉ số (trường exchange). TRẢ VỀ `industries`: icb_code, exchange (sàn hoặc rổ chỉ số tính bình quân, VD VNINDEX); eps, market_cap (VND); pe, ps, pb, ev_to_ebitda, quick_ratio, current_ratio, longterm_debt_to_equity, total_liabilities_to_equity, total_liabilities_to_total_assets, asset_turnover, inventory_turnover, account_receivable_turnover (lần); roa, roe, net_profit_margin, gross_profit_margin, operating_profit_margin, ebit, sale_growth_rate, equity_growth_rate (PHÂN SỐ: 0.0949 = 9,49%, nhân 100 khi trình bày %); price_change_1d/1w/1m/3m/6m/1y/ytd và close_index (đơn vị price_change_* chưa xác nhận — không diễn giải thành %). Một số ngành trả dòng toàn giá trị 0 (chưa có dữ liệu): bỏ qua, không trình bày như số liệu thật. VÍ DỤ: \"P/E bình quân các ngành trên HOSE\" -> exchange=HOSE, pageSize=50. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "icbCode": {
+          "type": "string",
+          "description": "Mã ngành ICB, lấy từ icb_code của kết quả hoặc từ marketdata_list_sectors_data. Bỏ trống = tất cả ngành."
+        },
+        "icbLevel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4,
+          "description": "Cấp phân ngành ICB, từ 1 đến 4 (số càng lớn càng chi tiết). Bỏ trống = không lọc theo cấp."
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch (viết hoa): HOSE, HNX hoặc UPCOM. Bỏ trống = tất cả."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "marketdata_list_company_news",
+    "description": "Danh sách tin tức/thông báo của công ty và thị trường, lọc theo khoảng ngày CẬP NHẬT tin (UpdateDate, không phải ngày công bố) [to - range, to]; có thể lọc theo mã, từ khoá trong tiêu đề, loại tin, tin trong/ngoài nước. DÙNG KHI: hỏi tin tức, thông báo công bố của một mã hoặc tin mới của thị trường. KHÔNG DÙNG KHI: cần toàn văn chắc chắn đầy đủ của một tin -> marketdata_get_company_news_detail (lấy news_id từ kết quả tool này); cần lịch cổ tức/ĐHCĐ/GDKHQ -> marketdata_list_corporate_actions. TRẢ VỀ `news`: news_id, symbol, title, short_content, full_content (HTML, cần bỏ thẻ khi trình bày; mỗi dòng có thể rất dài, độ đầy đủ so với tool chi tiết chưa xác nhận), image_url, news_source, source_code, news_source_link, category_code, update_date và public_date (dạng DD/MM/YYYY HH:mm:ss). Mỗi trang tối đa pageSize dòng nên chọn pageSize nhỏ nhất đủ dùng. Một tin có thể xuất hiện nhiều dòng cùng news_id — gộp theo news_id khi trình bày. Giới hạn của SSI MCP: mỗi lần chỉ tra tối đa 6 tháng (range lớn nhất = 6m); cần tin cũ hơn thì gọi lại với `to` lùi dần. VÍ DỤ: \"tin mới nhất về SSI tháng qua\" -> symbol=SSI, range=1m, pageSize=10. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu (VD SSI). Bỏ trống = tin của mọi mã và thị trường."
+        },
+        "isWorldNews": {
+          "type": "boolean",
+          "description": "true = chỉ tin quốc tế; false = chỉ tin trong nước. Bỏ trống = cả hai."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1m",
+            "3m",
+            "6m"
+          ],
+          "description": "Độ dài giai đoạn lọc theo ngày cập nhật tin, tính lùi từ `to`: 1m = 30 ngày; 3m = 90; 6m = 180 (lớn nhất). 'tin gần đây/tuần qua/tháng qua' -> 1m; 'quý qua' -> 3m. Chọn khung NHỎ NHẤT đủ dùng; cần tin cũ hơn khung đã chọn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày cập nhật tin muộn nhất cần lấy (lọc theo UpdateDate). Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "searchText": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Từ khoá tìm trong TIÊU ĐỀ tin (không tìm trong nội dung). Bỏ trống = không lọc."
+        },
+        "newsType": {
+          "type": "string",
+          "enum": [
+            "News",
+            "Announcement",
+            "All"
+          ],
+          "default": "All",
+          "description": "Loại tin: News = tin tức; Announcement = thông báo công bố; All = cả hai (mặc định)."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "PublicDate",
+            "UpdateDate"
+          ],
+          "default": "PublicDate",
+          "description": "Cột sắp xếp: PublicDate = ngày công bố tin (mặc định); UpdateDate = ngày cập nhật tin."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "DESC",
+          "description": "Thứ tự sắp xếp: ASC = tăng dần; DESC = giảm dần. Mặc định DESC nếu bỏ trống. 'tin mới nhất' -> DESC."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "default": "VN",
+          "description": "Ngôn ngữ trả về: VN = tiếng Việt; EN = tiếng Anh. Mặc định VN nếu bỏ trống."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "default": 10,
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_corp_finance_finance_indicator",
+    "description": "Chỉ số tài chính tóm tắt của MỘT mã: lợi nhuận, P/E, P/B, kèm kỳ báo cáo của từng dòng. DÙNG KHI: hỏi nhanh lợi nhuận, P/E, P/B của một mã. KHÔNG DÙNG KHI: cần ROE/ROA/EPS/biên lợi nhuận hoặc nhiều kỳ báo cáo có sắp xếp/lọc theo kỳ -> marketdata_list_finance_indicator; lịch sử P/E, P/B theo ngày -> marketdata_list_fundamental_ratio_history. TRẢ VỀ `indicators` (mỗi dòng 1 kỳ báo cáo; thứ tự các dòng chưa được xác nhận, đọc year_report/length_report để biết kỳ, không mặc định dòng đầu là kỳ mới nhất): symbol; net_profit và profit (VND; hai field riêng của nguồn dữ liệu, nghĩa chi tiết chưa được xác nhận — trích đúng tên field, không suy diễn thành \"lợi nhuận ròng\" hay \"lợi nhuận sau thuế\"); pe, pb (lần); year_report; length_report (1-4 = quý, 5 = cả năm). VÍ DỤ: \"P/E và P/B của SSI\" -> symbols=SSI. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbols": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Mã cổ phiếu, truyền ĐÚNG 1 mã mỗi lần (VD SSI), bắt buộc. Truyền nhiều mã chưa được xác nhận nên không dùng; hỏi nhiều mã thì gọi lần lượt từng mã."
+        }
+      },
+      "required": [
+        "symbols"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_sub_companies",
+    "description": "Công ty con và công ty liên kết của MỘT công ty mẹ. DÙNG KHI: hỏi công ty con/liên kết của một doanh nghiệp, tỷ lệ sở hữu của công ty mẹ. KHÔNG DÙNG KHI: cần ban lãnh đạo -> marketdata_list_company_leaderships; cần cổ đông -> marketdata_list_share_holder_detail; cần lịch sử phát hành cổ phiếu -> marketdata_list_share_issue. TRẢ VỀ `sub_companies`: parent_symbol, parent_company_name; child_symbol (có thể là mã nội bộ dạng số nếu công ty con không niêm yết), child_company_name; charter_capital (vốn điều lệ); percentage (tỷ lệ sở hữu; chưa xác nhận phân số hay %, đối chiếu nguồn trước khi trích số); role_id (11 = công ty con, 14 = công ty liên kết), role_name (tên quan hệ tương ứng). VÍ DỤ: \"công ty con của SSI\" -> symbol=SSI. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu của công ty mẹ, viết hoa (VD SSI)."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ tên công ty: VN = tiếng Việt, EN = tiếng Anh (mặc định VN). Người dùng hỏi 'tên tiếng Anh' -> EN."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Response không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống)."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_corporate_cw",
+    "description": "Danh sách chứng quyền có đảm bảo (CW) đã phát hành, lọc theo khoảng ngày phát hành hoặc ngày đáo hạn [toDate - range, toDate]. DÙNG KHI: hỏi các CW phát hành hoặc đáo hạn trong một giai đoạn đã qua. KHÔNG DÙNG KHI: cần chi tiết một CW cụ thể (cần mã CW) -> marketdata_list_covered_warrant_information; cần giao dịch tự doanh CW -> marketdata_list_cw_proprietary_trading. Khoảng hẹp không có CW nào thì trả rỗng (không lỗi) — thử range lớn hơn. toDate không được ở tương lai nên không liệt kê được CW sẽ đáo hạn sau hôm nay. Tool KHÔNG có bộ lọc theo tổ chức phát hành hay mã cơ sở và nguồn không công bố thứ tự sắp xếp: muốn tìm CW của một tổ chức/mã cơ sở thì duyệt các trang (số dòng nhận được = pageSize thì còn trang sau) rồi tự lọc trên kết quả; hoặc nếu đã biết mã CW thì dùng marketdata_list_covered_warrant_information. TRẢ VỀ `covered_warrants`: symbol (mã CW; nguồn không mô tả khác biệt với covered_warrant_code — khi tra chi tiết bằng marketdata_list_covered_warrant_information thì thử `symbol` trước), covered_warrant_code, covered_warrant_name, issue_price và exercise_price (VND), execution_rate_covered_warrant và execution_rate_share (tỷ lệ thực hiện, nguồn không ghi đơn vị), issue_date, last_trading_date, maturity_date, share_issue và guarantee_value (nguồn không ghi nghĩa/đơn vị — chỉ trích dẫn nguyên văn). Các field mã issuer_organization_code, derivative_type_code, term_stage_code, trading_status_code, right_style_code, payout_method_code là mã nội bộ của nguồn, KHÔNG có bảng giải nghĩa: không diễn giải ý nghĩa của chúng. VÍ DỤ: \"CW phát hành trong 3 tháng qua\" -> range=3m, dateType=IssueDate; \"CW đáo hạn trong 6 tháng qua\" -> range=6m, dateType=MaturityDate. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài giai đoạn, tính lùi từ toDate: 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). 3m = CW mới phát hành; max_range dùng khi cần danh sách đầy đủ. Chọn khung NHỎ NHẤT đủ dùng; cần giai đoạn dài hơn khung đã chọn thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối của khoảng lọc (tính theo loại ngày ở dateType), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay; không được ở tương lai. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "dateType": {
+          "type": "string",
+          "enum": [
+            "IssueDate",
+            "MaturityDate"
+          ],
+          "description": "Loại ngày dùng để lọc khoảng [toDate - range, toDate]: IssueDate = ngày phát hành (mặc định); MaturityDate = ngày đáo hạn (hỏi CW đáo hạn trong một giai đoạn đã qua -> MaturityDate)."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_get_latest_cap_and_dividend",
+    "description": "Chuỗi theo NĂM (không phải một giá trị mới nhất) về tài sản, cổ tức tiền mặt và vốn chủ sở hữu của MỘT cổ phiếu. DÙNG KHI: hỏi tổng tài sản, vốn chủ sở hữu, cổ tức tiền mặt của một mã qua các năm. KHÔNG DÙNG KHI: cần vốn điều lệ -> marketdata_list_company_profile (charter_capital); cần vốn hoá thị trường -> marketdata_list_stock_statistics hoặc marketdata_list_finance_indicator (market_cap); cần chỉ tiêu theo quý/kỳ báo cáo (ROE, EPS...) -> marketdata_list_finance_indicator; cần sự kiện chia cổ tức theo ngày (ngày giao dịch không hưởng quyền, tỷ lệ) -> marketdata_list_corporate_actions. TRẢ VỀ 3 danh sách: `assets_by_year` (year, asset: tài sản, VND); `cash_dividends_by_year` (year, value_per_share: cổ tức tiền mặt trên mỗi cổ phiếu, VND; có thể rỗng nếu mã không có dữ liệu); `owner_capital_by_year` (year, owner_capital: VỐN CHỦ SỞ HỮU, VND - KHÔNG phải vốn điều lệ hay vốn hoá thị trường). year là chuỗi (VD 2025); thứ tự các dòng chưa xác nhận - tự sắp xếp theo year. Số trả dạng chuỗi. Muốn giá trị hiện tại thì lấy year lớn nhất trong từng danh sách. VÍ DỤ: \"tổng tài sản của SSI qua các năm\" -> symbol=SSI. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_world_index",
+    "description": "Chỉ số thị trường thế giới theo phiên, trong các ngày [toDate - range, toDate]. Dữ liệu THƯA (đã gặp khoảng 1 điểm mỗi tuần) và có thể dừng ở ngày cũ nên khung ngắn có thể trả rỗng: dùng 1y hoặc max_range rồi lấy trading_date mới nhất. DÙNG KHI: hỏi điểm số, mức tăng giảm của chỉ số nước ngoài (Nikkei, Hang Seng, KOSPI, Shanghai...). KHÔNG DÙNG KHI: cần chỉ số trong nước (VNINDEX, VN30, HNX30...) -> marketdata_list_index_daily_data. TRẢ VỀ `indices`: world_index_code; currency_code; open_index, close_index, highest_index, lowest_index (điểm); index_change (thay đổi điểm); percent_index_change (thay đổi theo %; chưa xác nhận 1.5 = 1,5% hay 0.015, không tự quy đổi); total_volume, total_value (tổng khối lượng/giá trị, đơn vị theo thị trường gốc); trading_date. Tool chỉ hỗ trợ các mã trong worldIndexCode; hỏi chỉ số khác (VD Dow Jones, S&P 500, DAX) thì báo chưa có dữ liệu, không tự thử mã khác. Sắp xếp mặc định theo trading_date giảm dần. Bỏ trống worldIndexCode = tất cả chỉ số (nhiều dòng): tăng pageSize và duyệt thêm trang, hoặc lọc ở phía AI. VÍ DỤ: \"KOSPI năm qua\" -> worldIndexCode=KOSPI, range=1y, pageSize=100. (Read-only; chỉ số nước ngoài tính theo tiền tệ và đơn vị của thị trường gốc; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "worldIndexCode": {
+          "type": "string",
+          "enum": [
+            "BSESN",
+            "FTWISGPL",
+            "HANGSENG",
+            "KLSE",
+            "KOSPI",
+            "N225",
+            "PSEI.PS",
+            "SET.BK",
+            "SHANGHAI"
+          ],
+          "description": "Mã chỉ số thế giới, CHỈ MỘT mã mỗi lần (nhiều mã cách nhau dấu phẩy bị lỗi). BSESN = BSE Sensex (Ấn Độ); FTWISGPL = FTSE Singapore; HANGSENG = Hang Seng (Hồng Kông); KLSE = Kuala Lumpur (Malaysia); KOSPI = Hàn Quốc; N225 = Nikkei 225 (Nhật); PSEI.PS = PSEi (Philippines); SET.BK = SET (Thái Lan); SHANGHAI = Thượng Hải. Bỏ trống = tất cả chỉ số."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày, tính lùi từ toDate: 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). \"quý này\" -> 3m; \"nửa năm\" -> 6m; \"năm qua\" -> 1y. Chọn khung NHỎ NHẤT đủ dùng; cần dài hơn thì gọi lại với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống). Nhiều chỉ số x nhiều ngày thì dùng 100 và duyệt thêm trang."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_sectors_data",
+    "description": "Danh mục ngành ICB theo cấp (level 1-4); mỗi dòng là một ngành kèm danh sách công ty thuộc ngành đó. CẢNH BÁO KÍCH THƯỚC: mỗi ngành kèm TOÀN BỘ công ty của ngành (nhiều nghìn công ty nếu lấy cả cấp; ước lượng hàng trăm nghìn ký tự, có thể vượt giới hạn ngữ cảnh) — luôn truyền icbCode để thu hẹp về một ngành, hoặc dùng pageSize nhỏ. DÙNG KHI: hỏi \"mã nào thuộc ngành X\" (đã biết mã ngành) hoặc tra mã ngành ICB. KHÔNG DÙNG KHI: cần chỉ số tài chính bình quân của ngành -> marketdata_list_icb_industry; cần các công ty cùng ngành với MỘT mã kèm giá phiên gần nhất -> marketdata_list_company_in_same_industry. TRẢ VỀ `sectors`: industry_level, industry_code, industry_name; trong mỗi ngành có `companies`: symbol, company_name, company_short_name, exchange, icb_code_path (đường dẫn mã ICB từ cấp 1 đến cấp 4), icb_path_name (tên ngành tương ứng). Phân trang theo NGÀNH (mỗi trang là pageSize ngành, danh sách companies nằm lồng bên trong). Không truyền icbCode thì mỗi ngành trả kèm TẤT CẢ công ty của nó nên kết quả rất lớn: ưu tiên truyền icbCode khi cần danh sách công ty, dùng pageSize nhỏ khi chỉ cần xem các ngành. Chưa biết mã ngành (VD \"ngành ngân hàng\"): gọi level (không truyền icbCode), tìm industry_name phù hợp để lấy industry_code, rồi gọi lại với icbCode. Hành vi lọc theo icbCode chưa được xác nhận hoàn toàn: luôn kiểm tra industry_code/industry_name trong kết quả có đúng ngành người dùng hỏi trước khi trả lời. VÍ DỤ: \"các ngành ICB cấp 1\" -> level=1; \"các công ty thuộc một ngành cấp 2 đã biết mã\" -> level=2, icbCode=<mã ngành>. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4,
+          "description": "Cấp phân ngành ICB, 1-4 (bắt buộc). Cấp 1 = nhóm ngành lớn nhất; số càng lớn càng chi tiết."
+        },
+        "icbCode": {
+          "type": "string",
+          "description": "Mã ngành ICB cần lọc (tuỳ chọn; lấy industry_code từ kết quả gọi trước, không tự đoán). Hành vi lọc chưa được xác nhận hoàn toàn: kiểm tra industry_code trong kết quả. Bỏ trống = mọi ngành của cấp level (kèm toàn bộ công ty, rất lớn)."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ tên ngành: VN = tiếng Việt, EN = tiếng Anh (mặc định VN)."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số NGÀNH mỗi trang: chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống)."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Response không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        }
+      },
+      "required": [
+        "level"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_foreign_currency_converter",
+    "description": "Tra tỷ giá ngoại tệ của các ngân hàng theo ngày, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi tỷ giá mua/bán/chuyển khoản của một ngoại tệ (USD, EUR...) tại một ngân hàng. KHÔNG DÙNG KHI: hỏi lãi suất tiền gửi -> marketdata_list_bank_interest_rate. TRẢ VỀ `rates`: currency_code (luôn là 'VND', đồng tiền gốc), currency_name (cặp tiền dạng '<MÃ NGÂN HÀNG>_VND-<NGOẠI TỆ>', VD 'VCB_VND-USD'), buy (giá mua), sell (giá bán), transfer (giá chuyển khoản) - đều là VND cho 1 đơn vị ngoại tệ; buy = 0.0 nghĩa là không có giá mua tiền mặt cho cặp đó; trading_date (DD/MM/YYYY, chỉ có ngày làm việc). Tool không có tham số chọn ngoại tệ: muốn tỷ giá USD thì truyền bank rồi chọn dòng có currency_name kết thúc bằng '-USD' ở phía AI. Không truyền bank thì trả toàn bộ ngân hàng x toàn bộ cặp tiền (rất nhiều dòng mỗi ngày, khung dài có thể hàng nghìn dòng) - luôn truyền bank khi người dùng hỏi một ngân hàng cụ thể. VÍ DỤ: \"tỷ giá USD của Vietcombank hôm nay\" -> bank=VCB, range=1w, lấy dòng currency_name='VCB_VND-USD' có trading_date mới nhất. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bank": {
+          "type": "string",
+          "description": "Mã ngân hàng theo tiền tố của currency_name. Đã xác nhận có dữ liệu: VCB, BID, ACB, AGRB, TCB, SBVN, SCB. Ghi BIDV hoặc Vietcombank sẽ trả rỗng. Bỏ trống = tất cả ngân hàng (kết quả rất dài) - nên luôn truyền."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài lịch sử tỷ giá, tính lùi từ toDate. 1w = 7 ngày (đủ lấy tỷ giá hiện hành); 1m = 30 ngày; 3m = 90 ngày; 6m = 180 ngày; 1y = 365 ngày; max_range = 730 ngày (lớn nhất). Mỗi ngày làm việc có một bộ tỷ giá cho mọi cặp tiền nên khung càng dài kết quả càng lớn: từ 3m trở lên trả hơn 1.000 dòng ngay cả khi đã truyền bank. 'Hiện tại/hôm nay' -> 1w; 'tháng qua' -> 1m; 'quý qua' -> 3m. Chọn khung NHỎ NHẤT đủ dùng. Hỏi khoảng dài hơn max_range thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Hỏi tỷ giá vào một ngày cũ thì toDate=ngày đó rồi đọc bản ghi trading_date gần toDate nhất."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "fundamental_list_valuation_history",
+    "description": "Lịch sử định giá P/E và P/B theo NGÀY của MỘT mã, trong khoảng [toDate - range, toDate] (xem xu hướng định giá). DÙNG KHI: hỏi xu hướng P/E, P/B của một mã theo thời gian, so P/E hiện tại với quá khứ. KHÔNG DÙNG KHI: cần P/E, P/B theo kỳ báo cáo quý/năm kèm ROE, EPS -> fundamental_list_financial_ratios; cần P/E, P/B hiện tại của mã hoặc cả ngành -> marketdata_list_stock_statistics. Dữ liệu cập nhật THƯA (không phải mỗi ngày) nên khung ngắn có thể trả rỗng - vì vậy tool chỉ có khung từ 6m trở lên. Có thể có nhiều dòng cùng trading_date với P/E, P/B khác nhau: trading_date không phải khoá duy nhất, không coi mỗi dòng là một ngày giao dịch. Các dòng được sắp theo trading_date TĂNG DẦN (ngày cũ trước, quan sát trên dữ liệu thật), nên ngày mới nhất nằm ở cuối chuỗi hoặc ở trang sau. Các dòng có pe, pb làm tròn 2 chữ số thập phân và trùng ngày nhau (thường đứng cuối chuỗi) trông như số theo kỳ báo cáo chứ không phải định giá theo ngày (chưa xác nhận): không dùng làm \"P/E hiện tại\"; cần P/E hiện tại -> marketdata_list_stock_statistics. TRẢ VỀ `history`: pe, pb (lần); trading_date dạng MM/dd/yyyy HH:mm:ss (VD '08/20/2026 00:00:00' = ngày 20/08/2026). Chi tiết cách đọc dữ liệu: resource `ssi://fundamental/reference/financial-data-notes`. VÍ DỤ: \"xu hướng P/E của FPT một năm qua\" -> symbol=FPT, range=1y, pageSize=200 (đọc tiếp pageIndex=2, 3... tới khi số dòng nhận được < pageSize). (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc. Chỉ dùng mã cổ phiếu: mã chỉ số (VD VNINDEX) chưa xác nhận được."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài lịch sử, tính lùi từ toDate: 6m = 180 ngày (nhỏ nhất); 1y = 365; max_range = 730 (lớn nhất, nên dùng để xem xu hướng nhiều năm). Chọn khung NHỎ NHẤT đủ dùng; cần dài hơn thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Số dòng mỗi trang, từ 1 đến 200. Khung 1y trở lên nên đặt 200 để lấy đủ chuỗi, rồi tăng pageIndex nếu số dòng nhận được bằng pageSize. Bỏ trống = số dòng mặc định của hệ thống (chưa xác nhận)."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_intraday_stock_infor",
+    "description": "Lấy dữ liệu giao dịch TRONG PHIÊN (intraday), bản đầy đủ, của MỘT cổ phiếu. Có HAI chế độ, chọn ĐÚNG MỘT: (1) latest=true - chỉ bản ghi mới nhất, KHÔNG truyền range/toDate; (2) range kèm toDate tuỳ chọn - dữ liệu các ngày [toDate - range, toDate]. DÙNG KHI: hỏi giá hiện tại/mới nhất (latest=true) hoặc diễn biến trong một ngày giao dịch (range=1d). KHÔNG DÙNG KHI: cần phân trang liên tục và giá gốc chưa điều chỉnh -> marketdata_list_stock_infor; cần giá theo ngày -> marketdata_list_stock_daily_data. TRẢ VỀ `ticks`: symbol, open, high, low, close, price, ref_price (giá tham chiếu), avg_price (giá bình quân) - đều VND; price_changed (cờ true/false, KHÔNG phải mức thay đổi giá: true = giá đã được điều chỉnh do sự kiện quyền; muốn biết tăng/giảm bao nhiêu thì tự tính từ price và ref_price); volume (khối lượng); trading_date (dạng MM/dd/yyyy HH:mm:ss, VD '09/04/2026 09:49:28' = ngày 04/09/2026 lúc 09:49:28). KHÔNG nhập giờ phút: dữ liệu luôn lấy trọn các ngày trong khoảng, tính đến hết ngày toDate. Dữ liệu intraday rất lớn: chọn khung nhỏ nhất đáp ứng câu hỏi. VÍ DỤ: \"giá mới nhất của SSI\" -> symbol=SSI, latest=true; \"diễn biến SSI hôm qua\" -> symbol=SSI, range=1d, toDate=ngày hôm qua. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, VD SSI, bắt buộc, 1 mã mỗi lần."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1w",
+            "1m"
+          ],
+          "description": "Số ngày intraday cần lấy, tính lùi từ toDate; chỉ dùng khi KHÔNG dùng latest=true. 1d = cả ngày toDate; 1w = 7 ngày liền trước toDate đến hết toDate; 1m = 30 ngày liền trước toDate đến hết toDate (lớn nhất). 'Hôm nay/hôm qua/một phiên' -> 1d (đã là hàng nghìn dòng); 'tuần qua' -> 1w (rất lớn). Chọn khung NHỎ NHẤT đủ dùng; cần nhiều ngày hơn 1m thì gọi nhiều lần với toDate lùi dần. Bắt buộc khi không dùng latest=true; bỏ trống khi dùng latest=true."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày intraday cuối cùng cần lấy, định dạng DD/MM/YYYY (VD 05/10/2026), chỉ dùng cùng range, KHÔNG nhập giờ phút. Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "latest": {
+          "type": "boolean",
+          "description": "true = chỉ lấy bản ghi mới nhất, KHÔNG truyền cùng range/toDate. false hoặc bỏ trống = không dùng chế độ latest (khi đó bắt buộc có range)."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_ratio_index",
+    "description": "Bản ghi chỉ số tài chính (ratio) theo rổ chỉ số trong khoảng ngày [toDate - range, toDate]. Hiện tool CHỈ trả định danh và thời gian của bản ghi, KHÔNG có giá trị P/E, P/B hay chỉ số định giá nào. DÙNG KHI: cần biết sàn nào có bản ghi ratio vào ngày nào. Có thể trả rỗng nếu không có bản ghi trong khoảng đã chọn: thử range lớn hơn. KHÔNG DÙNG KHI: cần P/E, P/B theo ngày của một mã -> marketdata_list_fundamental_ratio_history; cần chỉ số tài chính bình quân theo ngành -> marketdata_list_icb_industry. TRẢ VỀ `ratios`: com_group_code (mã sàn/rổ chỉ số); trading_date (ngày tính chỉ số). indexName chỉ nhận 33 mã chỉ số của 3 sàn (xem enum); bỏ trống = mọi rổ. VÍ DỤ: \"ratio của rổ VN30\" -> indexName=VN30, range=1y; \"những rổ chỉ số nào có bản ghi ratio\" -> range=max_range (không truyền indexName). (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "description": "ID (RatioIndex_Id) của một bản ghi ratio index (tuỳ chọn). Kết quả của tool này KHÔNG trả ID nên thường để trống = mọi bản ghi trong khoảng ngày; không tự đoán ID."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày, tính lùi từ toDate: 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). \"quý này\" -> 3m; \"nửa năm\" -> 6m; \"cả năm\" -> 1y. Chọn khung NHỎ NHẤT đủ dùng; cần dài hơn thì gọi lại với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026), tính theo loại ngày ở dateType. Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Response không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageNumber để lấy tiếp."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống)."
+        },
+        "indexName": {
+          "type": "string",
+          "enum": [
+            "HOHAUP",
+            "VNMID",
+            "VNINDEX",
+            "HNXMSCAP",
+            "HNXINDEX",
+            "VNX50",
+            "VNCOND",
+            "HOHAUPOT",
+            "VNIT",
+            "HOHA",
+            "HNXMAN",
+            "VNFINSELEC",
+            "VNCONS",
+            "HNXLCAP",
+            "UPCOMINDEX",
+            "VNFINLEAD",
+            "VNREAL",
+            "VNSML",
+            "VNHEAL",
+            "HNXFIN",
+            "VNALL",
+            "VN30",
+            "HNX30",
+            "VNMAT",
+            "VNIND",
+            "VNDIAMOND",
+            "VNFIN",
+            "VNENE",
+            "HNXCON",
+            "VN100",
+            "VNUTI",
+            "VNSI",
+            "VNXALL"
+          ],
+          "description": "Mã chỉ số (rổ), viết hoa, chỉ nhận đúng 1 trong 33 giá trị. HOSE: VNINDEX, VN30, VN100, VNALL, VNMID, VNSML, VNX50, VNXALL, VNDIAMOND, VNFINLEAD, VNFINSELEC, VNSI, HOHA, HOHAUP, HOHAUPOT; ngành HOSE: VNCOND, VNCONS, VNENE, VNFIN, VNHEAL, VNIND, VNIT, VNMAT, VNREAL, VNUTI; HNX: HNXINDEX, HNX30, HNXLCAP, HNXMSCAP, HNXFIN, HNXCON, HNXMAN; UPCOM: UPCOMINDEX. Hỏi chung VN-Index -> VNINDEX. Bỏ trống = mọi rổ."
+        },
+        "dateType": {
+          "type": "string",
+          "enum": [
+            "TradingDate",
+            "UpdateDate"
+          ],
+          "description": "Loại ngày dùng cho khoảng ngày: TradingDate = ngày tính chỉ số (mặc định); UpdateDate = ngày cập nhật bản ghi."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "description": "Thứ tự sắp xếp: ASC = tăng dần (mặc định); DESC = giảm dần."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "RatioIndex_Id"
+          ],
+          "description": "Cột sắp xếp: RatioIndex_Id = theo ID bản ghi (giá trị duy nhất được hỗ trợ). Bỏ trống = RatioIndex_Id."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "fundamental_list_income_summary",
+    "description": "Báo cáo kết quả kinh doanh BẢN GỌN của MỘT mã theo quý/năm: doanh thu, lợi nhuận gộp, lợi nhuận hoạt động, lợi nhuận trước/sau thuế, lợi nhuận của cổ đông công ty mẹ, EPS cơ bản. DÙNG KHI: hỏi nhanh tăng trưởng doanh thu, lợi nhuận, biên lợi nhuận qua các kỳ. KHÔNG DÙNG KHI: cần chỉ tiêu riêng của ngành (thu nhập lãi thuần ngân hàng, doanh thu môi giới chứng khoán, phí bảo hiểm...) hoặc chi phí chi tiết -> marketdata_list_finance_income_statement (đầy đủ chỉ tiêu); cần ROE/ROA/P/E -> fundamental_list_financial_ratios. TRẢ VỀ `income_statements` (VND, giá trị số dạng chuỗi): company_type_code (CT = công ty thường, NH = ngân hàng, CK = chứng khoán, BH = bảo hiểm), ticker, year_report, length_report, is_audit (1 = đã kiểm toán, 0 = chưa), gross_revenue (doanh số), net_revenue (doanh số thuần), gross_profit, operating_profit_loss, profit_loss_before_tax, net_profit_after_tax, parent_company_shareholders_profit, basic_earnings_per_share. length_report: 1-4 = quý, 5 = cả năm, 6 và 9 = lũy kế 6/9 tháng (xác nhận trên dòng tiền FPT; không coi là quý, không tự cộng trừ để suy ra quý). Giá trị \"0\" có thể nghĩa là KHÔNG ÁP DỤNG hoặc nguồn không điền, không phải số thật: gross_revenue, net_revenue, gross_profit, operating_profit_loss của NGÂN HÀNG (NH) và BẢO HIỂM (BH) là 0 (quan sát ở mọi mã NH/BH đã kiểm; doanh thu của NH nằm ở total_operating_income, của BH ở net_revenue_from_insurance_business, chỉ có trong marketdata_list_finance_income_statement); basic_earnings_per_share của QUÝ có thể là 0 kể cả khi báo cáo đã công bố và đã kiểm toán (gặp ở một số mã chứng khoán, ngân hàng): dùng dòng cả năm (length_report=5). Bỏ các giá trị này khi trình bày. basic_earnings_per_share có thể lệch khoảng 8% so với lợi nhuận cổ đông công ty mẹ chia số cổ phiếu (quan sát ở hai mã): không nhân EPS với số cổ phiếu để suy ra lợi nhuận. Chứng khoán (CK) có số thật nhưng gross_profit = doanh thu trừ chi phí hoạt động, không so với biên lợi nhuận gộp của công ty thường. Lợi nhuận trước/sau thuế và lợi nhuận cổ đông công ty mẹ có số liệu ở mọi loại hình. Mã không tồn tại hoặc không có báo cáo trong khoảng ngày thì data rỗng. Khoảng ngày lọc theo NGÀY CÔNG BỐ báo cáo (không phải ngày cuối kỳ). Muốn đúng một kỳ (VD quý 2/2026) truyền yearReport + lengthReport kèm range=1y; kỳ cũ hơn thì đặt `to` sau ngày công bố của kỳ đó và dùng range=max_range. Thứ tự dòng không đảm bảo: hỏi nhiều kỳ thì đặt pageSize=50, tự sắp theo year_report rồi length_report; cùng kỳ có cả is_audit=1 và 0 thì ưu tiên 1 (báo cáo quý thường là 0, đừng loại bỏ). Chi tiết cách đọc: resource `ssi://fundamental/reference/financial-data-notes`. VÍ DỤ: \"doanh thu và lợi nhuận quý 2/2026 của FPT\" -> symbol=FPT, yearReport=2026, lengthReport=2, range=1y. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = không lọc theo năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ (muốn các dòng lũy kế 6/9 tháng, length_report 6 và 9, phải bỏ trống rồi chọn dòng: không lọc riêng được)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày công bố báo cáo, tính lùi từ `to`: 1y = 365 ngày (khoảng 4 quý gần nhất); max_range = 730 ngày (lớn nhất, khoảng 8 quý). Chọn 1y trừ khi cần nhiều kỳ hơn; cần xa hơn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày CÔNG BỐ muộn nhất của báo cáo cần lấy, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "isAudit": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Lọc theo kiểm toán: 1 = đã kiểm toán; 0 = chưa kiểm toán. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "research_get_ssi100_stock_ratings",
+    "description": "Lấy toàn bộ điểm đánh giá của SSI Research cho MỘT mã trong rổ SSI100: nhóm phân tích cơ bản (FA) và nhóm phân tích kỹ thuật (TA). DÙNG KHI: hỏi điểm, xếp hạng, sức khỏe tài chính hoặc điểm kỹ thuật của một mã SSI100. KHÔNG DÙNG KHI: cần lời nhận định bằng văn bản về mã -> research_get_ssi100_stock_commentary; cần xu hướng điểm FA theo thời gian -> research_list_fa_rating; cần so sánh các mã trong một ngành -> research_list_ssi100_stocks. TRẢ VỀ `industries` (thường 1 phần tử): icb_code, icb_name (ngành của mã) và `stocks`: symbol; company_name; exchange. Nhóm FA: fa_rating_score (điểm FA tổng hợp, thang 100); fa_rating (đánh giá FA, số sao); business_performance_score (điểm kết quả kinh doanh, thang 100); industry_score (điểm triển vọng ngành, thang 100); efficiency_score (điểm hiệu quả, thang 100); reliability_level_fa (mức tin cậy điểm FA). Nhóm TA: rating_ta (điểm TA tổng hợp, thang 100); rate (đánh giá TA, số sao); price_power (sức mạnh giá trên thị trường); trend_strength (sức mạnh xu hướng); short_position (vị thế ngắn hạn); cash_flow (dòng tiền); volatility (độ biến động); price_base (biên nền giá) - 6 chỉ tiêu này đều là số sao (1-5); reliability_level_ta (mức tin cậy điểm TA). CÁCH ĐỌC ĐIỂM (theo hướng dẫn FA/TA của SSI Research; chi tiết: resource `ssi://research/reference/rating-guide`): fa_rating_score, rating_ta và các *_score là điểm 0-100; fa_rating, rate và 6 chỉ tiêu TA là số sao (1-5); không phải %. Điểm là phân vị tương đối trong tập cổ phiếu được chấm cùng ngày: điểm thấp không có nghĩa doanh nghiệp yếu tuyệt đối, điểm cao không đảm bảo giá tăng hay hết rủi ro; sao là nhãn phân nhóm tương đối, không phải xác suất sinh lời. FA gồm efficiency_score (hiệu quả và quy mô), business_performance_score (kết quả kinh doanh và định giá), industry_score (triển vọng và vị thế ngành); ngân hàng không dùng điểm kết quả kinh doanh nên business_performance_score có thể trống. TA gồm Đà tăng (price_power, trend_strength, short_position) và Tích lũy (cash_flow, volatility, price_base). Giữ nguyên giá trị, không tự quy đổi. Trường trống thì bỏ qua. Không có phần tử cho mã = mã không thuộc SSI100. Chỉ lấy phần tử có symbol đúng mã được hỏi. Dữ liệu cập nhật hằng ngày (mặc định là bản ghi của ngày hiện tại); response không kèm ngày nên không nêu ngày cụ thể. VÍ DỤ: \"SSI100 chấm điểm FPT thế nào\" -> symbol=FPT. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc. Chỉ có dữ liệu nếu mã thuộc rổ SSI100."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_stock_infor",
+    "description": "Dữ liệu giao dịch TRONG PHIÊN (intraday) ĐẦY ĐỦ NHẤT của MỘT cổ phiếu theo khoảng ngày, có phân trang liên tục bằng sysToken và giá gốc chưa điều chỉnh; không có chế độ latest. DÙNG KHI: cần dữ liệu intraday đầy đủ kèm giá gốc (open_raw, high_raw, low_raw, close_raw) hoặc phải duyệt nhiều phần dữ liệu lớn. KHÔNG DÙNG KHI: cần bản ghi mới nhất -> marketdata_list_intraday_stock_infor (latest=true); cần giá theo ngày (OHLCV) -> marketdata_list_stock_daily_data. TRẢ VỀ `ticks`: symbol; open, high, low, close, price (VND); volume (cổ phiếu); ref_price (giá tham chiếu), avg_price (giá bình quân), price_changed (cờ true/false: true = giá đã bị điều chỉnh do sự kiện quyền, tức open/high/low/close khác giá gốc; KHÔNG phải mức đổi giá); open_raw, high_raw, low_raw, close_raw (giá gốc chưa điều chỉnh); trading_date (dạng MM/dd/yyyy HH:mm:ss, VD '09/04/2026 09:49:28' = ngày 04/09/2026 lúc 09:49:28). Kèm `sys_token`: truyền lại làm sysToken ở lần gọi kế tiếp (cùng symbol/range/toDate) để lấy phần dữ liệu tiếp theo. Dữ liệu rất lớn nên chọn khung nhỏ nhất đáp ứng câu hỏi. VÍ DỤ: \"toàn bộ dữ liệu intraday SSI phiên 05/10/2026\" -> symbol=SSI, range=1d, toDate=05/10/2026; còn dữ liệu thì gọi tiếp với sysToken=<sys_token>. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1w",
+            "1m"
+          ],
+          "description": "Độ dài khoảng ngày, tính lùi từ toDate: 1d = cả ngày toDate; 1w = 7 ngày liền trước toDate đến hết toDate; 1m = 30 ngày liền trước toDate đến hết toDate. Khung lớn nhất là 1m; cần dài hơn thì gọi nhiều lần với toDate lùi dần. Chọn khung NHỎ NHẤT đủ dùng. \"hôm nay/1 ngày/phiên 05/10\" -> 1d; \"tuần qua\" -> 1w; \"tháng qua\" -> 1m."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối khoảng, định dạng DD/MM/YYYY (VD 05/10/2026), không nhập giờ phút. Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "sysToken": {
+          "type": "string",
+          "description": "Token phân trang liên tục lấy từ `sys_token` của lần gọi trước; truyền lại cùng symbol/range/toDate. Bỏ trống ở lần gọi đầu."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_stock_daily_data",
+    "description": "Dữ liệu giao dịch cổ phiếu theo NGÀY dạng gọn (OHLCV) của MỘT mã HOẶC cả MỘT sàn, trong các ngày [toDate - range, toDate]. DÙNG KHI: hỏi giá mở/cao/thấp/đóng và khối lượng từng ngày, giá một phiên cụ thể, lịch sử giá. KHÔNG DÙNG KHI: cần giá trần/sàn/tham chiếu, khớp lệnh/thỏa thuận, khối ngoại -> marketdata_list_daily_stock_infor; cần % tăng giảm -> marketdata_list_stock_performance; cần đỉnh/đáy và bình quân cả giai đoạn -> marketdata_list_stock_statistic_by_range. TRẢ VỀ `stocks`: symbol; open, high, low, close (giá đã điều chỉnh theo sự kiện quyền, VND); volume (khối lượng, cổ phiếu); trading_date (ngày giao dịch, DD/MM/YYYY). Phải truyền ĐÚNG MỘT trong symbol hoặc exchange. Lấy nhiều ngày hoặc cả sàn: tăng pageSize (tối đa 200) và duyệt thêm trang. range=1d trả dữ liệu của toDate và ngày liền trước: hỏi đúng một phiên thì chỉ lấy dòng có trading_date = toDate. VÍ DỤ: \"giá đóng cửa SSI hôm qua\" -> symbol=SSI, range=1d, toDate=<ngày hôm qua> (lấy dòng có trading_date = toDate); \"giá SSI 3 tháng qua\" -> symbol=SSI, range=3m, pageSize=100. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, viết hoa (VD SSI). Truyền ĐÚNG MỘT trong symbol hoặc exchange, không truyền cả hai."
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch: HOSE, HNX hoặc UPCOM — lấy dữ liệu cả sàn (rất nhiều dòng, nên dùng range=1d). Truyền ĐÚNG MỘT trong symbol hoặc exchange, không truyền cả hai."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài dữ liệu theo ngày, tính lùi từ toDate: 1d = toDate và ngày liền trước (hỏi 1 phiên: đặt toDate = ngày đó); 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn; nhiều trang dữ liệu). \"hôm nay/phiên gần nhất/hôm qua\" -> 1d; \"quý này\" -> 3m; \"nửa năm\" -> 6m; \"năm qua\" -> 1y. Chọn khung NHỎ NHẤT đủ dùng."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay (phiên gần nhất). Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "pageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Số dòng mỗi trang, 1-200 (bỏ trống = mặc định của hệ thống, nên chỉ định rõ). Nhiều ngày hoặc cả sàn -> dùng 200."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_stock_performance",
+    "description": "Biến động giá theo NGÀY của MỘT cổ phiếu trong khoảng [toDate - range, toDate]: mức đổi giá và % đổi của từng phiên. DÙNG KHI: hỏi mã tăng/giảm bao nhiêu (VND, %) trong 1 phiên hoặc qua một giai đoạn. KHÔNG DÙNG KHI: cần giá mở/cao/thấp/đóng và khối lượng -> marketdata_list_stock_daily_data; cần giá cao nhất/thấp nhất cả giai đoạn -> marketdata_list_stock_statistic_by_range; cần xếp hạng nhiều mã -> marketdata_list_top_stocks. TRẢ VỀ `performance`: trading_date (DD/MM/YYYY); change_1d (thay đổi giá 1 ngày, VND); change_percent_1d (% thay đổi 1 ngày, VD -0.25 = -0,25%); change_to_date_percent (% thay đổi luỹ kế của giá đóng cửa ngày đó so với giá đóng cửa đầu khoảng, tức ngày toDate - range). VÍ DỤ: \"SSI phiên 05/10/2026 tăng giảm bao nhiêu\" -> symbol=SSI, range=1d, toDate=05/10/2026. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài giai đoạn, tính lùi từ toDate: 1d = toDate và ngày liền trước (hỏi 1 phiên cụ thể: đặt toDate = ngày đó); 3m = 90 ngày; 6m = 180; 1y = 365; max_range = 730 ngày (lớn nhất, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng. \"hôm nay/phiên gần nhất/hôm qua\" -> 1d (đặt toDate nếu không phải hôm nay); \"quý 1/2026\" -> range=3m, toDate=31/03/2026."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối khoảng, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_finance_income_statement",
+    "description": "Báo cáo kết quả kinh doanh của MỘT mã theo kỳ báo cáo (167 chỉ tiêu), lọc theo khoảng ngày [to - range, to] hoặc theo đúng một kỳ (yearReport + lengthReport). DÙNG KHI: hỏi doanh thu, giá vốn, lợi nhuận gộp, chi phí, lợi nhuận trước/sau thuế theo quý/năm. KHÔNG DÙNG KHI: bảng cân đối kế toán -> marketdata_list_finance_balance_sheet; lưu chuyển tiền tệ -> marketdata_list_finance_cash_flow; ROE/ROA/EPS/P/E -> marketdata_list_finance_indicator. TRẢ VỀ `income_statements`: company_type_code, ticker, year_report, length_report (1-4 = quý, 5 = cả năm; tài liệu nguồn còn nêu giá trị 6 và 9 nhưng không giải nghĩa), is_audit (1 = đã kiểm toán, 0 = chưa), cùng 167 chỉ tiêu (VND). Output chia 4 nhóm theo loại hình doanh nghiệp, phân biệt qua company_type_code; riêng nhóm 'isi' là nhóm DÙNG CHUNG nên có thể có giá trị song song với nhóm khác — chỉ trình bày nhóm khớp loại hình của mã và bỏ qua field null. Khoảng ngày lọc theo NGÀY CÔNG BỐ báo cáo (không phải ngày cuối kỳ). Muốn đúng một kỳ (VD quý 2/2026) truyền yearReport + lengthReport kèm range=1y; kỳ cũ hơn 1 năm thì đặt `to` sau ngày công bố của kỳ đó và dùng range=max_range. Thứ tự dòng không đảm bảo (có cả báo cáo đã/chưa kiểm toán của cùng kỳ): hỏi nhiều kỳ thì đặt pageSize=50 hoặc 100, rồi tự sắp theo year_report/length_report. VÍ DỤ: \"kết quả kinh doanh quý 2/2026 của SSI\" -> symbol=SSI, yearReport=2026, lengthReport=2, range=1y. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, 1 mã mỗi lần (VD SSI), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = không lọc theo năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày báo cáo, tính lùi từ `to`: 1y = 365 ngày (khoảng 4 quý gần nhất); max_range = 730 ngày (lớn nhất, khoảng 8 quý; không có khung lớn hơn). Chọn 1y trừ khi cần nhiều kỳ hơn; cần xa hơn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày CÔNG BỐ muộn nhất của báo cáo cần lấy (cuối khoảng lọc), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "isAudit": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Lọc theo kiểm toán: 1 = đã kiểm toán; 0 = chưa kiểm toán. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_company_leaderships",
+    "description": "Ban lãnh đạo của MỘT công ty niêm yết. DÙNG KHI: hỏi ai là chủ tịch, tổng giám đốc, thành viên HĐQT/ban kiểm soát/ban điều hành của một mã. KHÔNG DÙNG KHI: cần cổ đông lớn -> marketdata_list_share_holder_detail; cần công ty con -> marketdata_list_sub_companies; cần hồ sơ công ty -> marketdata_list_company_profile. TRẢ VỀ `leaderships`: symbol; full_name; position_name (chức vụ, ngôn ngữ theo tham số language); position_level (mã cấp chức vụ, dạng chuỗi, VD 2.1); position_id; person_id. Mặc định sắp xếp theo position_level tăng dần (ý nghĩa thứ tự cấp chưa xác nhận). Không có tham số lọc chức vụ: hỏi \"ai là chủ tịch/tổng giám đốc\" thì lấy danh sách rồi lọc theo position_name ở phía AI. Công ty lớn có nhiều người: duyệt thêm trang bằng pageIndex. VÍ DỤ: \"ban lãnh đạo SSI\" -> symbol=SSI, pageSize=50. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "default": "VN",
+          "description": "Ngôn ngữ chức vụ: VN = tiếng Việt, EN = tiếng Anh (mặc định VN)."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC",
+          "description": "Thứ tự sắp xếp: ASC = tăng dần (mặc định), DESC = giảm dần."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "positionLevel"
+          ],
+          "default": "positionLevel",
+          "description": "Cột sắp xếp: positionLevel = cấp chức vụ (giá trị đã xác nhận duy nhất, cũng là mặc định). Bỏ trống là đủ."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "default": 10,
+          "description": "Số dòng mỗi trang, chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống). Cần nhiều dòng -> chọn 50 hoặc 100 rồi duyệt thêm trang."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1,
+          "description": "Trang thứ mấy, bắt đầu từ 1 (mặc định 1). Kết quả không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_symbols_by_exchange",
+    "description": "Danh sách mã chứng khoán niêm yết trên MỘT sàn, có thể lọc theo loại chứng khoán. Không phân trang. DÙNG KHI: tra mã hợp lệ của một sàn, tìm mã theo loại (cổ phiếu, ETF, chứng quyền, trái phiếu...). KHÔNG DÙNG KHI: cần giá trần/sàn/tham chiếu của các mã -> marketdata_list_market_master_data; cần giá giao dịch theo ngày -> marketdata_list_stock_daily_data; cần trái phiếu doanh nghiệp riêng lẻ -> marketdata_list_private_corporate_bond. TRẢ VỀ `symbols`: symbol, symbol_name, stock_type, exchange (rỗng với phái sinh, stockType=Derivatives), isin; với stockType=Index chỉ có index_code, các trường còn lại để trống. Sàn HOSE trả rất nhiều dòng: chỉ trình bày phần người dùng cần. VÍ DỤ: \"các mã ETF trên HOSE\" -> exchange=HOSE, stockType=\"ETF Product\". (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch (bắt buộc): HOSE, HNX hoặc UPCOM. Chọn đúng 1 sàn. 'sàn TP.HCM' -> HOSE; 'sàn Hà Nội' -> HNX; 'sàn UPCoM' -> UPCOM."
+        },
+        "stockType": {
+          "type": "string",
+          "enum": [
+            "Stock",
+            "Bond",
+            "CW Product",
+            "Investment Fund",
+            "ETF Product",
+            "Derivatives",
+            "Index"
+          ],
+          "description": "Loại chứng khoán, bỏ trống = mọi loại: Stock = cổ phiếu; Bond = trái phiếu; CW Product = chứng quyền; Investment Fund = quỹ đầu tư; ETF Product = quỹ ETF; Derivatives = phái sinh; Index = chỉ số. Viết đúng chính tả, kể cả khoảng trắng."
+        }
+      },
+      "required": [
+        "exchange"
+      ]
+    }
+  },
+  {
+    "name": "fundamental_list_cash_flow_summary",
+    "description": "Báo cáo lưu chuyển tiền tệ BẢN GỌN của MỘT mã theo quý/năm: dòng tiền thuần từ hoạt động kinh doanh, đầu tư, tài chính, lưu chuyển tiền thuần trong kỳ, tiền đầu/cuối kỳ, cổ tức đã trả. DÙNG KHI: hỏi nhanh dòng tiền kinh doanh/đầu tư/tài chính, khả năng tự tài trợ qua các kỳ. KHÔNG DÙNG KHI: cần chi tiết từng khoản mục hoặc chỉ tiêu riêng của ngành -> marketdata_list_finance_cash_flow (đầy đủ chỉ tiêu); lợi nhuận sau thuế -> fundamental_list_income_summary. TRẢ VỀ `cash_flows` (VND, giá trị số dạng chuỗi): company_type_code (CT = công ty thường, NH = ngân hàng, CK = chứng khoán, BH = bảo hiểm), ticker, is_direct (true = phương pháp trực tiếp), year_report, length_report, is_audit (1 = đã kiểm toán, 0 = chưa), net_cash_from_operating_activities, net_cash_from_investing_activities, net_cash_from_financing_activities, net_cash_flow_in_period, cash_and_equivalents_beginning_of_period, cash_and_equivalents_end_of_period, dividends_paid, purchase_of_fixed_and_long_term_assets, depreciation_and_amortization. length_report: 1-4 = quý, 5 = cả năm, 6 và 9 = lũy kế 6/9 tháng (xác nhận trên dòng tiền FPT; không coi là quý, không tự cộng trừ để suy ra quý). Dòng tiền đầu tư thường ÂM khi doanh nghiệp đang chi đầu tư (không phải lỗi). Các khoản chi (purchase_of_fixed_and_long_term_assets, dividends_paid) là số ÂM (quan sát ở mọi mã đã kiểm): so sánh với dòng tiền kinh doanh theo giá trị tuyệt đối. cash_and_equivalents_end_of_period = đầu kỳ + net_cash_flow_in_period + chênh lệch tỷ giá (không có trong tool này) nên tự cộng đầu kỳ với lưu chuyển thuần có thể lệch nhỏ. Giá trị \"0\" có thể nghĩa là KHÔNG ÁP DỤNG hoặc chưa có số, không phải số thật (VD ngân hàng thường trả 0 cho khấu hao, cổ tức đã trả); bỏ các giá trị này khi trình bày. Một số mã (VD bảo hiểm BVH) không có báo cáo lưu chuyển tiền tệ trong khoảng ngày: data rỗng, hãy nói rõ với người dùng. Khoảng ngày lọc theo NGÀY CÔNG BỐ báo cáo (không phải ngày cuối kỳ). Muốn đúng một kỳ (VD quý 2/2026) truyền yearReport + lengthReport kèm range=1y; kỳ cũ hơn thì đặt `to` sau ngày công bố của kỳ đó và dùng range=max_range. Thứ tự dòng không đảm bảo: hỏi nhiều kỳ thì đặt pageSize=50, tự sắp theo year_report rồi length_report; cùng kỳ có cả is_audit=1 và 0 thì ưu tiên 1 (báo cáo quý thường là 0, đừng loại bỏ). Chi tiết cách đọc: resource `ssi://fundamental/reference/financial-data-notes`. VÍ DỤ: \"dòng tiền kinh doanh quý 2/2026 của FPT\" -> symbol=FPT, yearReport=2026, lengthReport=2, range=1y. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = không lọc theo năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ (muốn các dòng lũy kế 6/9 tháng, length_report 6 và 9, phải bỏ trống rồi chọn dòng: không lọc riêng được)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày công bố báo cáo, tính lùi từ `to`: 1y = 365 ngày (khoảng 4 quý gần nhất); max_range = 730 ngày (lớn nhất, khoảng 8 quý). Chọn 1y trừ khi cần nhiều kỳ hơn; cần xa hơn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày CÔNG BỐ muộn nhất của báo cáo cần lấy, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "isAudit": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Lọc theo kiểm toán: 1 = đã kiểm toán; 0 = chưa kiểm toán. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "fundamental_list_balance_sheet_summary",
+    "description": "Bảng cân đối kế toán BẢN GỌN của MỘT mã theo quý/năm: tổng tài sản, nợ phải trả (ngắn/dài hạn), vốn chủ sở hữu, tiền, vay nợ, phải thu, hàng tồn kho, lãi chưa phân phối. DÙNG KHI: hỏi nhanh quy mô tài sản, đòn bẩy nợ, vốn chủ sở hữu, tiền mặt qua các kỳ. KHÔNG DÙNG KHI: cần chi tiết từng khoản mục hoặc chỉ tiêu riêng của ngành (cho vay khách hàng, tiền gửi khách hàng, dự phòng nghiệp vụ...) -> marketdata_list_finance_balance_sheet (đầy đủ chỉ tiêu); cần tỷ số nợ/vốn chủ, thanh toán hiện hành -> fundamental_list_financial_ratios. TRẢ VỀ `balance_sheets` (VND, giá trị số dạng chuỗi): company_type_code (CT = công ty thường, NH = ngân hàng, CK = chứng khoán, BH = bảo hiểm), ticker, year_report, length_report, is_audit (1 = đã kiểm toán, 0 = chưa), total_assets, current_assets, liabilities (nợ phải trả), current_liabilities, long_term_liabilities, owners_equity, cash_and_cash_equivalents, short_term_borrowings, long_term_borrowings, trade_receivables, net_inventory, undistributed_earnings. length_report: 1-4 = quý, 5 = cả năm, 6 và 9 = lũy kế 6/9 tháng (xác nhận trên dòng tiền FPT; không coi là quý, không tự cộng trừ để suy ra quý). Giá trị \"0\" có thể nghĩa là KHÔNG ÁP DỤNG, không phải số thật: NGÂN HÀNG (NH) trả 0 cho current_assets, current_liabilities, long_term_liabilities, vay ngắn/dài hạn, trade_receivables, net_inventory; CHỨNG KHOÁN (CK) trả 0 cho long_term_borrowings, trade_receivables, net_inventory. Bỏ các giá trị này khi trình bày. total_assets, liabilities, owners_equity có số liệu ở mọi loại hình; cash_and_cash_equivalents có số liệu ở mọi loại hình nhưng với NGÂN HÀNG chỉ là tiền mặt, vàng bạc đá quý (quan sát ở một ngân hàng: nhỏ hơn nhiều so với tiền cuối kỳ trong báo cáo lưu chuyển tiền tệ), không phải tiền và tương đương tiền: bỏ qua khi trình bày về tiền của ngân hàng. Mã không tồn tại hoặc không có báo cáo trong khoảng ngày thì data rỗng. Khoảng ngày lọc theo NGÀY CÔNG BỐ báo cáo (không phải ngày cuối kỳ). Muốn đúng một kỳ (VD quý 2/2026) truyền yearReport + lengthReport kèm range=1y; kỳ cũ hơn thì đặt `to` sau ngày công bố của kỳ đó và dùng range=max_range. Thứ tự dòng không đảm bảo: hỏi nhiều kỳ thì đặt pageSize=50, tự sắp theo year_report rồi length_report; cùng kỳ có cả is_audit=1 và 0 thì ưu tiên 1 (báo cáo quý thường là 0, đừng loại bỏ). Chi tiết cách đọc: resource `ssi://fundamental/reference/financial-data-notes`. VÍ DỤ: \"tổng tài sản và nợ phải trả quý 2/2026 của FPT\" -> symbol=FPT, yearReport=2026, lengthReport=2, range=1y. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = không lọc theo năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ (muốn các dòng lũy kế 6/9 tháng, length_report 6 và 9, phải bỏ trống rồi chọn dòng: không lọc riêng được)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày công bố báo cáo, tính lùi từ `to`: 1y = 365 ngày (khoảng 4 quý gần nhất); max_range = 730 ngày (lớn nhất, khoảng 8 quý). Chọn 1y trừ khi cần nhiều kỳ hơn; cần xa hơn thì gọi lại với `to` lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày CÔNG BỐ muộn nhất của báo cáo cần lấy, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "isAudit": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Lọc theo kiểm toán: 1 = đã kiểm toán; 0 = chưa kiểm toán. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1). Nếu số dòng nhận được bằng pageSize thì có thể còn trang sau."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_stock_statistic_by_range",
+    "description": "Thống kê giá và thanh khoản cổ phiếu cho CẢ khoảng [toDate - range, toDate] của MỘT mã (số liệu tổng hợp, không liệt kê từng ngày). DÙNG KHI: hỏi đỉnh/đáy giá, khối lượng và giá trị khớp bình quân trong 1 ngày hoặc 1 tháng gần đây. KHÔNG DÙNG KHI: cần từng ngày -> marketdata_list_stock_daily_data; cần % biến động từng phiên -> marketdata_list_stock_performance; cần thống kê dài hơn 1 tháng -> gọi nhiều lần range=1m với toDate lùi dần rồi tự tổng hợp, hoặc dùng marketdata_list_stock_daily_data. TRẢ VỀ `statistics` (1 dòng, mọi số dạng chuỗi): highest_price, lowest_price (VND); price_change (VND); per_price_change (chuỗi có dấu %, dạng '<số>%'); highest_match_volume, lowest_match_volume, avg_match_volume (cổ phiếu); highest_match_value, lowest_match_value, avg_match_value (giá trị khớp lệnh, VND); highest_total_value, lowest_total_value, avg_value (tổng giá trị giao dịch gồm khớp lệnh và thỏa thuận, VND). Các mức bình quân (avg_*) chia theo số ngày thực tế có dữ liệu, không phải số ngày lịch. VÍ DỤ: \"đỉnh đáy SSI trong tháng qua\" -> symbol=SSI, range=1m. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1m"
+          ],
+          "description": "Độ dài khoảng tổng hợp, tính lùi từ toDate: 1d = toDate và ngày liền trước; 1m = 30 ngày (lớn nhất, không có khung lớn hơn). Hỏi 3 tháng/cả năm thì một lần gọi không đủ: gọi nhiều lần range=1m với toDate lùi dần. \"hôm nay/phiên gần nhất\" -> 1d; \"tháng qua\" -> 1m."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối khoảng, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_share_issue",
+    "description": "Danh sách các đợt chia cổ tức (tiền, cổ phiếu), cổ phiếu thưởng, phát hành thêm/quyền mua của TOÀN thị trường trong khoảng ngày [toDate - range, toDate]; tool không lọc theo mã. DÙNG KHI: tra các đợt cổ tức/thưởng/phát hành, ngày chốt quyền, ngày giao dịch không hưởng quyền, giá phát hành, thời gian đăng ký mua và chuyển nhượng quyền. KHÔNG DÙNG KHI: cần sự kiện doanh nghiệp khác (họp ĐHCĐ, giao dịch nội bộ, niêm yết...) hoặc cần lọc theo MỘT mã -> marketdata_list_corporate_actions; cần hệ số điều chỉnh giá -> marketdata_list_adjusted_rate. TRẢ VỀ `share_issues`: symbol; issue_method_code (2 = cổ tức bằng tiền; 3 = cổ tức bằng cổ phiếu; 6 = cổ phiếu thưởng; 7 = còn lại); public_date (ngày công bố); record_date (ngày đăng ký cuối cùng/chốt quyền); exright_date (ngày giao dịch không hưởng quyền). Chỉ có với cổ tức tiền (mã 2): exercise_rate (tỷ lệ % trả cổ tức tiền); value_per_share (giá trị thanh toán cổ tức tiền; đơn vị chưa xác nhận); payout_date (ngày thanh toán). Chỉ có với mã 3, 6, 7: exercise_ratio_own:exercise_ratio_earn (VD 10:3 = sở hữu 10 cổ phiếu được nhận thêm 3 cổ phiếu mới); plan_volume (số cổ phiếu dự kiến phát hành); issue_price (giá phát hành); issue_date (ngày công bố theo spec); subscription_period_start/end (thời gian đăng ký mua); right_transfer_period_start/end (thời gian chuyển nhượng quyền mua); right_code (mã quyền mua); isin_code (ISIN quyền mua). Trường không áp dụng cho loại phát hành của dòng đó thường rỗng. Đơn vị tiền (issue_price, value_per_share) chưa được xác nhận chính thức. Kết quả gồm nhiều mã: dùng khung range nhỏ nhất đáp ứng câu hỏi, lọc theo symbol ở phía AI và chỉ trình bày mã người dùng hỏi. VÍ DỤ: \"các đợt cổ tức, thưởng, phát hành thêm 3 tháng qua\" -> range=3m. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": [
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày lấy đợt phát hành, tính lùi từ toDate: 1w = 7 ngày; 1m = 30; 3m = 90; 6m = 180; 1y = 365; max_range = 730 (lớn nhất, không có khung lớn hơn). \"tuần qua\" -> 1w; \"tháng qua\" -> 1m; \"quý này\" -> 3m; \"nửa năm\" -> 6m; \"năm qua\" -> 1y; tra lịch sử phát hành của một mã -> max_range. Chọn khung NHỎ NHẤT đủ dùng."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026), tính theo loại ngày ở dateType. Bỏ trống = hôm nay; không được ở tương lai nên không tra được đợt chưa diễn ra. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "dateType": {
+          "type": "string",
+          "enum": [
+            "IssueDate",
+            "ExrightDate"
+          ],
+          "description": "Loại ngày dùng cho khoảng ngày: IssueDate = theo issue_date, ngày công bố theo spec, chỉ có ở mã 3/6/7 (mặc định); ExrightDate = ngày giao dịch không hưởng quyền (viết đúng ExrightDate, giá trị khác bị từ chối; chưa xác nhận bằng UAT). Hỏi theo ngày GDKHQ -> ExrightDate."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_share_holder_detail",
+    "description": "Danh sách cổ đông lớn của MỘT cổ phiếu, sắp xếp mặc định theo tỷ lệ sở hữu giảm dần. DÙNG KHI: hỏi ai là cổ đông lớn, tỷ lệ nắm giữ của từng cổ đông, cổ đông cá nhân hay tổ chức. KHÔNG DÙNG KHI: cần tổng hợp theo nhóm nước ngoài/nhà nước/khác -> marketdata_list_share_holder_summary; cần ban lãnh đạo -> marketdata_list_company_leaderships; cần công ty con/liên kết -> marketdata_list_sub_companies. TRẢ VỀ `shareholders`: symbol (mã/định danh cổ đông; với cá nhân thường lặp mã công ty); name; quantity (số cổ phần); percentage (tỷ lệ nắm giữ; đơn vị CHƯA xác nhận trên tool này: spec ghi %, còn marketdata_list_share_holder_summary trả phân số 0.15 = 15% — trình bày kèm giá trị gốc, không tự nhân/chia khi chưa chắc); public_date (ngày công bố, DD/MM/YYYY); ownership_type_code (NGOAI = tổ chức nước ngoài, KHAC = khác, NNUOC = nhà nước, CNHAN = cá nhân); type (I = cổ đông cá nhân, C = cổ đông tổ chức). VÍ DỤ: \"cổ đông lớn của SSI\" -> symbol=SSI; \"top 20 cổ đông tổ chức\" -> symbol=SSI, type=C, pageSize=20. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, viết hoa (VD SSI)."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ tên cổ đông tổ chức: VN = tiếng Việt, EN = tiếng Anh (mặc định VN)."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "description": "Thứ tự sắp xếp: DESC = giảm dần (mặc định, cổ đông lớn nhất trước); ASC = tăng dần."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "Percentage"
+          ],
+          "description": "Cột sắp xếp: Percentage = theo tỷ lệ sở hữu (mặc định, giá trị duy nhất được hỗ trợ)."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "I",
+            "C"
+          ],
+          "description": "Loại cổ đông: I = cá nhân; C = tổ chức. Bỏ trống = cả hai."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: chỉ nhận 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống). 'Top 20' -> 20."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (1-10000, mặc định 1). Response không trả tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng pageIndex để lấy tiếp."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_get_fund_information",
+    "description": "Lấy thông tin của MỘT quỹ đầu tư do SSI cung cấp, bản ghi mới nhất có trong nguồn (xem updated_at để biết độ cũ). DÙNG KHI: hỏi NAV, lợi suất từ đầu tháng/năm, phí quản lý, cơ cấu tài sản của quỹ SSIBF, VLGF hoặc SCA. KHÔNG DÙNG KHI: hỏi iNAV của quỹ ETF -> marketdata_list_etf_inav_index_latest. Tool KHÔNG trả chiến lược đầu tư, đơn vị quản lý quỹ, hay danh mục cổ phiếu nắm giữ chi tiết của quỹ. TRẢ VỀ một đối tượng ở root: fund_id, fund_name, fund_type (VD 'Quỹ mở'), inception_date (ngày thành lập), fund_management_fee (chuỗi, kèm đơn vị %/năm), pe, pb (chuỗi có dấu phẩy thập phân và hậu tố 'x'), expense_ratio, turnover_ratio, number_holdings, total_nav (VND), nav_for_unit (VND mỗi chứng chỉ quỹ), change, change_value, fund_quantity (số chứng chỉ quỹ), month_to_date_return, year_to_date_return, updated_at, và `asset_allocation` (mỗi dòng: category_name, category_name_en, category_ratio là tỷ trọng %, 15.5 = 15,5%). Các ngày (inception_date, updated_at) có dạng MM/dd/yyyy HH:mm:ss (VD '02/24/2020 00:00:00' = ngày 24/02/2020). Mọi giá trị số là chuỗi; đơn vị/cách đọc % của change, change_value, month_to_date_return, year_to_date_return, expense_ratio, turnover_ratio, number_holdings chưa xác nhận - trình bày đúng chuỗi trả về, không tự thêm %. Không có tham số ngày: luôn trả số liệu mới nhất. Tên khác ngoài SSIBF, VLGF, SCA không được hỗ trợ và làm tool báo 'Downstream service unavailable ... re-check the parameter values' - khi gặp lỗi này hãy báo người dùng chọn một trong 3 quỹ, không gọi lại nhiều lần. VÍ DỤ: \"NAV của quỹ SSIBF\" -> fundName=SSIBF. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fundName": {
+          "type": "string",
+          "enum": [
+            "SSIBF",
+            "VLGF",
+            "SCA"
+          ],
+          "description": "Mã ngắn của quỹ, bắt buộc, 1 quỹ mỗi lần: SSIBF = Quỹ SSIBF; VLGF = Quỹ VLGF; SCA = Quỹ SCA. Luôn viết HOA đúng như trong danh sách. Tên khác (SSIAM, SSI-SCA, VESAF, mã ETF...) không được hỗ trợ."
+        }
+      },
+      "required": [
+        "fundName"
+      ]
+    }
+  },
+  {
+    "name": "research_list_fa_rating",
+    "description": "Lấy điểm xếp hạng phân tích cơ bản (FA - Fundamental Analysis) của SSI theo thời gian cho MỘT cổ phiếu, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi điểm FA của mã hoặc xu hướng điểm FA qua các kỳ. KHÔNG DÙNG KHI: cần P/E, P/B theo ngày -> marketdata_list_fundamental_ratio_history; cần báo cáo tài chính -> marketdata_list_finance_balance_sheet, marketdata_list_finance_income_statement, marketdata_list_finance_cash_flow. TRẢ VỀ `records`: fa_rating (điểm FA tổng hợp) và 3 điểm thành phần effective (hiệu quả), prospect (triển vọng), business_result (kết quả kinh doanh); date_time (yyyy-MM-dd HH:mm:ss). CÁCH ĐỌC ĐIỂM (theo hướng dẫn FA của SSI Research; chi tiết: resource `ssi://research/reference/rating-guide`): fa_rating là điểm FA tổng hợp 0-100, KHÔNG phải số sao (khác fa_rating ở các tool SSI100) và không phải %. Điểm là phân vị tương đối trong tập cổ phiếu được chấm cùng ngày: điểm thấp không có nghĩa doanh nghiệp yếu tuyệt đối, điểm cao không đảm bảo giá tăng hay hết rủi ro; điểm có thể đổi dù số liệu doanh nghiệp ít đổi vì còn phụ thuộc các cổ phiếu khác. 3 điểm thành phần: effective (hiệu quả và quy mô), business_result (kết quả kinh doanh và định giá), prospect (triển vọng và vị thế ngành); khi điểm đổi, nêu thành phần nào thay đổi. Ngân hàng không dùng điểm kết quả kinh doanh nên business_result có thể trống. Giữ nguyên giá trị, không tự quy đổi. Dữ liệu cập nhật THƯA (vài bản ghi mỗi tháng) nên khung ngắn có thể ra rất ít bản ghi; kết quả có thể kèm 1-2 bản ghi cũ hơn đầu khoảng (điểm FA gần nhất trước đó) - lọc lại theo date_time nếu cần đúng khoảng. VÍ DỤ: \"xu hướng điểm FA của SSI một năm qua\" -> symbol=SSI, range=1y. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI), bắt buộc."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài chuỗi FA, tính lùi từ toDate. 3m = 90 ngày (chỉ vài bản ghi); 6m = 180 ngày; 1y = 365 ngày (nên dùng để xem xu hướng); max_range = 730 ngày (lớn nhất). Do dữ liệu thưa, khung quá ngắn có thể ra rất ít bản ghi. 'Gần đây' -> 3m; 'cả năm' -> 1y. Chọn khung NHỎ NHẤT đủ dùng. Hỏi khoảng dài hơn max_range thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Lọc theo date_time; hỏi xu hướng đến một thời điểm cũ thì toDate=ngày đó."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_finance_indicator",
+    "description": "Chỉ số tài chính theo KỲ BÁO CÁO (quý/năm) của MỘT mã, trả nhiều kỳ. Mặc định sắp theo LengthReport giảm dần (KHÔNG phải theo năm): muốn kỳ mới nhất trước thì truyền orderBy=YearReport, order=DESC. DÙNG KHI: hỏi ROE, ROA, EPS, P/E, P/B, biên lợi nhuận, doanh thu/lợi nhuận theo kỳ báo cáo. KHÔNG DÙNG KHI: chỉ cần lợi nhuận/P/E/P/B của kỳ gần nhất (tool đó chỉ trả 1 dòng) -> marketdata_list_corp_finance_finance_indicator; lịch sử P/E, P/B theo ngày -> marketdata_list_fundamental_ratio_history; báo cáo tài chính đầy đủ -> marketdata_list_finance_balance_sheet, marketdata_list_finance_income_statement, marketdata_list_finance_cash_flow. TRẢ VỀ `indicators` (số liệu dạng chuỗi): year_report; length_report (1-4 = quý, 5 = cả năm); revenue, profit, net_profit (VND); eps, diluted_eps; pe, diluted_pe, pb; roe, roa, roic, gross_profit_margin, net_profit_margin (PHÂN SỐ: 0.134 = 13,4%, nhân 100 khi trình bày %); bv, beta, debt_to_equity, debt_to_asset, current_ratio, quick_ratio, shares_outstanding, dividend_yield, market_cap, asset, financial_leverage (thang đo các chỉ số này chưa xác nhận — giữ nguyên giá trị khi trình bày). VÍ DỤ: \"ROE các kỳ gần nhất của SSI\" -> symbol=SSI, orderBy=YearReport, order=DESC, pageSize=10 (kết quả có thể gồm cả dòng cả năm length_report=5 xen kẽ quý; chỉ cần quý thì bỏ qua các dòng này). (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu, 1 mã mỗi lần (VD SSI), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = mọi năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1 nếu bỏ trống). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "YearReport",
+            "LengthReport"
+          ],
+          "description": "Cột sắp xếp: YearReport = theo năm báo cáo; LengthReport = theo kỳ báo cáo 1-5 (mặc định). Muốn kỳ mới nhất trước -> YearReport kèm order=DESC."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "description": "Thứ tự theo cột orderBy: ASC = tăng dần (VD YearReport -> năm cũ trước); DESC = giảm dần (mặc định; VD YearReport -> năm mới trước)."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_fundamental_analysis_index",
+    "description": "Lấy chỉ số phân tích cơ bản (FA - Fundamental Analysis) theo thời gian của MỘT cổ phiếu, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi đánh giá cơ bản của mã hoặc xu hướng điểm FA qua các kỳ. KHÔNG DÙNG KHI: cần P/E, P/B theo ngày -> marketdata_list_fundamental_ratio_history; cần báo cáo tài chính -> marketdata_list_finance_balance_sheet, marketdata_list_finance_income_statement, marketdata_list_finance_cash_flow. TRẢ VỀ `records`: fa_rating (điểm xếp hạng FA tổng hợp) và 3 điểm thành phần effective (hiệu quả), prospect (triển vọng), business_result (kết quả kinh doanh), date_time (dạng yyyy-MM-dd HH:mm:ss). Đây là điểm số, KHÔNG phải %; thang điểm tối đa chưa xác nhận - giữ nguyên giá trị, chỉ so sánh giữa các kỳ. Dữ liệu cập nhật THƯA (vài bản ghi mỗi tháng) nên khung ngắn có thể ra rất ít bản ghi; kết quả có thể kèm 1-2 bản ghi cũ hơn đầu khoảng (điểm FA gần nhất trước đó) - lọc lại theo date_time nếu cần đúng khoảng. VÍ DỤ: \"xu hướng điểm FA của SSI một năm qua\" -> symbol=SSI, range=1y. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI), bắt buộc."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài chuỗi FA, tính lùi từ toDate. 3m = 90 ngày (chỉ vài bản ghi); 6m = 180 ngày; 1y = 365 ngày (nên dùng để xem xu hướng); max_range = 730 ngày (lớn nhất). Do dữ liệu thưa, khung quá ngắn có thể ra rất ít bản ghi. 'Gần đây' -> 3m; 'cả năm' -> 1y. Chọn khung NHỎ NHẤT đủ dùng. Hỏi khoảng dài hơn max_range thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Lọc theo date_time; hỏi xu hướng đến một thời điểm cũ thì toDate=ngày đó."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_corporate_bond_profile",
+    "description": "Lấy hồ sơ trái phiếu doanh nghiệp đại chúng của MỘT mã theo ngày báo cáo, trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi tổ chức phát hành, ngày đáo hạn, lãi suất, giá/khối lượng khớp của một trái phiếu doanh nghiệp. KHÔNG DÙNG KHI: trái phiếu riêng lẻ (mã dạng AAS12201) -> marketdata_list_private_corporate_bond. TRẢ VỀ `bonds`: symbol, issuer (tổ chức phát hành), maturity_date (DD/MM/YYYY), quantity và interest (lãi suất) — hai field này nguồn trả dạng chuỗi nguyên văn, đơn vị chưa được xác nhận nên không tự gắn đơn vị (%/năm, VND, số trái phiếu) hay quy đổi, closed_price (giá đóng cửa, VND), matched_volume (khối lượng khớp), matched_value (giá trị khớp, VND), matched_avg (giá bình quân khớp, VND), report_date (dạng MM/dd/yyyy HH:mm:ss, VD '09/28/2026 00:00:00' = ngày 28/09/2026). Tool không phân trang. symbol bắt buộc, 1 mã mỗi lần: hỏi nhiều mã thì gọi lần lượt từng mã. VÍ DỤ: \"hồ sơ hiện hành của trái phiếu mã BAF126003\" -> symbol=BAF126003, range=1d. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã trái phiếu doanh nghiệp, bắt buộc, 1 mã mỗi lần (VD BAF126003)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng theo ngày báo cáo, tính lùi từ toDate. 1d = toDate và ngày liền trước; 1w = 7 ngày; 1m = 30 ngày; 3m = 90 ngày; 6m = 180 ngày; 1y = 365 ngày; max_range = 730 ngày (lớn nhất, xem toàn bộ lịch sử báo cáo của mã). 'Hồ sơ hiện hành' -> 1d (nếu rỗng do cuối tuần/ngày lễ thì thử 1w); 'tháng qua' -> 1m; 'cả năm' -> 1y. Chọn khung NHỎ NHẤT đủ dùng. Hỏi khoảng dài hơn max_range thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Lọc theo report_date."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_share_holder_summary",
+    "description": "Tổng hợp cơ cấu sở hữu của MỘT cổ phiếu theo 3 nhóm cổ đông: nước ngoài, nhà nước (spec ghi nhóm này là \"cổ đông trong nước\"; chưa xác nhận), khác. DÙNG KHI: hỏi tỷ lệ sở hữu của nhà đầu tư nước ngoài/nhà nước/nhóm khác trong một mã. KHÔNG DÙNG KHI: cần danh sách từng cổ đông lớn -> marketdata_list_share_holder_detail. TRẢ VỀ `summary` (1 phần tử): symbol; foreigner_volume, state_volume, other_volume (số cổ phần, chuỗi số); foreigner_percentage, state_percentage, other_percentage (PHÂN SỐ: 0.15 = 15%, nhân 100 khi trình bày %); public_date (ngày công bố, DD/MM/YYYY). VÍ DỤ: \"SSI có bao nhiêu % sở hữu nước ngoài\" -> symbol=SSI, đọc foreigner_percentage x 100. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD SSI)."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_market_master_data",
+    "description": "Bảng giá trần/sàn/tham chiếu của TOÀN thị trường trong ngày (hàng nghìn dòng, không phân trang, không có tham số lọc; kết quả rất lớn). DÙNG KHI: cần bảng giá trần/sàn/tham chiếu của NHIỀU hoặc TOÀN BỘ mã trong ngày (VD thống kê/đối chiếu cả thị trường hoặc cả một sàn). KHÔNG DÙNG KHI: hỏi giá trần/sàn/tham chiếu của MỘT mã (hoặc một khoảng ngày) -> marketdata_list_daily_stock_infor (symbol, range=1d); cần danh sách mã của một sàn -> marketdata_list_symbols_by_exchange. TRẢ VỀ `symbols`: exchange (HOSE, HNX, UPCOM, DERIVATIVES...); symbol; trading_date (DD/MM/YYYY); ceiling (giá trần, VND); floor (giá sàn, VND); ref_price (giá tham chiếu, VND). Kết quả rất dài: chỉ lọc và trình bày các mã/sàn người dùng hỏi, không liệt kê toàn bộ. VÍ DỤ: \"bảng giá trần sàn tham chiếu toàn thị trường hôm nay\" -> gọi không tham số; \"giá trần SSI hôm nay\" -> KHÔNG dùng tool này, dùng marketdata_list_daily_stock_infor với symbol=SSI, range=1d. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "marketdata_get_company_news_detail",
+    "description": "Lấy nội dung chi tiết của MỘT tin tức công ty theo newsId. DÙNG KHI: người dùng muốn đọc toàn văn một tin đã có news_id. KHÔNG DÙNG KHI: cần danh sách tin theo mã/khoảng ngày -> marketdata_list_company_news (lấy news_id từ đó). TRẢ VỀ một đối tượng (không phải mảng) ở root: news_id, title, short_content, full_content (HTML có thẻ <p>, <table>... - bỏ thẻ khi trình bày), image_url, news_source, source_code, news_source_link, update_date, public_date (định dạng ngày chưa xác nhận bằng dữ liệu thật; trình bày đúng chuỗi trả về). Kết quả rỗng = không tìm thấy tin: quay lại marketdata_list_company_news lấy lại news_id, không gọi lại với cùng giá trị. VÍ DỤ: \"đọc chi tiết tin có news_id X\" -> newsId=X, language=VN. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "newsId": {
+          "type": "string",
+          "description": "ID tin tức, bắt buộc, chuỗi: lấy nguyên văn từ field news_id trong kết quả marketdata_list_company_news, không tự đặt. Rỗng = không tìm thấy tin; không thử lại cùng giá trị."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ nội dung tin, bắt buộc. VN = tiếng Việt; EN = tiếng Anh. Không nói rõ -> VN. Dùng cùng ngôn ngữ đã dùng khi gọi marketdata_list_company_news lấy news_id."
+        }
+      },
+      "required": [
+        "newsId",
+        "language"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_etf_inav_chart",
+    "description": "Lấy dữ liệu biểu đồ iNAV (giá trị tài sản ròng chỉ báo, cập nhật liên tục trong phiên) theo ngày của MỘT quỹ ETF, trong khoảng [toDate - range, toDate]. DÙNG KHI: so sánh giá thị trường với iNAV hoặc xem xu hướng iNAV theo thời gian. KHÔNG DÙNG KHI: chỉ cần iNAV mới nhất -> marketdata_list_etf_inav_index_latest. TRẢ VỀ `points` (mỗi dòng 1 ngày): etf_symbol, close_inav (iNAV cuối ngày; nguồn không ghi đơn vị, thường cùng thang với giá chứng chỉ quỹ nhưng chưa xác nhận), open_price, high_price, low_price, close_price (giá thị trường của chứng chỉ quỹ, VND), volume (khối lượng), trading_date (DD/MM/YYYY). VÍ DỤ: \"iNAV của E1VFVN30 tháng qua\" -> etfSymbol=E1VFVN30, range=1m. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "etfSymbol": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Mã quỹ ETF viết hoa, bắt buộc, 1 mã mỗi lần (VD E1VFVN30)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài chuỗi iNAV, tính lùi từ toDate. 1w = 7 ngày; 1m = 30 ngày; 3m = 90 ngày; 6m = 180 ngày; 1y = 365 ngày; max_range = 730 ngày (lớn nhất). 'Tuần qua' -> 1w; 'tháng qua' -> 1m; 'quý qua' -> 3m; 'cả năm' -> 1y. Chọn khung NHỎ NHẤT đủ dùng. Hỏi khoảng dài hơn max_range thì gọi nhiều lần với toDate lùi dần."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Hỏi giai đoạn cũ (VD cả năm 2025) thì toDate=31/12/2025 với range=1y."
+        }
+      },
+      "required": [
+        "etfSymbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_company_profile",
+    "description": "Lấy hồ sơ của MỘT công ty niêm yết theo mã cổ phiếu. DÙNG KHI: hỏi công ty làm gì, ngành, vốn điều lệ, số cổ phiếu phát hành, free float, địa chỉ, website, thông tin thành lập/niêm yết. KHÔNG DÙNG KHI: ban lãnh đạo -> marketdata_list_company_leaderships; cổ đông -> marketdata_list_share_holder_detail; công ty con -> marketdata_list_sub_companies; công ty cùng ngành -> marketdata_list_company_in_same_industry. TRẢ VỀ `companies`: symbol, company_name, industry_name, super_sector, sub_sector, sector, founding_date (spec ghi là năm thành lập), listing_date (định dạng của hai field này chưa xác nhận - trình bày đúng chuỗi trả về), charter_capital (VND), number_of_employee, exchange, issue_share (cổ phiếu), free_float_rate (tỷ lệ cổ phiếu tự do chuyển nhượng; chưa xác nhận phân số hay %, trình bày đúng số trả về), listed_value (VND), address, website, email, telephone, fax, company_profile (giới thiệu công ty, HTML dài - chỉ trích khi người dùng hỏi giới thiệu công ty). VÍ DỤ: \"giới thiệu công ty SSI\" -> symbol=SSI, language=VN. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, VD SSI, bắt buộc. Mỗi lần gọi 1 mã."
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "VN",
+            "EN"
+          ],
+          "description": "Ngôn ngữ trả về. VN = tiếng Việt; EN = tiếng Anh. Bỏ trống = VN."
+        },
+        "updateDate": {
+          "type": "string",
+          "description": "Chỉ lấy các hồ sơ có điều chỉnh từ ngày này đến hiện tại, định dạng DD/MM/YYYY (VD 01/09/2026). Bỏ trống = lấy hồ sơ hiện hành, không lọc. Kết quả rỗng khi có updateDate nghĩa là không có điều chỉnh từ ngày đó, KHÔNG phải mã không tồn tại."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_private_corporate_bond",
+    "description": "Thông tin và giao dịch của MỘT trái phiếu doanh nghiệp RIÊNG LẺ theo ngày giao dịch trong khoảng [toDate - range, toDate]. DÙNG KHI: hỏi giá, thanh khoản, lãi suất, kỳ hạn, doanh nghiệp phát hành của một trái phiếu riêng lẻ (mã dạng AAS12201, ABB12402). KHÔNG DÙNG KHI: trái phiếu doanh nghiệp đại chúng -> marketdata_list_corporate_bond_profile; tra mã theo sàn -> marketdata_list_symbols_by_exchange (chỉ liệt kê trái phiếu đại chúng, không có mã riêng lẻ). TRẢ VỀ `bonds`: symbol, isin, trading_date; issue_date, maturity_date; kỳ hạn (bond_period, period_unit, period_remain); issuer (mã tổ chức phát hành); interest_rate (lãi suất; đơn vị % hay phân số CHƯA xác nhận) và interest_type, interest_period_unit, interest_coupon_type, interest_rate_type, interest_payment_type (mã loại lãi suất/cách trả lãi); par_value (mệnh giá); total_listing_quantity (tổng khối lượng niêm yết). Các trường GIÁ: ref_price, floor_price, ceiling_price, floor_price_out, ceiling_price_out, ceiling_price_rep, floor_price_rep, open_price, close_price, current_price, highest_price, lowest_price, match_price, mid_price. Các trường KHỐI LƯỢNG: match_quantity, current_quantity, total_volume_traded, remain_foreign_quantity; GIÁ TRỊ giao dịch: total_value_traded. Nhóm giao dịch nm_* (nm_total_trade_quantity, nm_total_trade_value), pt_* (pt_match_*, pt_max_*, pt_min_*, pt_total_trade_*, pt_best_bid_*, pt_best_offer_*, pt_total_bid_quantity, pt_total_offer_quantity) và repos_* (repos_total_trade_quantity, repos_total_trade_value): nhiều khả năng nm = khớp lệnh thông thường, pt = giao dịch thỏa thuận, repos = repo theo thông lệ sàn, nhưng chưa được xác nhận. Các mã board_code, trading_session, trading_session_status, security_trading_status: mã nội bộ chưa được giải nghĩa. Đơn vị của các trường giá/khối lượng/giá trị/lãi suất CHƯA được xác nhận (VND hay % mệnh giá; trái phiếu hay đơn vị khác): trình bày nguyên giá trị, không tự quy đổi hay diễn giải các mã. Định dạng ngày trong KẾT QUẢ không đồng nhất: trading_date dạng ISO (2024-07-15T00:00:00); issue_date, maturity_date dạng nén YYYYMMDD (VD 20260728). Mỗi lần 1 mã: tool không phân trang, bỏ trống mã sẽ trả cả thị trường và vượt giới hạn payload 5 MB nên symbol là bắt buộc; hỏi nhiều mã thì gọi lần lượt từng mã. VÍ DỤ: \"giao dịch trái phiếu AAS12201 trong tuần qua\" -> symbol=AAS12201, range=1w. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã trái phiếu riêng lẻ viết hoa, BẮT BUỘC, 1 mã mỗi lần (VD AAS12201)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày giao dịch, tính lùi từ toDate: 1d = toDate và ngày liền trước; 1w = 7 ngày; 1m = 30; 3m = 90; 6m = 180; 1y = 365; max_range = 730 ngày (lớn nhất, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng. \"hôm nay/phiên gần nhất\" -> 1d; \"tuần qua\" -> 1w; \"tháng qua\" -> 1m."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối khoảng, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        }
+      },
+      "required": [
+        "symbol",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "research_get_ssi100_industry_assessment",
+    "description": "Lấy nhận định của SSI Research về MỘT ngành trong rổ SSI100: truyền mã ngành, hoặc truyền mã cổ phiếu để lấy nhận định của ngành mà mã đó thuộc về. DÙNG KHI: hỏi nhận định, triển vọng, đánh giá của SSI Research về một ngành (hoặc ngành của một mã) trong SSI100. KHÔNG DÙNG KHI: cần danh sách mã SSI100 trong ngành và điểm từng mã -> research_list_ssi100_stocks; cần nhận định về một mã -> research_get_ssi100_stock_commentary; cần chỉ số tài chính bình quân của ngành -> marketdata_list_icb_industry. TRẢ VỀ `industries` (thường 1 phần tử): icb_code (mã ngành ICB cấp 2); icb_name (tên ngành); assessment (nhận định của SSI Research về ngành, vài đoạn văn). Nội dung `assessment` là văn bản của SSI Research: trình bày nguyên văn, ghi nguồn \"SSI Research\", không diễn giải thêm. Dữ liệu cập nhật hằng ngày (mặc định là bản ghi của ngày hiện tại); response không kèm ngày nên không nêu ngày cụ thể. VÍ DỤ: \"SSI Research nhận định gì về ngành ngân hàng\" -> industry=8300; \"nhận định ngành của FPT\" -> symbol=FPT. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "industry": {
+          "type": "string",
+          "enum": [
+            "5300",
+            "500",
+            "2357",
+            "2300",
+            "5700",
+            "6500",
+            "7573",
+            "7577",
+            "7500",
+            "8300",
+            "8500",
+            "8600",
+            "9999",
+            "8700",
+            "9500",
+            "4500",
+            "5500",
+            "3300",
+            "3500",
+            "3530",
+            "3573",
+            "3763",
+            "3760",
+            "2700",
+            "2730",
+            "2720",
+            "2770",
+            "1357",
+            "1353",
+            "1700",
+            "1770",
+            "1730",
+            "1300"
+          ],
+          "description": "Mã ngành ICB cấp 2 (chỉ nhận mã, không nhận tên). Đổi tên ngành người dùng nói sang mã: 5300 = Bán lẻ; 500 = Dầu khí; 2357 = Xây dựng; 2300 = Vật liệu xây dựng; 5700 = Du lịch và Giải trí; 6500 = Viễn thông; 7573 = Phân phối xăng dầu, khí đốt; 7577 = Nước; 7500 = Sản xuất, phân phối Điện; 8300 = Ngân hàng; 8500 = Bảo hiểm; 8600 = Bất động sản; 9999 = Bất động sản KCN; 8700 = Dịch vụ tài chính; 9500 = Công nghệ Thông tin; 4500 = Y tế; 5500 = Truyền thông; 3300 = Ô tô và phụ tùng; 3500 = Thực phẩm; 3530 = Đồ uống; 3573 = Nuôi trồng nông hải sản; 3763 = May mặc; 3760 = Hàng gia dụng, hàng giải trí, hàng cá nhân khác; 2700 = Công nghiệp nặng; 2730 = Điện tử, thiết bị điện; 2720 = Hàng công nghiệp; 2770 = Vận tải; 1357 = Sản phẩm hóa dầu, nông dược, hóa chất; 1353 = Nhựa, cao su, sợi; 1700 = Kim loại; 1770 = Khai khoáng; 1730 = Lâm nghiệp và Giấy; 1300 = Hóa chất. Bắt buộc truyền `industry` HOẶC `symbol` (một trong hai, không cả hai). Không truyền cùng `symbol`."
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa (VD FPT), 1 mã. Dùng khi người dùng hỏi ngành của một mã mà chưa biết mã ngành. Không truyền cùng `industry`."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "marketdata_list_index_daily_data",
+    "description": "Lấy dữ liệu chỉ số thị trường trong nước theo ngày của MỘT chỉ số, trong khoảng [to - range, to]. DÙNG KHI: hỏi điểm đóng cửa/mở cửa/cao/thấp, khối lượng, diễn biến của VNINDEX, VN30, HNX30... theo ngày. KHÔNG DÙNG KHI: hiệu suất VNINDEX theo tháng -> marketdata_list_vn_index_performance; chỉ số thế giới -> marketdata_list_world_index. TRẢ VỀ `indices` (mỗi dòng 1 ngày): symbol; open, high, low, close, price (điểm chỉ số); ref_price (điểm tham chiếu = đóng cửa phiên trước), avg_price (điểm bình quân trong phiên) - hai field này nguồn dữ liệu ghi là 'chưa dùng' nên có thể rỗng hoặc 0: ưu tiên close, không dựa vào chúng khi tính toán; volume (khối lượng); trading_date (DD/MM/YYYY, VD '05/10/2026' = ngày 05/10/2026). Tham số ngày cuối khoảng của tool này tên là `to`. VÍ DỤ: \"VNINDEX 3 tháng gần đây\" -> indexCode=VNINDEX, range=3m; \"VN30 quý 1/2026\" -> indexCode=VN30, range=3m, to=31/03/2026. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "indexCode": {
+          "type": "string",
+          "description": "Mã chỉ số viết hoa, bắt buộc, 1 mã mỗi lần (VD VNINDEX, VN30, HNX30)."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài dữ liệu chỉ số, tính lùi từ to. 1d = to và ngày liền trước (hỏi 1 phiên: đặt to = ngày đó); 3m = 90 ngày; 6m = 180 ngày; 1y = 365 ngày; max_range = 730 ngày (lớn nhất). 'Hôm qua/một phiên' -> 1d; 'quý qua' -> 3m; 'nửa năm' -> 6m; 'cả năm' -> 1y. Chọn khung NHỎ NHẤT đủ dùng (1y ≈ 250 dòng, max_range ≈ 500 dòng). Hỏi khoảng dài hơn max_range thì gọi nhiều lần với to lùi dần."
+        },
+        "to": {
+          "type": "string",
+          "description": "Ngày cuối của chuỗi chỉ số (trading_date muộn nhất), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại. Hỏi một giai đoạn cũ (VD quý 1/2026) thì to=31/03/2026 với range=3m rồi lọc theo trading_date."
+        },
+        "includeToday": {
+          "type": "boolean",
+          "description": "true = gồm cả dữ liệu hôm nay nếu phiên đang diễn ra; bỏ trống = không truyền, không đảm bảo có dòng của hôm nay."
+        }
+      },
+      "required": [
+        "indexCode",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_etf_inav_index_latest",
+    "description": "Lấy iNAV (giá trị tài sản ròng chỉ báo) và chỉ số iIndex MỚI NHẤT của MỘT quỹ ETF. DÙNG KHI: hỏi iNAV hiện tại của một quỹ ETF. KHÔNG DÙNG KHI: cần chuỗi iNAV theo ngày để xem xu hướng/vẽ biểu đồ -> marketdata_list_etf_inav_chart. TRẢ VỀ `quotes` (điểm dữ liệu mới nhất): etf_no (ID của quỹ ETF trong nguồn), etf_symbol, i_index_symbol, index_symbol, inav (VND mỗi chứng chỉ quỹ), i_index (giá trị chỉ số tham chiếu), inav_change và i_index_change (mức thay đổi tuyệt đối so với mốc so sánh; nguồn không ghi đơn vị và mốc so sánh — chỉ trích dẫn nguyên văn, không dùng để kết luận tăng/giảm bao nhiêu), trading_date (DD/MM/YYYY), trading_time (HH:mm:ss), exchange. Tool KHÔNG trả % thay đổi của iNAV/iIndex - không tự suy ra phần trăm từ các field này. VÍ DỤ: \"iNAV mới nhất của E1VFVN30\" -> etfSymbol=E1VFVN30. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "etfSymbol": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Mã quỹ ETF viết hoa, bắt buộc, 1 mã mỗi lần (VD E1VFVN30, FUEVFVND)."
+        }
+      },
+      "required": [
+        "etfSymbol"
+      ]
+    }
+  },
+  {
+    "name": "fundamental_list_financial_ratios",
+    "description": "Các chỉ số tài chính chính theo KỲ BÁO CÁO (quý/năm) của MỘT mã: định giá (P/E, P/B, EPS, giá trị sổ sách, vốn hóa), sinh lời (ROE, ROA, ROIC, biên lợi nhuận gộp/ròng), đòn bẩy và thanh khoản (nợ/vốn chủ, nợ/tài sản, thanh toán hiện hành và nhanh), tỷ suất cổ tức. Chỉ sắp được theo MỘT cột: orderBy=YearReport, order=DESC đưa các năm mới lên trước nhưng thứ tự length_report TRONG CÙNG NĂM không đảm bảo (quan sát: lẫn lộn 1, 4, 5, 2...), không lấy dòng đầu tiên làm kỳ mới nhất: tự chọn dòng có year_report lớn nhất rồi length_report lớn nhất trong 1-4 (quý gần nhất) hoặc dòng length_report=5 (cả năm gần nhất) tuỳ câu hỏi. Mặc định (không truyền orderBy) sắp theo LengthReport giảm dần, không theo năm. DÙNG KHI: hỏi ROE, ROA, EPS, P/E, P/B, biên lợi nhuận, nợ/vốn chủ của một mã theo kỳ báo cáo. KHÔNG DÙNG KHI: cần P/E, P/B theo NGÀY -> fundamental_list_valuation_history; cần giá trị tuyệt đối (doanh thu, tài sản) -> fundamental_list_income_summary, fundamental_list_balance_sheet_summary; cần beta, EPS pha loãng, doanh thu/lợi nhuận kèm chỉ số -> marketdata_list_finance_indicator. TRẢ VỀ `indicators`: year_report; length_report (1-4 = quý, 5 = cả năm); pe, pb (lần); eps, book_value (giá trị sổ sách mỗi cổ phiếu, VND); roe, roa, roic, gross_profit_margin, net_profit_margin (PHÂN SỐ: 0.134 = 13,4%, nhân 100 khi trình bày %); debt_to_equity, debt_to_asset, current_ratio, quick_ratio, dividend_yield, market_cap. Thang đo (suy từ dữ liệu thật, chưa có tài liệu của đơn vị cung cấp dữ liệu xác nhận): debt_to_equity, current_ratio, quick_ratio là số lần (0.95 = 0,95 lần); debt_to_asset, dividend_yield là PHÂN SỐ (0.488 = 48,8%, nhân 100 khi trình bày %); market_cap là VND. Ý nghĩa: debt_to_equity = TỔNG nợ phải trả / vốn chủ sở hữu (không chỉ nợ vay), debt_to_asset = tổng nợ phải trả / tổng tài sản. Ở dòng QUÝ (length_report 1-4), roe, roa, roic, gross_profit_margin, net_profit_margin tính trên 12 tháng gần nhất (TTM), không phải riêng quý (quan sát trên một mã); dòng cả năm (length_report=5) là cả năm. Khi so các kỳ, nêu rõ đây là chỉ số TTM. Giá trị số trả dạng chuỗi. Nhiều dòng THIẾU field (dòng quý 4 hoặc kỳ cũ thường chỉ có một phần chỉ số): field vắng = không có dữ liệu, không phải 0; không lấy chỉ số của kỳ khác thay thế mà không nêu rõ kỳ. Giá trị \"0\" có thể nghĩa là KHÔNG ÁP DỤNG, không phải số thật (VD ngân hàng trả 0 cho roic, current_ratio, quick_ratio, dividend_yield): bỏ qua khi trình bày. Mã không tồn tại thì data rỗng. Kết quả có thể xen kẽ dòng quý và dòng cả năm (length_report=5); length_report 6 và 9 là lũy kế 6/9 tháng (xác nhận trên dòng tiền FPT): không coi là quý. Chỉ cần quý thì bỏ qua các dòng khác. Chi tiết cách đọc dữ liệu: resource `ssi://fundamental/reference/financial-data-notes`. VÍ DỤ: \"ROE và P/E các kỳ gần nhất của FPT\" -> symbol=FPT, orderBy=YearReport, order=DESC, pageSize=10. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "Mã cổ phiếu viết hoa, 1 mã mỗi lần (VD FPT), bắt buộc."
+        },
+        "yearReport": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "description": "Năm báo cáo (VD 2026). Bỏ trống = mọi năm."
+        },
+        "lengthReport": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "description": "Kỳ báo cáo: 1, 2, 3, 4 = quý 1-4; 5 = cả năm. Bỏ trống = mọi kỳ (muốn các dòng lũy kế 6/9 tháng, length_report 6 và 9, phải bỏ trống rồi chọn dòng: không lọc riêng được)."
+        },
+        "pageSize": {
+          "type": "integer",
+          "enum": [
+            10,
+            20,
+            50,
+            100
+          ],
+          "description": "Số dòng mỗi trang: 10, 20, 50 hoặc 100 (mặc định 10 nếu bỏ trống); giá trị khác bị từ chối."
+        },
+        "pageIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Số trang, bắt đầu từ 1 (mặc định 1). Phản hồi không có tổng số trang: nếu số dòng nhận được bằng pageSize thì có thể còn trang sau, tăng lên để lấy tiếp."
+        },
+        "orderBy": {
+          "type": "string",
+          "enum": [
+            "YearReport",
+            "LengthReport"
+          ],
+          "description": "Cột sắp xếp: YearReport = theo năm báo cáo; LengthReport = theo kỳ báo cáo 1-5 (mặc định). Muốn kỳ mới nhất trước -> YearReport kèm order=DESC."
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "description": "Thứ tự theo cột orderBy: ASC = tăng dần; DESC = giảm dần (mặc định)."
+        }
+      },
+      "required": [
+        "symbol"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_adjusted_rate",
+    "description": "Danh sách sự kiện điều chỉnh giá do sự kiện doanh nghiệp (chia cổ tức, thưởng cổ phiếu...) của TOÀN thị trường trong khoảng [toDate - range, toDate], lọc theo ngày giao dịch của bản ghi điều chỉnh. DÙNG KHI: cần tỷ lệ thực hiện điều chỉnh giá khi xử lý giá lịch sử (backtest) hoặc đối chiếu sự kiện điều chỉnh. KHÔNG DÙNG KHI: cần lịch sự kiện doanh nghiệp (ngày giao dịch không hưởng quyền, tỷ lệ) -> marketdata_list_corporate_actions; cần giá đóng cửa đã điều chỉnh -> marketdata_list_daily_stock_infor (close_price_adjusted). TRẢ VỀ `adjusted_rates`: symbol; exchange; adjusted_date (ngày thực hiện sự kiện, DD/MM/YYYY); rate_adjusted (tỷ lệ thực hiện, dạng chuỗi; cách đọc chưa xác nhận - trình bày đúng chuỗi trả về); received_date (ngày dữ liệu được nạp vào hệ thống, DD/MM/YYYY). Tool không có tham số lọc theo mã và không phân trang: kết quả gồm nhiều mã của toàn thị trường, có thể rất nhiều dòng - dùng khung range NHỎ NHẤT đủ dùng, lọc symbol ở phía AI. Có thể trả rỗng nếu khoảng không có sự kiện. VÍ DỤ: \"các lần điều chỉnh giá 6 tháng qua\" -> range=6m. (Read-only; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": [
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y",
+            "max_range"
+          ],
+          "description": "Độ dài khoảng ngày, tính lùi từ toDate: 1w = 7 ngày; 1m = 30; 3m = 90; 6m = 180; 1y = 365 (đủ cho hầu hết nhu cầu backtest 1 năm); max_range = 730 ngày (lớn nhất, dùng cho backtest dài, không có khung lớn hơn). Chọn khung NHỎ NHẤT đủ dùng. \"quý gần đây\" -> 3m; \"nửa năm\" -> 6m; \"năm qua\" -> 1y."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối khoảng lọc (theo ngày giao dịch của bản ghi điều chỉnh), định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Không được ở tương lai nên không tra được sự kiện sắp diễn ra. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        }
+      },
+      "required": [
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "marketdata_list_top_stocks",
+    "description": "Xếp hạng top cổ phiếu của MỘT sàn theo MỘT tiêu chí, gộp trên cả giai đoạn [toDate - range, toDate]. DÙNG KHI: \"top tăng/giảm mạnh nhất\", \"top thanh khoản\", \"mã nào khớp nhiều nhất\" của HOSE/HNX/UPCOM. KHÔNG DÙNG KHI: cần giá/thống kê của 1 mã cụ thể -> marketdata_list_stock_performance; cần lịch sử giá từng ngày -> marketdata_list_stock_daily_data; cần P/E, P/B, vốn hoá -> marketdata_list_stock_statistics. TRẢ VỀ `stocks` (đã xếp hạng, phần tử đầu = hạng 1): symbol; change_by_value (VND, mức đổi giá tuyệt đối); change_by_percent (%, VD 1.5 = 1,5%); avg_volume (cổ phiếu/phiên); avg_trading_amount (VND/phiên). Một lần gọi chỉ 1 sàn, 1 tiêu chí; muốn nhiều sàn thì gọi nhiều lần. VÍ DỤ: \"top 5 tăng mạnh nhất HOSE tuần qua\" -> exchange=HOSE, criteria=topIncreaseByPercent, range=1w, limit=5. (Read-only; tiền tệ VND; timezone Asia/Ho_Chi_Minh, UTC+7.)",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "HOSE",
+            "HNX",
+            "UPCOM"
+          ],
+          "description": "Sàn giao dịch (viết hoa): HOSE, HNX hoặc UPCOM. Chọn đúng 1 sàn. Hỏi chung 'thị trường' không nói sàn -> HOSE."
+        },
+        "criteria": {
+          "type": "string",
+          "enum": [
+            "topIncreaseByValue",
+            "topDecreaseByValue",
+            "topIncreaseByPercent",
+            "topDecreaseByPercent",
+            "topByVolume",
+            "topbytradingamount"
+          ],
+          "description": "Tiêu chí xếp hạng, chép đúng chính tả (kể cả chữ thường ở giá trị cuối). topIncreaseByPercent = tăng mạnh nhất theo %; topDecreaseByPercent = giảm mạnh nhất theo %; topIncreaseByValue = tăng nhiều nhất theo mức giá tuyệt đối (VND); topDecreaseByValue = giảm nhiều nhất theo VND; topByVolume = khối lượng khớp lớn nhất; topbytradingamount = giá trị giao dịch lớn nhất. Hỏi \"tăng/giảm mạnh\" mà không nói rõ -> mặc định chọn theo %."
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "1d",
+            "1w",
+            "1m",
+            "3m",
+            "6m",
+            "1y"
+          ],
+          "description": "Độ dài giai đoạn xếp hạng, tính lùi từ toDate. 1d = hai ngày dương lịch toDate-1 và toDate, xếp hạng gộp cả hai ngày (không phải riêng một phiên); 1w = 7 ngày; 1m = 30; 3m = 90; 6m = 180; 1y = 365. Kết quả là xếp hạng gộp cả giai đoạn, không phải từng ngày. Chọn khung NHỎ NHẤT đủ dùng. \"hôm nay/phiên gần nhất\" -> 1d; \"tuần qua\" -> 1w; \"tháng qua\" -> 1m."
+        },
+        "toDate": {
+          "type": "string",
+          "description": "Ngày cuối giai đoạn, định dạng DD/MM/YYYY (VD 05/10/2026). Bỏ trống = hôm nay. Chỉ nhận ngày trong 730 ngày gần nhất; ngoài khoảng này tool trả lỗi nêu khoảng hợp lệ để bạn sửa lại."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 10,
+          "description": "Số mã trả về, 1-50 (mặc định 10 nếu bỏ trống). 'top 5' -> limit=5."
+        }
+      },
+      "required": [
+        "exchange",
+        "criteria",
+        "range"
+      ]
+    }
+  }
+]

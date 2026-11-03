@@ -1,0 +1,3063 @@
+{
+  "timestamp": "2026-11-03T01:34:10Z",
+  "tools": {
+    "count": 56,
+    "names": [
+      "marketdata_list_fundamental_ratio_history",
+      "marketdata_list_company_in_same_industry",
+      "marketdata_list_bank_interest_rate",
+      "marketdata_list_vn_index_performance",
+      "marketdata_list_stock_statistics",
+      "research_get_ssi100_stock_recommendation",
+      "marketdata_list_finance_balance_sheet",
+      "marketdata_list_daily_stock_infor",
+      "research_list_ssi100_stocks",
+      "marketdata_list_finance_cash_flow",
+      "marketdata_list_covered_warrant_information",
+      "marketdata_list_corporate_actions",
+      "research_get_ssi100_stock_commentary",
+      "marketdata_list_cw_proprietary_trading",
+      "marketdata_list_icb_industry",
+      "marketdata_list_company_news",
+      "marketdata_list_corp_finance_finance_indicator",
+      "marketdata_list_sub_companies",
+      "marketdata_list_corporate_cw",
+      "marketdata_get_latest_cap_and_dividend",
+      "marketdata_list_world_index",
+      "marketdata_list_sectors_data",
+      "marketdata_list_foreign_currency_converter",
+      "fundamental_list_valuation_history",
+      "marketdata_list_intraday_stock_infor",
+      "marketdata_list_ratio_index",
+      "fundamental_list_income_summary",
+      "research_get_ssi100_stock_ratings",
+      "marketdata_list_stock_infor",
+      "marketdata_list_stock_daily_data",
+      "marketdata_list_stock_performance",
+      "marketdata_list_finance_income_statement",
+      "marketdata_list_company_leaderships",
+      "marketdata_list_symbols_by_exchange",
+      "fundamental_list_cash_flow_summary",
+      "fundamental_list_balance_sheet_summary",
+      "marketdata_list_stock_statistic_by_range",
+      "marketdata_list_share_issue",
+      "marketdata_list_share_holder_detail",
+      "marketdata_get_fund_information",
+      "research_list_fa_rating",
+      "marketdata_list_finance_indicator",
+      "marketdata_list_fundamental_analysis_index",
+      "marketdata_list_corporate_bond_profile",
+      "marketdata_list_share_holder_summary",
+      "marketdata_list_market_master_data",
+      "marketdata_get_company_news_detail",
+      "marketdata_list_etf_inav_chart",
+      "marketdata_list_company_profile",
+      "marketdata_list_private_corporate_bond",
+      "research_get_ssi100_industry_assessment",
+      "marketdata_list_index_daily_data",
+      "marketdata_list_etf_inav_index_latest",
+      "fundamental_list_financial_ratios",
+      "marketdata_list_adjusted_rate",
+      "marketdata_list_top_stocks"
+    ]
+  },
+  "resources": {
+    "count": 9,
+    "items": [
+      {
+        "name": "date_range_caps",
+        "uri": "ssi://marketdata/reference/date-range-caps",
+        "description": "Giá trị range hợp lệ và giới hạn to_field (max_lookback) của từng tool marketdata có tham số range + đến-ngày — tra trước khi gọi để tránh bị reject",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "exchanges",
+        "uri": "ssi://marketdata/reference/exchanges",
+        "description": "Danh sách mã sàn giao dịch được các tool MCP hỗ trợ (tham số 'exchange')",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "fundamental_financial_data_notes",
+        "uri": "ssi://fundamental/reference/financial-data-notes",
+        "description": "Ghi chú đọc dữ liệu tài chính của tool fundamental_*: kỳ báo cáo, chọn kỳ mới nhất, kiểm toán, giá trị 0 theo loại hình doanh nghiệp, thang đo chỉ số, lịch sử định giá",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "prompt_catalog",
+        "uri": "ssi://marketdata/reference/prompt-catalog",
+        "description": "Danh mục prompt hiện có (nhóm ssi.marketdata.*, ssi.fundamental.*, ssi.research.*; tên + mục đích + tham số) — tham khảo trước khi gọi prompts/get",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "research_rating_guide",
+        "uri": "ssi://research/reference/rating-guide",
+        "description": "Hướng dẫn đọc điểm FA và TA của SSI Research: ý nghĩa điểm phân vị, các điểm thành phần, thang TA, cách đọc từng field của tool research_*",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "resource_catalog",
+        "uri": "ssi://marketdata/reference/resource-catalog",
+        "description": "Danh mục resource hiện có (URI + tên + mục đích + khi nào nên đọc) — tham khảo trước khi gọi resources/read",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "sort_criteria",
+        "uri": "ssi://marketdata/reference/sort-criteria",
+        "description": "Giá trị hợp lệ cho field sắp xếp/xếp hạng (order, criteria) ở các tool marketdata — tra trước khi gọi tool để tránh bị reject tham số",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "term_glossary",
+        "uri": "ssi://marketdata/reference/term-glossary",
+        "description": "Định nghĩa chuẩn hoá các thuật ngữ tài chính thường gặp — dùng để giải thích cho người dùng không rành thuật ngữ, tránh AI tự bịa định nghĩa",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "tool_catalog",
+        "uri": "ssi://marketdata/reference/tool-catalog",
+        "description": "Danh mục tool đang published (nhóm marketdata, fundamental, research) và khả dụng cho tier standard (tên + mô tả) — tham khảo trước khi gọi tools/list",
+        "mimeType": "application/json"
+      }
+    ]
+  },
+  "probes": {
+    "marketdata_list_stock_daily_data": {
+      "SSI": {
+        "exchange": "HOSE",
+        "sector": "Securities",
+        "latency_s": 0.126,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "stocks": [
+              {
+                "symbol": "SSI",
+                "open": "19250",
+                "high": "19350",
+                "low": "18500",
+                "close": "18850",
+                "volume": "27277400",
+                "trading_date": "02/11/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "19600",
+                "high": "19700",
+                "low": "19300",
+                "close": "19300",
+                "volume": "14279200",
+                "trading_date": "30/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "19850",
+                "high": "20000",
+                "low": "19600",
+                "close": "19600",
+                "volume": "13779800",
+                "trading_date": "29/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "19900",
+                "high": "19950",
+                "low": "19600",
+                "close": "19750",
+                "volume": "12572700",
+                "trading_date": "28/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "19800",
+                "high": "19950",
+                "low": "19700",
+                "close": "19800",
+                "volume": "9321400",
+                "trading_date": "27/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "20000",
+                "high": "20100",
+                "low": "19800",
+                "close": "19800",
+                "volume": "14516100",
+                "trading_date": "26/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "20100",
+                "high": "20150",
+                "low": "19900",
+                "close": "19950",
+                "volume": "20683200",
+                "trading_date": "23/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "20450",
+                "high": "20600",
+                "low": "20150",
+                "close": "20150",
+                "volume": "19083400",
+                "trading_date": "22/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "20050",
+                "high": "20450",
+                "low": "20000",
+                "close": "20400",
+                "volume": "31771600",
+                "trading_date": "21/10/2026"
+              },
+              {
+                "symbol": "SSI",
+                "open": "19700",
+                "high": "19950",
+                "low": "19600",
+                "close": "19950",
+                "volume": "13109700",
+                "trading_date": "20/10/2026"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:13.6391846+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem biểu đồ kỹ thuật SSI trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/trading-view?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.view_chart"
+              },
+              {
+                "label": "Lọc cổ phiếu theo tiêu chí trên iBoard của SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/stock-filter?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.stock_filter"
+              }
+            ]
+          }
+        }
+      },
+      "VCB": {
+        "exchange": "HOSE",
+        "sector": "Bank",
+        "latency_s": 0.178,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "stocks": [
+              {
+                "symbol": "VCB",
+                "open": "56100",
+                "high": "56200",
+                "low": "53300",
+                "close": "53600",
+                "volume": "14009100",
+                "trading_date": "02/11/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "57100",
+                "high": "57200",
+                "low": "56300",
+                "close": "56300",
+                "volume": "3621700",
+                "trading_date": "30/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "57900",
+                "high": "58400",
+                "low": "57000",
+                "close": "57200",
+                "volume": "4049800",
+                "trading_date": "29/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "56200",
+                "high": "57600",
+                "low": "56100",
+                "close": "57500",
+                "volume": "6453700",
+                "trading_date": "28/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "56100",
+                "high": "56400",
+                "low": "56000",
+                "close": "56100",
+                "volume": "2438200",
+                "trading_date": "27/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "56800",
+                "high": "56800",
+                "low": "56100",
+                "close": "56100",
+                "volume": "3617000",
+                "trading_date": "26/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "56300",
+                "high": "57000",
+                "low": "56200",
+                "close": "56800",
+                "volume": "3278900",
+                "trading_date": "23/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "56700",
+                "high": "57200",
+                "low": "56200",
+                "close": "56300",
+                "volume": "3290100",
+                "trading_date": "22/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "55800",
+                "high": "56500",
+                "low": "55800",
+                "close": "56400",
+                "volume": "5480600",
+                "trading_date": "21/10/2026"
+              },
+              {
+                "symbol": "VCB",
+                "open": "56200",
+                "high": "56300",
+                "low": "55500",
+                "close": "55800",
+                "volume": "3671900",
+                "trading_date": "20/10/2026"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:14.1799444+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem biểu đồ kỹ thuật VCB trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/trading-view?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.view_chart"
+              },
+              {
+                "label": "Lọc cổ phiếu theo tiêu chí trên iBoard của SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/stock-filter?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.stock_filter"
+              }
+            ]
+          }
+        }
+      },
+      "BVH": {
+        "exchange": "HOSE",
+        "sector": "Insurance",
+        "latency_s": 0.159,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "stocks": [
+              {
+                "symbol": "BVH",
+                "open": "68400",
+                "high": "68400",
+                "low": "65800",
+                "close": "66300",
+                "volume": "1047000",
+                "trading_date": "02/11/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "68100",
+                "high": "69000",
+                "low": "66400",
+                "close": "69000",
+                "volume": "917400",
+                "trading_date": "30/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "69600",
+                "high": "69600",
+                "low": "65500",
+                "close": "69000",
+                "volume": "1285400",
+                "trading_date": "29/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "67800",
+                "high": "70000",
+                "low": "67000",
+                "close": "69800",
+                "volume": "887300",
+                "trading_date": "28/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "68400",
+                "high": "69200",
+                "low": "67500",
+                "close": "67800",
+                "volume": "474300",
+                "trading_date": "27/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "70200",
+                "high": "70200",
+                "low": "68200",
+                "close": "68700",
+                "volume": "529900",
+                "trading_date": "26/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "69000",
+                "high": "69700",
+                "low": "68400",
+                "close": "69000",
+                "volume": "504100",
+                "trading_date": "23/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "68600",
+                "high": "69600",
+                "low": "67700",
+                "close": "69000",
+                "volume": "760500",
+                "trading_date": "22/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "70900",
+                "high": "70900",
+                "low": "67200",
+                "close": "68400",
+                "volume": "1437900",
+                "trading_date": "21/10/2026"
+              },
+              {
+                "symbol": "BVH",
+                "open": "69500",
+                "high": "70300",
+                "low": "68800",
+                "close": "69700",
+                "volume": "582500",
+                "trading_date": "20/10/2026"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:14.7588533+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem biểu đồ kỹ thuật BVH trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/trading-view?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.view_chart"
+              },
+              {
+                "label": "Lọc cổ phiếu theo tiêu chí trên iBoard của SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/stock-filter?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.stock_filter"
+              }
+            ]
+          }
+        }
+      },
+      "PVS": {
+        "exchange": "HNX",
+        "sector": "Oil/Gas",
+        "latency_s": 0.156,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "stocks": [
+              {
+                "symbol": "PVS",
+                "open": "30300",
+                "high": "30600",
+                "low": "28800",
+                "close": "29800",
+                "volume": "2927700",
+                "trading_date": "02/11/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "30600",
+                "high": "30800",
+                "low": "30300",
+                "close": "30500",
+                "volume": "1699200",
+                "trading_date": "30/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "32000",
+                "high": "32000",
+                "low": "30300",
+                "close": "30500",
+                "volume": "4659800",
+                "trading_date": "29/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "31800",
+                "high": "32100",
+                "low": "31500",
+                "close": "32000",
+                "volume": "1196400",
+                "trading_date": "28/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "32000",
+                "high": "32200",
+                "low": "31600",
+                "close": "31800",
+                "volume": "1337000",
+                "trading_date": "27/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "32400",
+                "high": "33000",
+                "low": "32000",
+                "close": "32100",
+                "volume": "2437800",
+                "trading_date": "26/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "32500",
+                "high": "33100",
+                "low": "32200",
+                "close": "32300",
+                "volume": "1843300",
+                "trading_date": "23/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "31800",
+                "high": "32700",
+                "low": "31800",
+                "close": "32500",
+                "volume": "2922600",
+                "trading_date": "22/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "32200",
+                "high": "32200",
+                "low": "31100",
+                "close": "31800",
+                "volume": "3843900",
+                "trading_date": "21/10/2026"
+              },
+              {
+                "symbol": "PVS",
+                "open": "31100",
+                "high": "32000",
+                "low": "30500",
+                "close": "32000",
+                "volume": "1204600",
+                "trading_date": "20/10/2026"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:15.3139840+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem biểu đồ kỹ thuật PVS trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/trading-view?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.view_chart"
+              },
+              {
+                "label": "Lọc cổ phiếu theo tiêu chí trên iBoard của SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/stock-filter?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.stock_filter"
+              }
+            ]
+          }
+        }
+      },
+      "BSR": {
+        "exchange": "UPCOM",
+        "sector": "Refinery",
+        "latency_s": 0.16,
+        "isError": true,
+        "data": {
+          "status": "error",
+          "data": null,
+          "error": {
+            "code": "RATE_LIMITED",
+            "message": "Rate limit exceeded",
+            "retryAfterSeconds": 2
+          },
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:15.8612642+00:00",
+            "nextCursor": null
+          }
+        }
+      }
+    },
+    "marketdata_list_daily_stock_infor": {
+      "tool": "marketdata_list_daily_stock_infor",
+      "arguments": {
+        "symbol": "VNM",
+        "range": "3m"
+      },
+      "latency_s": 0.322,
+      "isError": false,
+      "data": {
+        "status": "ok",
+        "data": {
+          "stocks": [
+            {
+              "symbol": "VNM",
+              "open": "56900",
+              "high": "57100",
+              "low": "55600",
+              "close": "56000",
+              "volume": "4335400",
+              "trading_date": "02/11/2026",
+              "ceiling_price": "60800",
+              "floor_price": "53000",
+              "ref_price": "56900",
+              "avg_price": "56190",
+              "price_changed": "-900",
+              "per_price_change": "-1.58",
+              "close_price_adjusted": "56000",
+              "total_match_volume": "4335400",
+              "total_match_value": "243605700000",
+              "foreign_buy_volume_total": "788735",
+              "foreign_current_room": "1052138055",
+              "foreign_sell_volume_total": "627300",
+              "foreign_buy_value_total": "44408379700",
+              "foreign_sell_value_total": "35252030000",
+              "total_buy_trade": "7711",
+              "total_buy_trade_volume": "6668706",
+              "total_sell_trade": "3218",
+              "total_sell_trade_volume": "6212255",
+              "net_buy_sell_volume": "161435",
+              "net_buy_sell_value": "9156349700",
+              "foreign_buy_volume_matched": "788735",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "56000",
+              "open_raw": "56900",
+              "high_raw": "57100",
+              "low_raw": "55600"
+            },
+            {
+              "symbol": "VNM",
+              "open": "57700",
+              "high": "57700",
+              "low": "56700",
+              "close": "56900",
+              "volume": "2982300",
+              "trading_date": "30/10/2026",
+              "ceiling_price": "61700",
+              "floor_price": "53700",
+              "ref_price": "57700",
+              "avg_price": "57144",
+              "price_changed": "-800",
+              "per_price_change": "-1.39",
+              "close_price_adjusted": "56900",
+              "total_match_volume": "2982300",
+              "total_match_value": "170419620000",
+              "foreign_buy_volume_total": "155225",
+              "foreign_current_room": "1052102449",
+              "foreign_sell_volume_total": "691704",
+              "foreign_buy_value_total": "8895482500",
+              "foreign_sell_value_total": "39594042000",
+              "total_buy_trade": "6194",
+              "total_buy_trade_volume": "5402951",
+              "total_sell_trade": "3798",
+              "total_sell_trade_volume": "4362594",
+              "net_buy_sell_volume": "-536479",
+              "net_buy_sell_value": "-30698559500",
+              "foreign_buy_volume_matched": "155225",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "56900",
+              "open_raw": "57700",
+              "high_raw": "57700",
+              "low_raw": "56700"
+            },
+            {
+              "symbol": "VNM",
+              "open": "58300",
+              "high": "58400",
+              "low": "57600",
+              "close": "57700",
+              "volume": "1335300",
+              "trading_date": "29/10/2026",
+              "ceiling_price": "62200",
+              "floor_price": "54200",
+              "ref_price": "58200",
+              "avg_price": "57868",
+              "price_changed": "-500",
+              "per_price_change": "-0.86",
+              "close_price_adjusted": "57700",
+              "total_match_volume": "1335300",
+              "total_match_value": "77270850000",
+              "foreign_buy_volume_total": "1281600",
+              "foreign_current_room": "1052057446",
+              "foreign_sell_volume_total": "1539900",
+              "foreign_buy_value_total": "73955360000",
+              "foreign_sell_value_total": "88912470000",
+              "total_buy_trade": "3181",
+              "total_buy_trade_volume": "3529735",
+              "total_sell_trade": "2321",
+              "total_sell_trade_volume": "4118663",
+              "net_buy_sell_volume": "-258300",
+              "net_buy_sell_value": "-14957110000",
+              "foreign_buy_volume_matched": "1281600",
+              "foreign_buy_volume_deal": "1211300",
+              "close_raw": "57700",
+              "open_raw": "58300",
+              "high_raw": "58400",
+              "low_raw": "57600"
+            },
+            {
+              "symbol": "VNM",
+              "open": "57700",
+              "high": "58200",
+              "low": "57400",
+              "close": "58200",
+              "volume": "2362800",
+              "trading_date": "28/10/2026",
+              "ceiling_price": "61600",
+              "floor_price": "53600",
+              "ref_price": "57600",
+              "avg_price": "57750",
+              "price_changed": "600",
+              "per_price_change": "1.04",
+              "close_price_adjusted": "58200",
+              "total_match_volume": "2362800",
+              "total_match_value": "136450530000",
+              "foreign_buy_volume_total": "285300",
+              "foreign_current_room": "1051773645",
+              "foreign_sell_volume_total": "893116",
+              "foreign_buy_value_total": "16465160000",
+              "foreign_sell_value_total": "51523052200",
+              "total_buy_trade": "3410",
+              "total_buy_trade_volume": "4185165",
+              "total_sell_trade": "3104",
+              "total_sell_trade_volume": "4108362",
+              "net_buy_sell_volume": "-607816",
+              "net_buy_sell_value": "-35057892200",
+              "foreign_buy_volume_matched": "285300",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "58200",
+              "open_raw": "57700",
+              "high_raw": "58200",
+              "low_raw": "57400"
+            },
+            {
+              "symbol": "VNM",
+              "open": "57600",
+              "high": "57900",
+              "low": "57500",
+              "close": "57600",
+              "volume": "1103400",
+              "trading_date": "27/10/2026",
+              "ceiling_price": "61600",
+              "floor_price": "53600",
+              "ref_price": "57600",
+              "avg_price": "57670",
+              "price_changed": "0",
+              "per_price_change": "0",
+              "close_price_adjusted": "57600",
+              "total_match_volume": "1103400",
+              "total_match_value": "63633500000",
+              "foreign_buy_volume_total": "66800",
+              "foreign_current_room": "1051776398",
+              "foreign_sell_volume_total": "214728",
+              "foreign_buy_value_total": "3853710000",
+              "foreign_sell_value_total": "12384915600",
+              "total_buy_trade": "2407",
+              "total_buy_trade_volume": "1884238",
+              "total_sell_trade": "1747",
+              "total_sell_trade_volume": "2809289",
+              "net_buy_sell_volume": "-147928",
+              "net_buy_sell_value": "-8531205600",
+              "foreign_buy_volume_matched": "66800",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "57600",
+              "open_raw": "57600",
+              "high_raw": "57900",
+              "low_raw": "57500"
+            },
+            {
+              "symbol": "VNM",
+              "open": "57600",
+              "high": "57900",
+              "low": "57500",
+              "close": "57600",
+              "volume": "1279800",
+              "trading_date": "26/10/2026",
+              "ceiling_price": "61600",
+              "floor_price": "53600",
+              "ref_price": "57600",
+              "avg_price": "57645",
+              "price_changed": "0",
+              "per_price_change": "0",
+              "close_price_adjusted": "57600",
+              "total_match_volume": "1279800",
+              "total_match_value": "73773480000",
+              "foreign_buy_volume_total": "111500",
+              "foreign_current_room": "1051582508",
+              "foreign_sell_volume_total": "161000",
+              "foreign_buy_value_total": "6426800000",
+              "foreign_sell_value_total": "9283560000",
+              "total_buy_trade": "3247",
+              "total_buy_trade_volume": "2369041",
+              "total_sell_trade": "1845",
+              "total_sell_trade_volume": "2156359",
+              "net_buy_sell_volume": "-49500",
+              "net_buy_sell_value": "-2856760000",
+              "foreign_buy_volume_matched": "111500",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "57600",
+              "open_raw": "57600",
+              "high_raw": "57900",
+              "low_raw": "57500"
+            },
+            {
+              "symbol": "VNM",
+              "open": "58000",
+              "high": "58100",
+              "low": "57500",
+              "close": "57600",
+              "volume": "1793700",
+              "trading_date": "23/10/2026",
+              "ceiling_price": "62100",
+              "floor_price": "54100",
+              "ref_price": "58100",
+              "avg_price": "57757",
+              "price_changed": "-500",
+              "per_price_change": "-0.86",
+              "close_price_adjusted": "57600",
+              "total_match_volume": "1793700",
+              "total_match_value": "103597940000",
+              "foreign_buy_volume_total": "159512",
+              "foreign_current_room": "1051530536",
+              "foreign_sell_volume_total": "379560",
+              "foreign_buy_value_total": "9215925600",
+              "foreign_sell_value_total": "21918184000",
+              "total_buy_trade": "3934",
+              "total_buy_trade_volume": "3188125",
+              "total_sell_trade": "1821",
+              "total_sell_trade_volume": "3009606",
+              "net_buy_sell_volume": "-220048",
+              "net_buy_sell_value": "-12702258400",
+              "foreign_buy_volume_matched": "159512",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "57600",
+              "open_raw": "58000",
+              "high_raw": "58100",
+              "low_raw": "57500"
+            },
+            {
+              "symbol": "VNM",
+              "open": "58400",
+              "high": "58500",
+              "low": "57900",
+              "close": "58100",
+              "volume": "1232300",
+              "trading_date": "22/10/2026",
+              "ceiling_price": "62300",
+              "floor_price": "54300",
+              "ref_price": "58300",
+              "avg_price": "58109",
+              "price_changed": "-200",
+              "per_price_change": "-0.34",
+              "close_price_adjusted": "58100",
+              "total_match_volume": "1232300",
+              "total_match_value": "71607280000",
+              "foreign_buy_volume_total": "313159",
+              "foreign_current_room": "1051323548",
+              "foreign_sell_volume_total": "472909",
+              "foreign_buy_value_total": "18195399700",
+              "foreign_sell_value_total": "27477763800",
+              "total_buy_trade": "0",
+              "total_buy_trade_volume": "0",
+              "total_sell_trade": "0",
+              "total_sell_trade_volume": "0",
+              "net_buy_sell_volume": "-159750",
+              "net_buy_sell_value": "-9282364100",
+              "foreign_buy_volume_matched": "313159",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "58100",
+              "open_raw": "58400",
+              "high_raw": "58500",
+              "low_raw": "57900"
+            },
+            {
+              "symbol": "VNM",
+              "open": "57900",
+              "high": "58300",
+              "low": "57700",
+              "close": "58300",
+              "volume": "2785200",
+              "trading_date": "21/10/2026",
+              "ceiling_price": "61700",
+              "floor_price": "53700",
+              "ref_price": "57700",
+              "avg_price": "57955",
+              "price_changed": "600",
+              "per_price_change": "1.04",
+              "close_price_adjusted": "58300",
+              "total_match_volume": "2785200",
+              "total_match_value": "161415290000",
+              "foreign_buy_volume_total": "441400",
+              "foreign_current_room": "1050874539",
+              "foreign_sell_volume_total": "360400",
+              "foreign_buy_value_total": "25585440000",
+              "foreign_sell_value_total": "20878290000",
+              "total_buy_trade": "3913",
+              "total_buy_trade_volume": "4937464",
+              "total_sell_trade": "4502",
+              "total_sell_trade_volume": "4137787",
+              "net_buy_sell_volume": "81000",
+              "net_buy_sell_value": "4707150000",
+              "foreign_buy_volume_matched": "441400",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "58300",
+              "open_raw": "57900",
+              "high_raw": "58300",
+              "low_raw": "57700"
+            },
+            {
+              "symbol": "VNM",
+              "open": "57500",
+              "high": "58000",
+              "low": "57400",
+              "close": "57700",
+              "volume": "857000",
+              "trading_date": "20/10/2026",
+              "ceiling_price": "61500",
+              "floor_price": "53500",
+              "ref_price": "57500",
+              "avg_price": "57731",
+              "price_changed": "200",
+              "per_price_change": "0.35",
+              "close_price_adjusted": "57700",
+              "total_match_volume": "857000",
+              "total_match_value": "49475380000",
+              "foreign_buy_volume_total": "115714",
+              "foreign_current_room": "1051253668",
+              "foreign_sell_volume_total": "165455",
+              "foreign_buy_value_total": "6681507800",
+              "foreign_sell_value_total": "9551512000",
+              "total_buy_trade": "2452",
+              "total_buy_trade_volume": "1955319",
+              "total_sell_trade": "1813",
+              "total_sell_trade_volume": "2412031",
+              "net_buy_sell_volume": "-49741",
+              "net_buy_sell_value": "-2870004200",
+              "foreign_buy_volume_matched": "115714",
+              "foreign_buy_volume_deal": "0",
+              "close_raw": "57700",
+              "open_raw": "57500",
+              "high_raw": "58000",
+              "low_raw": "57400"
+            }
+          ]
+        },
+        "error": null,
+        "meta": {
+          "asOfUtc": "2026-11-03T01:34:16.5453462+00:00",
+          "nextCursor": null,
+          "links": [
+            {
+              "label": "Xem biểu đồ kỹ thuật VNM trên nền tảng SSI",
+              "url": "https://iboard.ssi.com.vn/analysis/trading-view?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=tech.view_chart"
+            },
+            {
+              "label": "Xem top cổ phiếu trên iBoard của SSI",
+              "url": "https://iboard.ssi.com.vn/analysis/top-stock?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=mkt.top_stock"
+            }
+          ]
+        }
+      }
+    },
+    "news_windows": {
+      "1m": {
+        "tool": "marketdata_list_company_news",
+        "arguments": {
+          "symbol": "SSI",
+          "range": "1m"
+        },
+        "latency_s": 0.211,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "news": [
+              {
+                "news_id": "122114012",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-29/SSI/20261029SSIChapthuandongcuaPGDLeVanLuongcuaUBCKNN_signed.pdf\" title=\"Tải về\" download>20261029SSIChapthuandongcuaPGDLeVanLuongcuaUBCKNN_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-cong-van-cua-ubcknn-ve-viec-chap-thuan-cho-ssi-dong-cua-phong-gd-le-van-luong/2509354",
+                "category_code": "oact",
+                "update_date": "29/10/2026 17:55:32",
+                "public_date": "29/10/2026 16:45:04"
+              },
+              {
+                "news_id": "121995932",
+                "symbol": "SSI",
+                "title": "SSI lãi trước thuế 4.510 tỷ đồng sau 9 tháng, dư nợ cho vay ký quỹ đạt 38.294 tỷ đồng",
+                "short_content": "Lũy kế 9 tháng đầu năm 2026, CTCP Chứng khoán SSI (SSI - sàn HOSE) ước đạt 4.510 tỷ đồng lợi nhuận trước thuế hợp nhất, tăng 11% so với cùng kỳ. Quy mô dư nợ cho vay ký quỹ (margin) và ứng trước tiền bán lên tới 38.294 tỷ đồng.",
+                "full_content": "<p>Theo số liệu vừa công bố, tổng doanh thu hợp nhất 9 tháng của SSI ước đạt 9.871 tỷ đồng, tăng 5% so với cùng kỳ năm 2025 và hoàn thành 77% kế hoạch lợi nhuận cả năm. Tính riêng trong quý III/2026, doanh thu hợp nhất của Công ty ước đạt 3.219 tỷ đồng và lợi nhuận trước thuế đạt khoảng 1.388 tỷ đồng.</p><p>Hoạt động cho vay ký quỹ và ứng trước tiền bán tiếp tục là một trong những trụ cột doanh thu, ghi nhận 1.115 tỷ đồng trong quý III, tăng 11% so với cùng kỳ. Tại thời điểm 30/9/2026, tổng dư nợ cho vay của mảng này đạt 38.294 tỷ đồng.</p><p>Sự mở rộng của dư nợ cho vay song hành cùng vị thế của SSI trên thị trường. Trong quý III/2026, Công ty nắm giữ 11,09% thị phần môi giới cổ phiếu, chứng chỉ quỹ và chứng quyền có bảo đảm trên Sở Giao dịch Chứng khoán TP.HCM (HOSE), tiếp tục nằm trong nhóm dẫn đầu. Nền tảng giao dịch này giúp mảng môi giới và tư vấn thu về 382 tỷ đồng doanh thu trong quý.</p><div class=\"ads_middle\"><div class=\"banner fyi\" data-position=\"Web_AdsArticleMiddle\" id=\"adsWeb_AdsArticleMiddle\">Ở hoạt động đầu tư, doanh thu quý III/2026 đạt 1.414 tỷ đồng, đóng góp khoảng 46% tổng doanh thu trong kỳ. Dù sở hữu quy mô danh mục lớn, Công ty duy trì cách phân bổ thận trọng khi trái phiếu và chứng chỉ tiền gửi chiếm gần 98% danh mục tài sản tài chính ghi nhận thông qua lãi/lỗ (FVTPL). Cơ cấu này giúp SSI ưu tiên khả năng tạo dòng tiền ổn định và quản trị thanh khoản, thay vì phụ thuộc quá lớn vào biến động giá cổ phiếu.</div></div><p>Để đáp ứng nhu cầu vốn, hoạt động nguồn vốn của SSI cũng được đẩy mạnh, ghi nhận 83 tỷ đồng lợi nhuận trước thuế trong quý III (tăng 33% so với cùng kỳ). Công ty hiện tiếp cận nguồn vốn từ nhiều ngân hàng, tổ chức tài chính và thị trường vốn nhằm gia tăng dư địa cho vay ký quỹ, đồng thời phục vụ hoạt động đầu tư. Tại thời điểm 30/9/2026, tổng tài sản công ty mẹ đạt 92.441 tỷ đồng, vốn chủ sở hữu đạt 38.057 tỷ đồng.</p><div class=\"ads_middle\"><div class=\"banner fyi\" data-position=\"Web_AdsArticleMiddle1\" id=\"adsWeb_AdsArticleMiddle1\">Bên cạnh mảng khách hàng cá nhân, SSI tiếp tục duy trì thế mạnh cốt lõi ở phân khúc khách hàng tổ chức, đặc biệt trong giai đoạn thị trường chứng khoán Việt Nam đón nhận thông tin tích cực về tiến trình nâng hạng từ FTSE Russell.</div></div><p>Trong thời gian tới, Công ty đặt trọng tâm phát triển các giải pháp tài chính chuyên sâu, chuẩn bị cho giai đoạn thị trường vốn nâng chuẩn và kết nối sâu rộng hơn với dòng vốn toàn cầu.</p>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127379/I/2026/10/21/ssi3988_11405388012530700.jpg",
+                "news_source": "DTCK",
+                "source_code": "dtck",
+                "news_source_link": "https://www.tinnhanhchungkhoan.vn/ssi-lai-truoc-thue-4510-ty-dong-sau-9-thang-du-no-cho-vay-ky-quy-dat-38294-ty-dong-post399902.html",
+                "category_code": "eanno",
+                "update_date": "21/10/2026 11:58:56",
+                "public_date": "21/10/2026 11:22:00"
+              },
+              {
+                "news_id": "121963862",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo mua lại cổ phiếu ESOP",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo mua lại cổ phiếu ESOP như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo mua lại cổ phiếu ESOP như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-19/SSI/20261016SSIThongbaomualaicophieuESOP_signed.pdf\" title=\"Tải về\" download>20261016SSIThongbaomualaicophieuESOP_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-mua-lai-co-phieu-esop/2505302",
+                "category_code": "trea",
+                "update_date": "19/10/2026 16:59:24",
+                "public_date": "19/10/2026 16:15:33"
+              },
+              {
+                "news_id": "121963882",
+                "symbol": "SSI",
+                "title": "SSI: Các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026 như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026 như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-19/SSI/20261016SSINQHDQTmualaicophieuESOPvathanhlapTTSanphamsocbtt_signed.pdf\" title=\"Tải về\" download>20261016SSINQHDQTmualaicophieuESOPvathanhlapTTSanphamsocbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-cac-nghi-quyet-hdqt-so-32-va-33-ngay-16102026/2505298",
+                "category_code": "bod",
+                "update_date": "19/10/2026 16:59:18",
+                "public_date": "19/10/2026 16:13:54"
+              },
+              {
+                "news_id": "121946652",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-16/SSI/20261016SSIThongbaothaydoimaudauchinhanhHaNoicbtt_signed.pdf\" title=\"Tải về\" download>20261016SSIThongbaothaydoimaudauchinhanhHaNoicbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-ve-viec-thay-doi-mau-dau-chi-nhanh-ha-noi/2504993",
+                "category_code": "oact",
+                "update_date": "19/10/2026 09:00:01",
+                "public_date": "16/10/2026 17:15:18"
+              },
+              {
+                "news_id": "121915322",
+                "symbol": "SSI",
+                "title": "SSI: Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11 như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11 như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-14/SSI/20261013SSIGiaychungnhanDKHDChinhanhHaNoithaydoilanthu11cbtt_signed.pdf\" title=\"Tải về\" download>20261013SSIGiaychungnhanDKHDChinhanhHaNoithaydoilanthu11cbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-giay-chung-nhan-dang-ky-hoat-dong-chi-nhanh-ha-noi-thay-doi-lan-thu-11/2504305",
+                "category_code": "oact",
+                "update_date": "14/10/2026 18:03:01",
+                "public_date": "14/10/2026 17:46:38"
+              },
+              {
+                "news_id": "121885982",
+                "symbol": "SSI",
+                "title": "SSI: Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI công bố Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI công bố Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-12/SSI/20261009SSINQHDQTdoitenvadiadiemPGDTimesCityvadongcuaPGDLVL_signed.pdf\" title=\"Tải về\" download>20261009SSINQHDQTdoitenvadiadiemPGDTimesCityvadongcuaPGDLVL_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-nghi-quyet-hdqt-thong-qua-thay-doi-ten-dia-diem-pgd-times-city-va-cham-dut-hoat-dong-pgd-le-van-luong/2503752",
+                "category_code": "bod",
+                "update_date": "12/10/2026 17:32:54",
+                "public_date": "12/10/2026 17:06:39"
+              },
+              {
+                "news_id": "121839982",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-07/SSI/20261006SSIThongbaochamduthoatdongChinhanhMyDinh_signed.pdf\" title=\"Tải về\" download>20261006SSIThongbaochamduthoatdongChinhanhMyDinh_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-cua-so-tai-chinh-tp.-ha-noi-ve-viec-cham-dut-hoat-dong-chi-nhanh-my-dinh/2502671",
+                "category_code": "oact",
+                "update_date": "08/10/2026 08:29:32",
+                "public_date": "07/10/2026 16:46:42"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:17.1565968+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem hồ sơ doanh nghiệp SSI trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/company-profile?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=co.profile"
+              }
+            ]
+          }
+        }
+      },
+      "3m": {
+        "tool": "marketdata_list_company_news",
+        "arguments": {
+          "symbol": "SSI",
+          "range": "3m"
+        },
+        "latency_s": 0.27,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "news": [
+              {
+                "news_id": "122114012",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-29/SSI/20261029SSIChapthuandongcuaPGDLeVanLuongcuaUBCKNN_signed.pdf\" title=\"Tải về\" download>20261029SSIChapthuandongcuaPGDLeVanLuongcuaUBCKNN_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-cong-van-cua-ubcknn-ve-viec-chap-thuan-cho-ssi-dong-cua-phong-gd-le-van-luong/2509354",
+                "category_code": "oact",
+                "update_date": "29/10/2026 17:55:32",
+                "public_date": "29/10/2026 16:45:04"
+              },
+              {
+                "news_id": "121995932",
+                "symbol": "SSI",
+                "title": "SSI lãi trước thuế 4.510 tỷ đồng sau 9 tháng, dư nợ cho vay ký quỹ đạt 38.294 tỷ đồng",
+                "short_content": "Lũy kế 9 tháng đầu năm 2026, CTCP Chứng khoán SSI (SSI - sàn HOSE) ước đạt 4.510 tỷ đồng lợi nhuận trước thuế hợp nhất, tăng 11% so với cùng kỳ. Quy mô dư nợ cho vay ký quỹ (margin) và ứng trước tiền bán lên tới 38.294 tỷ đồng.",
+                "full_content": "<p>Theo số liệu vừa công bố, tổng doanh thu hợp nhất 9 tháng của SSI ước đạt 9.871 tỷ đồng, tăng 5% so với cùng kỳ năm 2025 và hoàn thành 77% kế hoạch lợi nhuận cả năm. Tính riêng trong quý III/2026, doanh thu hợp nhất của Công ty ước đạt 3.219 tỷ đồng và lợi nhuận trước thuế đạt khoảng 1.388 tỷ đồng.</p><p>Hoạt động cho vay ký quỹ và ứng trước tiền bán tiếp tục là một trong những trụ cột doanh thu, ghi nhận 1.115 tỷ đồng trong quý III, tăng 11% so với cùng kỳ. Tại thời điểm 30/9/2026, tổng dư nợ cho vay của mảng này đạt 38.294 tỷ đồng.</p><p>Sự mở rộng của dư nợ cho vay song hành cùng vị thế của SSI trên thị trường. Trong quý III/2026, Công ty nắm giữ 11,09% thị phần môi giới cổ phiếu, chứng chỉ quỹ và chứng quyền có bảo đảm trên Sở Giao dịch Chứng khoán TP.HCM (HOSE), tiếp tục nằm trong nhóm dẫn đầu. Nền tảng giao dịch này giúp mảng môi giới và tư vấn thu về 382 tỷ đồng doanh thu trong quý.</p><div class=\"ads_middle\"><div class=\"banner fyi\" data-position=\"Web_AdsArticleMiddle\" id=\"adsWeb_AdsArticleMiddle\">Ở hoạt động đầu tư, doanh thu quý III/2026 đạt 1.414 tỷ đồng, đóng góp khoảng 46% tổng doanh thu trong kỳ. Dù sở hữu quy mô danh mục lớn, Công ty duy trì cách phân bổ thận trọng khi trái phiếu và chứng chỉ tiền gửi chiếm gần 98% danh mục tài sản tài chính ghi nhận thông qua lãi/lỗ (FVTPL). Cơ cấu này giúp SSI ưu tiên khả năng tạo dòng tiền ổn định và quản trị thanh khoản, thay vì phụ thuộc quá lớn vào biến động giá cổ phiếu.</div></div><p>Để đáp ứng nhu cầu vốn, hoạt động nguồn vốn của SSI cũng được đẩy mạnh, ghi nhận 83 tỷ đồng lợi nhuận trước thuế trong quý III (tăng 33% so với cùng kỳ). Công ty hiện tiếp cận nguồn vốn từ nhiều ngân hàng, tổ chức tài chính và thị trường vốn nhằm gia tăng dư địa cho vay ký quỹ, đồng thời phục vụ hoạt động đầu tư. Tại thời điểm 30/9/2026, tổng tài sản công ty mẹ đạt 92.441 tỷ đồng, vốn chủ sở hữu đạt 38.057 tỷ đồng.</p><div class=\"ads_middle\"><div class=\"banner fyi\" data-position=\"Web_AdsArticleMiddle1\" id=\"adsWeb_AdsArticleMiddle1\">Bên cạnh mảng khách hàng cá nhân, SSI tiếp tục duy trì thế mạnh cốt lõi ở phân khúc khách hàng tổ chức, đặc biệt trong giai đoạn thị trường chứng khoán Việt Nam đón nhận thông tin tích cực về tiến trình nâng hạng từ FTSE Russell.</div></div><p>Trong thời gian tới, Công ty đặt trọng tâm phát triển các giải pháp tài chính chuyên sâu, chuẩn bị cho giai đoạn thị trường vốn nâng chuẩn và kết nối sâu rộng hơn với dòng vốn toàn cầu.</p>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127379/I/2026/10/21/ssi3988_11405388012530700.jpg",
+                "news_source": "DTCK",
+                "source_code": "dtck",
+                "news_source_link": "https://www.tinnhanhchungkhoan.vn/ssi-lai-truoc-thue-4510-ty-dong-sau-9-thang-du-no-cho-vay-ky-quy-dat-38294-ty-dong-post399902.html",
+                "category_code": "eanno",
+                "update_date": "21/10/2026 11:58:56",
+                "public_date": "21/10/2026 11:22:00"
+              },
+              {
+                "news_id": "121963862",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo mua lại cổ phiếu ESOP",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo mua lại cổ phiếu ESOP như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo mua lại cổ phiếu ESOP như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-19/SSI/20261016SSIThongbaomualaicophieuESOP_signed.pdf\" title=\"Tải về\" download>20261016SSIThongbaomualaicophieuESOP_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-mua-lai-co-phieu-esop/2505302",
+                "category_code": "trea",
+                "update_date": "19/10/2026 16:59:24",
+                "public_date": "19/10/2026 16:15:33"
+              },
+              {
+                "news_id": "121963882",
+                "symbol": "SSI",
+                "title": "SSI: Các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026 như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026 như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-19/SSI/20261016SSINQHDQTmualaicophieuESOPvathanhlapTTSanphamsocbtt_signed.pdf\" title=\"Tải về\" download>20261016SSINQHDQTmualaicophieuESOPvathanhlapTTSanphamsocbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-cac-nghi-quyet-hdqt-so-32-va-33-ngay-16102026/2505298",
+                "category_code": "bod",
+                "update_date": "19/10/2026 16:59:18",
+                "public_date": "19/10/2026 16:13:54"
+              },
+              {
+                "news_id": "121946652",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-16/SSI/20261016SSIThongbaothaydoimaudauchinhanhHaNoicbtt_signed.pdf\" title=\"Tải về\" download>20261016SSIThongbaothaydoimaudauchinhanhHaNoicbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-ve-viec-thay-doi-mau-dau-chi-nhanh-ha-noi/2504993",
+                "category_code": "oact",
+                "update_date": "19/10/2026 09:00:01",
+                "public_date": "16/10/2026 17:15:18"
+              },
+              {
+                "news_id": "121915322",
+                "symbol": "SSI",
+                "title": "SSI: Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11 như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11 như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-14/SSI/20261013SSIGiaychungnhanDKHDChinhanhHaNoithaydoilanthu11cbtt_signed.pdf\" title=\"Tải về\" download>20261013SSIGiaychungnhanDKHDChinhanhHaNoithaydoilanthu11cbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-giay-chung-nhan-dang-ky-hoat-dong-chi-nhanh-ha-noi-thay-doi-lan-thu-11/2504305",
+                "category_code": "oact",
+                "update_date": "14/10/2026 18:03:01",
+                "public_date": "14/10/2026 17:46:38"
+              },
+              {
+                "news_id": "121885982",
+                "symbol": "SSI",
+                "title": "SSI: Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI công bố Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI công bố Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-12/SSI/20261009SSINQHDQTdoitenvadiadiemPGDTimesCityvadongcuaPGDLVL_signed.pdf\" title=\"Tải về\" download>20261009SSINQHDQTdoitenvadiadiemPGDTimesCityvadongcuaPGDLVL_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-nghi-quyet-hdqt-thong-qua-thay-doi-ten-dia-diem-pgd-times-city-va-cham-dut-hoat-dong-pgd-le-van-luong/2503752",
+                "category_code": "bod",
+                "update_date": "12/10/2026 17:32:54",
+                "public_date": "12/10/2026 17:06:39"
+              },
+              {
+                "news_id": "121839982",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-07/SSI/20261006SSIThongbaochamduthoatdongChinhanhMyDinh_signed.pdf\" title=\"Tải về\" download>20261006SSIThongbaochamduthoatdongChinhanhMyDinh_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-cua-so-tai-chinh-tp.-ha-noi-ve-viec-cham-dut-hoat-dong-chi-nhanh-my-dinh/2502671",
+                "category_code": "oact",
+                "update_date": "08/10/2026 08:29:32",
+                "public_date": "07/10/2026 16:46:42"
+              },
+              {
+                "news_id": "121792752",
+                "symbol": "SSI",
+                "title": "SSI: Nghị quyết HĐQT chào bán chứng quyền có bảo đảm",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo Nghị quyết HĐQT chào bán chứng quyền có bảo đảm như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo Nghị quyết HĐQT chào bán chứng quyền có bảo đảm như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-02/SSI/20261002SSINQHDQTchaobanchungquyen_signed.pdf\" title=\"Tải về\" download>20261002SSINQHDQTchaobanchungquyen_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-nghi-quyet-hdqt-chao-ban-chung-quyen-co-bao-dam/2501802",
+                "category_code": "bod",
+                "update_date": "02/10/2026 17:07:32",
+                "public_date": "02/10/2026 16:58:39"
+              },
+              {
+                "news_id": "121761872",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo nhận được Quyết định của UBCKNN về việc sửa đổi Quyết định chấp thuận thành lập chi nhánh Hà Nội do thay đổi địa điểm",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo nhận được Quyết định của UBCKNN về việc sửa đổi Quyết định chấp thuận thành lập chi nhánh Hà Nội do thay đổi địa điểm như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo nhận được Quyết định của UBCKNN về việc sửa đổi Quyết định chấp thuận thành lập chi nhánh Hà Nội do thay đổi địa điểm như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-09/2026-09-30/SSI/20260929SSIQDsuadoiQDchapthuanthanhlapCNHNdothaydoidiadiem_signed.pdf\" title=\"Tải về\" download>20260929SSIQDsuadoiQDchapthuanthanhlapCNHNdothaydoidiadiem_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-nhan-duoc-quyet-dinh-cua-ubcknn-ve-viec-sua-doi-quyet-dinh-chap-thuan-thanh-lap-chi-nhanh-ha-noi-do-thay-doi-dia-diem/2501102",
+                "category_code": "oact",
+                "update_date": "30/09/2026 16:14:28",
+                "public_date": "30/09/2026 15:59:35"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:17.7894465+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem hồ sơ doanh nghiệp SSI trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/company-profile?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=co.profile"
+              }
+            ]
+          }
+        }
+      },
+      "6m": {
+        "tool": "marketdata_list_company_news",
+        "arguments": {
+          "symbol": "SSI",
+          "range": "6m"
+        },
+        "latency_s": 0.24,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "news": [
+              {
+                "news_id": "122114012",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo công văn của UBCKNN về việc chấp thuận cho SSI đóng cửa Phòng GD Lê Văn Lương như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-29/SSI/20261029SSIChapthuandongcuaPGDLeVanLuongcuaUBCKNN_signed.pdf\" title=\"Tải về\" download>20261029SSIChapthuandongcuaPGDLeVanLuongcuaUBCKNN_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-cong-van-cua-ubcknn-ve-viec-chap-thuan-cho-ssi-dong-cua-phong-gd-le-van-luong/2509354",
+                "category_code": "oact",
+                "update_date": "29/10/2026 17:55:32",
+                "public_date": "29/10/2026 16:45:04"
+              },
+              {
+                "news_id": "121995932",
+                "symbol": "SSI",
+                "title": "SSI lãi trước thuế 4.510 tỷ đồng sau 9 tháng, dư nợ cho vay ký quỹ đạt 38.294 tỷ đồng",
+                "short_content": "Lũy kế 9 tháng đầu năm 2026, CTCP Chứng khoán SSI (SSI - sàn HOSE) ước đạt 4.510 tỷ đồng lợi nhuận trước thuế hợp nhất, tăng 11% so với cùng kỳ. Quy mô dư nợ cho vay ký quỹ (margin) và ứng trước tiền bán lên tới 38.294 tỷ đồng.",
+                "full_content": "<p>Theo số liệu vừa công bố, tổng doanh thu hợp nhất 9 tháng của SSI ước đạt 9.871 tỷ đồng, tăng 5% so với cùng kỳ năm 2025 và hoàn thành 77% kế hoạch lợi nhuận cả năm. Tính riêng trong quý III/2026, doanh thu hợp nhất của Công ty ước đạt 3.219 tỷ đồng và lợi nhuận trước thuế đạt khoảng 1.388 tỷ đồng.</p><p>Hoạt động cho vay ký quỹ và ứng trước tiền bán tiếp tục là một trong những trụ cột doanh thu, ghi nhận 1.115 tỷ đồng trong quý III, tăng 11% so với cùng kỳ. Tại thời điểm 30/9/2026, tổng dư nợ cho vay của mảng này đạt 38.294 tỷ đồng.</p><p>Sự mở rộng của dư nợ cho vay song hành cùng vị thế của SSI trên thị trường. Trong quý III/2026, Công ty nắm giữ 11,09% thị phần môi giới cổ phiếu, chứng chỉ quỹ và chứng quyền có bảo đảm trên Sở Giao dịch Chứng khoán TP.HCM (HOSE), tiếp tục nằm trong nhóm dẫn đầu. Nền tảng giao dịch này giúp mảng môi giới và tư vấn thu về 382 tỷ đồng doanh thu trong quý.</p><div class=\"ads_middle\"><div class=\"banner fyi\" data-position=\"Web_AdsArticleMiddle\" id=\"adsWeb_AdsArticleMiddle\">Ở hoạt động đầu tư, doanh thu quý III/2026 đạt 1.414 tỷ đồng, đóng góp khoảng 46% tổng doanh thu trong kỳ. Dù sở hữu quy mô danh mục lớn, Công ty duy trì cách phân bổ thận trọng khi trái phiếu và chứng chỉ tiền gửi chiếm gần 98% danh mục tài sản tài chính ghi nhận thông qua lãi/lỗ (FVTPL). Cơ cấu này giúp SSI ưu tiên khả năng tạo dòng tiền ổn định và quản trị thanh khoản, thay vì phụ thuộc quá lớn vào biến động giá cổ phiếu.</div></div><p>Để đáp ứng nhu cầu vốn, hoạt động nguồn vốn của SSI cũng được đẩy mạnh, ghi nhận 83 tỷ đồng lợi nhuận trước thuế trong quý III (tăng 33% so với cùng kỳ). Công ty hiện tiếp cận nguồn vốn từ nhiều ngân hàng, tổ chức tài chính và thị trường vốn nhằm gia tăng dư địa cho vay ký quỹ, đồng thời phục vụ hoạt động đầu tư. Tại thời điểm 30/9/2026, tổng tài sản công ty mẹ đạt 92.441 tỷ đồng, vốn chủ sở hữu đạt 38.057 tỷ đồng.</p><div class=\"ads_middle\"><div class=\"banner fyi\" data-position=\"Web_AdsArticleMiddle1\" id=\"adsWeb_AdsArticleMiddle1\">Bên cạnh mảng khách hàng cá nhân, SSI tiếp tục duy trì thế mạnh cốt lõi ở phân khúc khách hàng tổ chức, đặc biệt trong giai đoạn thị trường chứng khoán Việt Nam đón nhận thông tin tích cực về tiến trình nâng hạng từ FTSE Russell.</div></div><p>Trong thời gian tới, Công ty đặt trọng tâm phát triển các giải pháp tài chính chuyên sâu, chuẩn bị cho giai đoạn thị trường vốn nâng chuẩn và kết nối sâu rộng hơn với dòng vốn toàn cầu.</p>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127379/I/2026/10/21/ssi3988_11405388012530700.jpg",
+                "news_source": "DTCK",
+                "source_code": "dtck",
+                "news_source_link": "https://www.tinnhanhchungkhoan.vn/ssi-lai-truoc-thue-4510-ty-dong-sau-9-thang-du-no-cho-vay-ky-quy-dat-38294-ty-dong-post399902.html",
+                "category_code": "eanno",
+                "update_date": "21/10/2026 11:58:56",
+                "public_date": "21/10/2026 11:22:00"
+              },
+              {
+                "news_id": "121963862",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo mua lại cổ phiếu ESOP",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo mua lại cổ phiếu ESOP như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo mua lại cổ phiếu ESOP như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-19/SSI/20261016SSIThongbaomualaicophieuESOP_signed.pdf\" title=\"Tải về\" download>20261016SSIThongbaomualaicophieuESOP_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-mua-lai-co-phieu-esop/2505302",
+                "category_code": "trea",
+                "update_date": "19/10/2026 16:59:24",
+                "public_date": "19/10/2026 16:15:33"
+              },
+              {
+                "news_id": "121963882",
+                "symbol": "SSI",
+                "title": "SSI: Các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026 như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo các Nghị quyết HĐQT số 32 và 33 ngày 16/10/2026 như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-19/SSI/20261016SSINQHDQTmualaicophieuESOPvathanhlapTTSanphamsocbtt_signed.pdf\" title=\"Tải về\" download>20261016SSINQHDQTmualaicophieuESOPvathanhlapTTSanphamsocbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-cac-nghi-quyet-hdqt-so-32-va-33-ngay-16102026/2505298",
+                "category_code": "bod",
+                "update_date": "19/10/2026 16:59:18",
+                "public_date": "19/10/2026 16:13:54"
+              },
+              {
+                "news_id": "121946652",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo về việc thay đổi mẫu dấu chi nhánh Hà Nội như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-16/SSI/20261016SSIThongbaothaydoimaudauchinhanhHaNoicbtt_signed.pdf\" title=\"Tải về\" download>20261016SSIThongbaothaydoimaudauchinhanhHaNoicbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-ve-viec-thay-doi-mau-dau-chi-nhanh-ha-noi/2504993",
+                "category_code": "oact",
+                "update_date": "19/10/2026 09:00:01",
+                "public_date": "16/10/2026 17:15:18"
+              },
+              {
+                "news_id": "121915322",
+                "symbol": "SSI",
+                "title": "SSI: Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11 như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo Giấy chứng nhận đăng ký hoạt động chi nhánh Hà Nội thay đổi lần thứ 11 như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-14/SSI/20261013SSIGiaychungnhanDKHDChinhanhHaNoithaydoilanthu11cbtt_signed.pdf\" title=\"Tải về\" download>20261013SSIGiaychungnhanDKHDChinhanhHaNoithaydoilanthu11cbtt_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-giay-chung-nhan-dang-ky-hoat-dong-chi-nhanh-ha-noi-thay-doi-lan-thu-11/2504305",
+                "category_code": "oact",
+                "update_date": "14/10/2026 18:03:01",
+                "public_date": "14/10/2026 17:46:38"
+              },
+              {
+                "news_id": "121885982",
+                "symbol": "SSI",
+                "title": "SSI: Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI công bố Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI công bố Nghị quyết HĐQT thông qua thay đổi tên, địa điểm PGD Times City và chấm dứt hoạt động PGD Lê Văn Lương như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-12/SSI/20261009SSINQHDQTdoitenvadiadiemPGDTimesCityvadongcuaPGDLVL_signed.pdf\" title=\"Tải về\" download>20261009SSINQHDQTdoitenvadiadiemPGDTimesCityvadongcuaPGDLVL_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-nghi-quyet-hdqt-thong-qua-thay-doi-ten-dia-diem-pgd-times-city-va-cham-dut-hoat-dong-pgd-le-van-luong/2503752",
+                "category_code": "bod",
+                "update_date": "12/10/2026 17:32:54",
+                "public_date": "12/10/2026 17:06:39"
+              },
+              {
+                "news_id": "121839982",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo của Sở Tài chính TP. Hà Nội về việc chấm dứt hoạt động Chi nhánh Mỹ Đình như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-07/SSI/20261006SSIThongbaochamduthoatdongChinhanhMyDinh_signed.pdf\" title=\"Tải về\" download>20261006SSIThongbaochamduthoatdongChinhanhMyDinh_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-cua-so-tai-chinh-tp.-ha-noi-ve-viec-cham-dut-hoat-dong-chi-nhanh-my-dinh/2502671",
+                "category_code": "oact",
+                "update_date": "08/10/2026 08:29:32",
+                "public_date": "07/10/2026 16:46:42"
+              },
+              {
+                "news_id": "121792752",
+                "symbol": "SSI",
+                "title": "SSI: Nghị quyết HĐQT chào bán chứng quyền có bảo đảm",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo Nghị quyết HĐQT chào bán chứng quyền có bảo đảm như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo Nghị quyết HĐQT chào bán chứng quyền có bảo đảm như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-10/2026-10-02/SSI/20261002SSINQHDQTchaobanchungquyen_signed.pdf\" title=\"Tải về\" download>20261002SSINQHDQTchaobanchungquyen_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-nghi-quyet-hdqt-chao-ban-chung-quyen-co-bao-dam/2501802",
+                "category_code": "bod",
+                "update_date": "02/10/2026 17:07:32",
+                "public_date": "02/10/2026 16:58:39"
+              },
+              {
+                "news_id": "121761872",
+                "symbol": "SSI",
+                "title": "SSI: Thông báo nhận được Quyết định của UBCKNN về việc sửa đổi Quyết định chấp thuận thành lập chi nhánh Hà Nội do thay đổi địa điểm",
+                "short_content": "Công ty Cổ phần Chứng khoán SSI thông báo nhận được Quyết định của UBCKNN về việc sửa đổi Quyết định chấp thuận thành lập chi nhánh Hà Nội do thay đổi địa điểm như sau:",
+                "full_content": "<p>Công ty Cổ phần Chứng khoán SSI thông báo nhận được Quyết định của UBCKNN về việc sửa đổi Quyết định chấp thuận thành lập chi nhánh Hà Nội do thay đổi địa điểm như sau:</p><table width=\"100%\" style='text-align: left;border=0'><tr><td colspan='2'><hr /></td></tr><tr><td colspan='2'>Tài liệu đính kèm</td></tr><tr><td> </td><td><a href=\"https://cmsv6.fiingroup.vn/medialib/FG/2026/2026-09/2026-09-30/SSI/20260929SSIQDsuadoiQDchapthuanthanhlapCNHNdothaydoidiadiem_signed.pdf\" title=\"Tải về\" download>20260929SSIQDsuadoiQDchapthuanthanhlapCNHNdothaydoidiadiem_signed.pdf</a></td></tr></table>",
+                "image_url": "https://cdn.fiingroup.vn/medialib/127889/I/2024/11/26/09481833153750700_SSI-1.png",
+                "news_source": "HOSE",
+                "source_code": "hose",
+                "news_source_link": "https://www.hsx.vn/vi/tin-tuc/ssi-thong-bao-nhan-duoc-quyet-dinh-cua-ubcknn-ve-viec-sua-doi-quyet-dinh-chap-thuan-thanh-lap-chi-nhanh-ha-noi-do-thay-doi-dia-diem/2501102",
+                "category_code": "oact",
+                "update_date": "30/09/2026 16:14:28",
+                "public_date": "30/09/2026 15:59:35"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:18.4478381+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Xem hồ sơ doanh nghiệp SSI trên nền tảng SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/company-profile?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=co.profile"
+              }
+            ]
+          }
+        }
+      },
+      "1y": {
+        "tool": "marketdata_list_company_news",
+        "arguments": {
+          "symbol": "SSI",
+          "range": "1y"
+        },
+        "latency_s": 0.154,
+        "isError": true,
+        "data": {
+          "status": "error",
+          "data": null,
+          "error": {
+            "code": "VALIDATION_FAILED",
+            "message": "Invalid arguments: range must be one of: 1m, 3m, 6m"
+          },
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:19.0544969+00:00",
+            "nextCursor": null
+          }
+        }
+      },
+      "max_range": {
+        "tool": "marketdata_list_company_news",
+        "arguments": {
+          "symbol": "SSI",
+          "range": "max_range"
+        },
+        "latency_s": 0.164,
+        "isError": true,
+        "data": {
+          "status": "error",
+          "data": null,
+          "error": {
+            "code": "VALIDATION_FAILED",
+            "message": "Invalid arguments: range must be one of: 1m, 3m, 6m"
+          },
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:19.6167158+00:00",
+            "nextCursor": null
+          }
+        }
+      }
+    },
+    "financials": {
+      "marketdata_list_finance_indicator_SSI": {
+        "tool": "marketdata_list_finance_indicator",
+        "arguments": {
+          "symbol": "SSI",
+          "range": "1y"
+        },
+        "latency_s": 0.16,
+        "isError": true,
+        "data": {
+          "status": "error",
+          "data": null,
+          "error": {
+            "code": "VALIDATION_FAILED",
+            "message": "Invalid arguments: range"
+          },
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:20.1869093+00:00",
+            "nextCursor": null
+          }
+        }
+      }
+    },
+    "index_data": {
+      "VNINDEX": {
+        "tool": "marketdata_list_index_daily_data",
+        "arguments": {
+          "indexCode": "VNINDEX",
+          "range": "3m"
+        },
+        "latency_s": 0.412,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "indices": [
+              {
+                "symbol": "VNINDEX",
+                "open": "1730.51",
+                "high": "1744.35",
+                "low": "1693.75",
+                "close": "1710.72",
+                "volume": "724512489",
+                "price": "1710.72",
+                "trading_date": "02/11/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1747.93",
+                "high": "1748.68",
+                "low": "1727",
+                "close": "1741.62",
+                "volume": "573601499",
+                "price": "1741.62",
+                "trading_date": "30/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1769.08",
+                "high": "1769.08",
+                "low": "1750.55",
+                "close": "1755.61",
+                "volume": "549740358",
+                "price": "1755.61",
+                "trading_date": "29/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1762.64",
+                "high": "1767.48",
+                "low": "1753.95",
+                "close": "1766.65",
+                "volume": "512485970",
+                "price": "1766.65",
+                "trading_date": "28/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1763.46",
+                "high": "1772.62",
+                "low": "1759.11",
+                "close": "1761.87",
+                "volume": "468766835",
+                "price": "1761.87",
+                "trading_date": "27/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1774.31",
+                "high": "1781.45",
+                "low": "1760.37",
+                "close": "1763.55",
+                "volume": "518996420",
+                "price": "1763.55",
+                "trading_date": "26/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1757.6",
+                "high": "1775.19",
+                "low": "1750.83",
+                "close": "1774.15",
+                "volume": "640986900",
+                "price": "1774.15",
+                "trading_date": "23/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1746.15",
+                "high": "1763.55",
+                "low": "1746.15",
+                "close": "1760.63",
+                "volume": "571952962",
+                "price": "1760.63",
+                "trading_date": "22/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1696.77",
+                "high": "1738.91",
+                "low": "1695.95",
+                "close": "1738.67",
+                "volume": "809041972",
+                "price": "1738.67",
+                "trading_date": "21/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1692.73",
+                "high": "1695.48",
+                "low": "1677.19",
+                "close": "1691.97",
+                "volume": "488370161",
+                "price": "1691.97",
+                "trading_date": "20/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1721.05",
+                "high": "1721.39",
+                "low": "1689.84",
+                "close": "1689.84",
+                "volume": "519290379",
+                "price": "1689.84",
+                "trading_date": "19/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1702.55",
+                "high": "1713.57",
+                "low": "1698.11",
+                "close": "1705.91",
+                "volume": "460798676",
+                "price": "1705.91",
+                "trading_date": "16/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1701.2",
+                "high": "1709.54",
+                "low": "1691.18",
+                "close": "1698.35",
+                "volume": "635720836",
+                "price": "1698.35",
+                "trading_date": "15/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1720.91",
+                "high": "1722.65",
+                "low": "1700.74",
+                "close": "1704.87",
+                "volume": "446355129",
+                "price": "1704.87",
+                "trading_date": "14/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1716.52",
+                "high": "1726.35",
+                "low": "1710.95",
+                "close": "1719.42",
+                "volume": "459797307",
+                "price": "1719.42",
+                "trading_date": "13/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1736.64",
+                "high": "1736.64",
+                "low": "1717.76",
+                "close": "1720.98",
+                "volume": "470350947",
+                "price": "1720.98",
+                "trading_date": "12/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1737.63",
+                "high": "1744.89",
+                "low": "1724.17",
+                "close": "1735.09",
+                "volume": "745542163",
+                "price": "1735.09",
+                "trading_date": "09/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1749.22",
+                "high": "1764.45",
+                "low": "1737.95",
+                "close": "1738.97",
+                "volume": "532713885",
+                "price": "1738.97",
+                "trading_date": "08/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1760.54",
+                "high": "1760.54",
+                "low": "1743.24",
+                "close": "1753.39",
+                "volume": "485847590",
+                "price": "1753.39",
+                "trading_date": "07/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1755.34",
+                "high": "1763.84",
+                "low": "1734.94",
+                "close": "1759.08",
+                "volume": "647086058",
+                "price": "1759.08",
+                "trading_date": "06/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1738.92",
+                "high": "1756.3",
+                "low": "1738.78",
+                "close": "1753.2",
+                "volume": "432945344",
+                "price": "1753.2",
+                "trading_date": "05/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1747.29",
+                "high": "1751.6",
+                "low": "1731.03",
+                "close": "1737.71",
+                "volume": "615757736",
+                "price": "1737.71",
+                "trading_date": "02/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1767.01",
+                "high": "1768.05",
+                "low": "1738.39",
+                "close": "1749.3",
+                "volume": "449376366",
+                "price": "1749.3",
+                "trading_date": "01/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1780.67",
+                "high": "1786.2",
+                "low": "1759.91",
+                "close": "1768.62",
+                "volume": "504587243",
+                "price": "1768.62",
+                "trading_date": "30/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1780.42",
+                "high": "1782.65",
+                "low": "1772.54",
+                "close": "1777.73",
+                "volume": "436417359",
+                "price": "1777.73",
+                "trading_date": "29/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1786.73",
+                "high": "1788",
+                "low": "1763.62",
+                "close": "1780.68",
+                "volume": "547813604",
+                "price": "1780.68",
+                "trading_date": "28/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1773.63",
+                "high": "1796.29",
+                "low": "1771.57",
+                "close": "1785.11",
+                "volume": "466982821",
+                "price": "1785.11",
+                "trading_date": "25/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1801.07",
+                "high": "1801.07",
+                "low": "1772.24",
+                "close": "1775.09",
+                "volume": "516640105",
+                "price": "1775.09",
+                "trading_date": "24/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1818.06",
+                "high": "1822.67",
+                "low": "1801.65",
+                "close": "1801.65",
+                "volume": "481244160",
+                "price": "1801.65",
+                "trading_date": "23/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1798.9",
+                "high": "1816.93",
+                "low": "1787.62",
+                "close": "1816.93",
+                "volume": "391812105",
+                "price": "1816.93",
+                "trading_date": "22/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1825.5",
+                "high": "1827.92",
+                "low": "1786.37",
+                "close": "1799.67",
+                "volume": "511317889",
+                "price": "1799.67",
+                "trading_date": "21/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1835.16",
+                "high": "1841.2",
+                "low": "1808.96",
+                "close": "1815.66",
+                "volume": "721522265",
+                "price": "1815.66",
+                "trading_date": "18/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1802.79",
+                "high": "1830.35",
+                "low": "1801.42",
+                "close": "1822.77",
+                "volume": "601599155",
+                "price": "1822.77",
+                "trading_date": "17/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1812.96",
+                "high": "1816.26",
+                "low": "1805.2",
+                "close": "1810.11",
+                "volume": "446938604",
+                "price": "1810.11",
+                "trading_date": "16/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1795.12",
+                "high": "1813.94",
+                "low": "1794.76",
+                "close": "1811.15",
+                "volume": "523818299",
+                "price": "1811.15",
+                "trading_date": "15/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1792.67",
+                "high": "1799.1",
+                "low": "1776.85",
+                "close": "1788.23",
+                "volume": "663718670",
+                "price": "1788.23",
+                "trading_date": "14/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1821",
+                "high": "1822.44",
+                "low": "1795.21",
+                "close": "1795.21",
+                "volume": "628257109",
+                "price": "1795.21",
+                "trading_date": "11/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1825.79",
+                "high": "1834.96",
+                "low": "1812.98",
+                "close": "1829.23",
+                "volume": "383185655",
+                "price": "1829.23",
+                "trading_date": "10/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1836.98",
+                "high": "1848.17",
+                "low": "1822.63",
+                "close": "1827.12",
+                "volume": "467328995",
+                "price": "1827.12",
+                "trading_date": "09/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1820.84",
+                "high": "1831.31",
+                "low": "1814.5",
+                "close": "1830.44",
+                "volume": "403071199",
+                "price": "1830.44",
+                "trading_date": "08/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1857.32",
+                "high": "1874.48",
+                "low": "1821.64",
+                "close": "1821.64",
+                "volume": "498044335",
+                "price": "1821.64",
+                "trading_date": "07/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1829.66",
+                "high": "1862.63",
+                "low": "1829.66",
+                "close": "1853.08",
+                "volume": "500988851",
+                "price": "1853.08",
+                "trading_date": "04/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1821.82",
+                "high": "1829.84",
+                "low": "1802.11",
+                "close": "1827.72",
+                "volume": "520015604",
+                "price": "1827.72",
+                "trading_date": "03/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1833.27",
+                "high": "1838.2",
+                "low": "1819.16",
+                "close": "1832.12",
+                "volume": "562184482",
+                "price": "1832.12",
+                "trading_date": "28/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1821.82",
+                "high": "1838.25",
+                "low": "1815.42",
+                "close": "1831.56",
+                "volume": "484230398",
+                "price": "1831.56",
+                "trading_date": "27/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1789.43",
+                "high": "1821.32",
+                "low": "1787.8",
+                "close": "1821.32",
+                "volume": "587417275",
+                "price": "1821.32",
+                "trading_date": "26/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1792.19",
+                "high": "1812.18",
+                "low": "1785.22",
+                "close": "1791.41",
+                "volume": "643465330",
+                "price": "1791.41",
+                "trading_date": "25/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1787.54",
+                "high": "1795.38",
+                "low": "1778.4",
+                "close": "1788.78",
+                "volume": "669160018",
+                "price": "1788.78",
+                "trading_date": "24/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1733.52",
+                "high": "1768.31",
+                "low": "1725.4",
+                "close": "1768.12",
+                "volume": "667783227",
+                "price": "1768.12",
+                "trading_date": "21/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1735.56",
+                "high": "1742.38",
+                "low": "1729.48",
+                "close": "1734.24",
+                "volume": "339514782",
+                "price": "1734.24",
+                "trading_date": "20/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1732.02",
+                "high": "1734.39",
+                "low": "1719.16",
+                "close": "1726.69",
+                "volume": "390828453",
+                "price": "1726.69",
+                "trading_date": "19/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1727.62",
+                "high": "1750.86",
+                "low": "1724.33",
+                "close": "1732.02",
+                "volume": "450739454",
+                "price": "1732.02",
+                "trading_date": "18/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1727.81",
+                "high": "1735.2",
+                "low": "1715.91",
+                "close": "1727.46",
+                "volume": "396771648",
+                "price": "1727.46",
+                "trading_date": "17/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1763.6",
+                "high": "1763.6",
+                "low": "1717.64",
+                "close": "1729.08",
+                "volume": "635802237",
+                "price": "1729.08",
+                "trading_date": "14/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1796.07",
+                "high": "1798.79",
+                "low": "1762.96",
+                "close": "1765.63",
+                "volume": "640346210",
+                "price": "1765.63",
+                "trading_date": "13/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1776.63",
+                "high": "1794.01",
+                "low": "1770.63",
+                "close": "1793.18",
+                "volume": "452560911",
+                "price": "1793.18",
+                "trading_date": "12/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1781.08",
+                "high": "1789.35",
+                "low": "1772.03",
+                "close": "1773.41",
+                "volume": "553915398",
+                "price": "1773.41",
+                "trading_date": "11/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1775.79",
+                "high": "1785.38",
+                "low": "1759.06",
+                "close": "1776.77",
+                "volume": "622931255",
+                "price": "1776.77",
+                "trading_date": "10/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1761.23",
+                "high": "1774.61",
+                "low": "1756.07",
+                "close": "1768.06",
+                "volume": "529722667",
+                "price": "1768.06",
+                "trading_date": "07/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1784.65",
+                "high": "1784.65",
+                "low": "1764.32",
+                "close": "1764.78",
+                "volume": "470876516",
+                "price": "1764.78",
+                "trading_date": "06/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VNINDEX",
+                "open": "1784.94",
+                "high": "1790.87",
+                "low": "1769.44",
+                "close": "1776.46",
+                "volume": "630678743",
+                "price": "1776.46",
+                "trading_date": "05/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:20.7874991+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Theo dõi diễn biến thị trường trên iBoard của SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/market-overview?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=mkt.iboard"
+              }
+            ]
+          }
+        }
+      },
+      "VN30": {
+        "tool": "marketdata_list_index_daily_data",
+        "arguments": {
+          "indexCode": "VN30",
+          "range": "3m"
+        },
+        "latency_s": 0.312,
+        "isError": false,
+        "data": {
+          "status": "ok",
+          "data": {
+            "indices": [
+              {
+                "symbol": "VN30",
+                "open": "1845.84",
+                "high": "1847.96",
+                "low": "1802.33",
+                "close": "1813.41",
+                "volume": "333580658",
+                "price": "1813.41",
+                "trading_date": "02/11/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1868.74",
+                "high": "1869.78",
+                "low": "1851.69",
+                "close": "1855.04",
+                "volume": "198423810",
+                "price": "1855.04",
+                "trading_date": "30/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1893.39",
+                "high": "1893.39",
+                "low": "1872.75",
+                "close": "1877.18",
+                "volume": "228648159",
+                "price": "1877.18",
+                "trading_date": "29/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1890.27",
+                "high": "1893.05",
+                "low": "1877.77",
+                "close": "1890.22",
+                "volume": "212402691",
+                "price": "1890.22",
+                "trading_date": "28/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1889.06",
+                "high": "1898.77",
+                "low": "1883.46",
+                "close": "1888.4",
+                "volume": "165818153",
+                "price": "1888.4",
+                "trading_date": "27/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1906.23",
+                "high": "1908.53",
+                "low": "1888.99",
+                "close": "1889.53",
+                "volume": "183325932",
+                "price": "1889.53",
+                "trading_date": "26/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1888.21",
+                "high": "1911.04",
+                "low": "1880.89",
+                "close": "1907.09",
+                "volume": "245960375",
+                "price": "1907.09",
+                "trading_date": "23/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1888.15",
+                "high": "1895.77",
+                "low": "1883.34",
+                "close": "1892.98",
+                "volume": "218883964",
+                "price": "1892.98",
+                "trading_date": "22/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1850.84",
+                "high": "1880.88",
+                "low": "1847.19",
+                "close": "1880.57",
+                "volume": "287847580",
+                "price": "1880.57",
+                "trading_date": "21/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1839.75",
+                "high": "1847.51",
+                "low": "1825.19",
+                "close": "1845.51",
+                "volume": "210136466",
+                "price": "1845.51",
+                "trading_date": "20/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1867.44",
+                "high": "1868.49",
+                "low": "1836.86",
+                "close": "1839.18",
+                "volume": "224315278",
+                "price": "1839.18",
+                "trading_date": "19/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1848.32",
+                "high": "1860.42",
+                "low": "1845.34",
+                "close": "1855.41",
+                "volume": "201242534",
+                "price": "1855.41",
+                "trading_date": "16/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1847.79",
+                "high": "1853.55",
+                "low": "1836.56",
+                "close": "1843.71",
+                "volume": "273979729",
+                "price": "1843.71",
+                "trading_date": "15/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1863.17",
+                "high": "1866.34",
+                "low": "1847.5",
+                "close": "1852.44",
+                "volume": "204405251",
+                "price": "1852.44",
+                "trading_date": "14/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1864.5",
+                "high": "1870.15",
+                "low": "1856.44",
+                "close": "1860.99",
+                "volume": "227053255",
+                "price": "1860.99",
+                "trading_date": "13/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1877.71",
+                "high": "1879.67",
+                "low": "1867.06",
+                "close": "1869.38",
+                "volume": "230096037",
+                "price": "1869.38",
+                "trading_date": "12/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1874.03",
+                "high": "1883.07",
+                "low": "1861.65",
+                "close": "1873.43",
+                "volume": "348385064",
+                "price": "1873.43",
+                "trading_date": "09/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1889.55",
+                "high": "1905.79",
+                "low": "1877",
+                "close": "1877",
+                "volume": "221025362",
+                "price": "1877",
+                "trading_date": "08/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1898.32",
+                "high": "1902.19",
+                "low": "1884.39",
+                "close": "1894.2",
+                "volume": "196062089",
+                "price": "1894.2",
+                "trading_date": "07/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1896.79",
+                "high": "1902.04",
+                "low": "1874.52",
+                "close": "1898.82",
+                "volume": "293918851",
+                "price": "1898.82",
+                "trading_date": "06/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1881.45",
+                "high": "1899.6",
+                "low": "1880.99",
+                "close": "1894.46",
+                "volume": "187204207",
+                "price": "1894.46",
+                "trading_date": "05/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1890.92",
+                "high": "1896.02",
+                "low": "1871.33",
+                "close": "1875.99",
+                "volume": "237402163",
+                "price": "1875.99",
+                "trading_date": "02/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1907.76",
+                "high": "1909.75",
+                "low": "1885.81",
+                "close": "1890.57",
+                "volume": "193051812",
+                "price": "1890.57",
+                "trading_date": "01/10/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1922.05",
+                "high": "1927.51",
+                "low": "1905.01",
+                "close": "1906.81",
+                "volume": "176194252",
+                "price": "1906.81",
+                "trading_date": "30/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1922.46",
+                "high": "1925.99",
+                "low": "1907.62",
+                "close": "1914.35",
+                "volume": "185359600",
+                "price": "1914.35",
+                "trading_date": "29/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1942.19",
+                "high": "1942.19",
+                "low": "1911.74",
+                "close": "1922.42",
+                "volume": "244005815",
+                "price": "1922.42",
+                "trading_date": "28/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1932.58",
+                "high": "1951.57",
+                "low": "1928",
+                "close": "1938.5",
+                "volume": "233504449",
+                "price": "1938.5",
+                "trading_date": "25/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1955.45",
+                "high": "1955.45",
+                "low": "1930.59",
+                "close": "1932.15",
+                "volume": "231013744",
+                "price": "1932.15",
+                "trading_date": "24/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1965.94",
+                "high": "1974.17",
+                "low": "1954.17",
+                "close": "1954.91",
+                "volume": "223285757",
+                "price": "1954.91",
+                "trading_date": "23/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1951.73",
+                "high": "1968.55",
+                "low": "1942.9",
+                "close": "1965.36",
+                "volume": "155265123",
+                "price": "1965.36",
+                "trading_date": "22/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1976",
+                "high": "1976.36",
+                "low": "1932.61",
+                "close": "1953.26",
+                "volume": "279697137",
+                "price": "1953.26",
+                "trading_date": "21/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1985.65",
+                "high": "1997.37",
+                "low": "1964.17",
+                "close": "1964.17",
+                "volume": "399017981",
+                "price": "1964.17",
+                "trading_date": "18/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1945.19",
+                "high": "1978.53",
+                "low": "1942.89",
+                "close": "1975.01",
+                "volume": "292957873",
+                "price": "1975.01",
+                "trading_date": "17/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1952.23",
+                "high": "1955.74",
+                "low": "1941.82",
+                "close": "1954.29",
+                "volume": "195700955",
+                "price": "1954.29",
+                "trading_date": "16/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1936.12",
+                "high": "1951.58",
+                "low": "1935.94",
+                "close": "1951.14",
+                "volume": "244005413",
+                "price": "1951.14",
+                "trading_date": "15/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1936.19",
+                "high": "1942.79",
+                "low": "1916.84",
+                "close": "1928.57",
+                "volume": "265371923",
+                "price": "1928.57",
+                "trading_date": "14/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1967.84",
+                "high": "1967.84",
+                "low": "1936.69",
+                "close": "1936.69",
+                "volume": "273319720",
+                "price": "1936.69",
+                "trading_date": "11/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1964.97",
+                "high": "1982.68",
+                "low": "1958.78",
+                "close": "1976.82",
+                "volume": "182146313",
+                "price": "1976.82",
+                "trading_date": "10/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1973.14",
+                "high": "1984.72",
+                "low": "1966.06",
+                "close": "1967.64",
+                "volume": "224945647",
+                "price": "1967.64",
+                "trading_date": "09/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1961.61",
+                "high": "1970.4",
+                "low": "1956.95",
+                "close": "1968.52",
+                "volume": "156257116",
+                "price": "1968.52",
+                "trading_date": "08/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1989.05",
+                "high": "2000.42",
+                "low": "1963.01",
+                "close": "1963.01",
+                "volume": "210083849",
+                "price": "1963.01",
+                "trading_date": "07/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1964.43",
+                "high": "1989.54",
+                "low": "1964.3",
+                "close": "1984.89",
+                "volume": "227785032",
+                "price": "1984.89",
+                "trading_date": "04/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1969.93",
+                "high": "1972.71",
+                "low": "1949.93",
+                "close": "1961.57",
+                "volume": "245347502",
+                "price": "1961.57",
+                "trading_date": "03/09/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1981",
+                "high": "1992.15",
+                "low": "1971.18",
+                "close": "1982.96",
+                "volume": "285273354",
+                "price": "1982.96",
+                "trading_date": "28/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1969.75",
+                "high": "1984.09",
+                "low": "1967.92",
+                "close": "1979.23",
+                "volume": "231380275",
+                "price": "1979.23",
+                "trading_date": "27/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1935.55",
+                "high": "1970.01",
+                "low": "1934.62",
+                "close": "1970.01",
+                "volume": "292355104",
+                "price": "1970.01",
+                "trading_date": "26/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1944.09",
+                "high": "1958.81",
+                "low": "1932.33",
+                "close": "1936.15",
+                "volume": "260516349",
+                "price": "1936.15",
+                "trading_date": "25/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1947.91",
+                "high": "1952.13",
+                "low": "1933.63",
+                "close": "1942",
+                "volume": "256440735",
+                "price": "1942",
+                "trading_date": "24/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1885.84",
+                "high": "1927.79",
+                "low": "1877.05",
+                "close": "1927.79",
+                "volume": "283752696",
+                "price": "1927.79",
+                "trading_date": "21/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1883.05",
+                "high": "1896.2",
+                "low": "1881.72",
+                "close": "1887.06",
+                "volume": "161633435",
+                "price": "1887.06",
+                "trading_date": "20/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1876.72",
+                "high": "1878.75",
+                "low": "1864.16",
+                "close": "1875.73",
+                "volume": "170760161",
+                "price": "1875.73",
+                "trading_date": "19/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1879.51",
+                "high": "1894.83",
+                "low": "1866.45",
+                "close": "1876.14",
+                "volume": "215330975",
+                "price": "1876.14",
+                "trading_date": "18/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1875.43",
+                "high": "1885.29",
+                "low": "1868.97",
+                "close": "1877.68",
+                "volume": "187118946",
+                "price": "1877.68",
+                "trading_date": "17/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1907.07",
+                "high": "1908.9",
+                "low": "1868.27",
+                "close": "1876.81",
+                "volume": "265895343",
+                "price": "1876.81",
+                "trading_date": "14/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1941.37",
+                "high": "1944.4",
+                "low": "1909.23",
+                "close": "1909.23",
+                "volume": "289858008",
+                "price": "1909.23",
+                "trading_date": "13/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1924.31",
+                "high": "1944.59",
+                "low": "1919.58",
+                "close": "1936.46",
+                "volume": "192702926",
+                "price": "1936.46",
+                "trading_date": "12/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1928.29",
+                "high": "1938.94",
+                "low": "1920.22",
+                "close": "1922.53",
+                "volume": "217020374",
+                "price": "1922.53",
+                "trading_date": "11/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1915.93",
+                "high": "1933.73",
+                "low": "1899.64",
+                "close": "1925.18",
+                "volume": "305649738",
+                "price": "1925.18",
+                "trading_date": "10/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1901.64",
+                "high": "1916.14",
+                "low": "1894.06",
+                "close": "1911.09",
+                "volume": "268480686",
+                "price": "1911.09",
+                "trading_date": "07/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1923.49",
+                "high": "1923.49",
+                "low": "1901.3",
+                "close": "1902.79",
+                "volume": "195022762",
+                "price": "1902.79",
+                "trading_date": "06/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              },
+              {
+                "symbol": "VN30",
+                "open": "1937.13",
+                "high": "1941.4",
+                "low": "1912.45",
+                "close": "1916.88",
+                "volume": "256526132",
+                "price": "1916.88",
+                "trading_date": "05/08/2026",
+                "ref_price": "0",
+                "avg_price": "0"
+              }
+            ]
+          },
+          "error": null,
+          "meta": {
+            "asOfUtc": "2026-11-03T01:34:21.6576858+00:00",
+            "nextCursor": null,
+            "links": [
+              {
+                "label": "Theo dõi diễn biến thị trường trên iBoard của SSI",
+                "url": "https://iboard.ssi.com.vn/analysis/market-overview?utm_source=other&utm_medium=mcp&utm_campaign=ssi_mcp&utm_content=mkt.iboard"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "server_info": {
+    "name": "Ssi.Mcp.Service.Api",
+    "version": "1.0.0.0"
+  }
+}

@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/11-02-vietnam-market-support/prd.md", "reason": "Parent requirements and confirmed provider facts"}
+{"file": ".trellis/tasks/11-02-vietnam-market-support/research/ssi-mcp-tools.txt", "reason": "SSI tool list, parameters and date limits"}
+{"file": ".trellis/tasks/11-02-vietnam-market-support/research/ssi-mcp-resources.txt", "reason": "SSI catalog resources and data notes"}
+{"file": ".trellis/tasks/11-02-vietnam-market-support/research/tcbs-mcp-doc.txt", "reason": "TCBS tool list and auth notes"}
+{"file": ".trellis/tasks/11-02-vn-mcp-spike/research/algolab-findings.md", "reason": "AlgoLab evaluation and data limits"}
