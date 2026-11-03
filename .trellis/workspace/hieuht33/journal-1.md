@@ -133,3 +133,42 @@ Implemented Vietnam equity market trading rules, simulated statutory reporting l
 ### Next Steps
 
 - Proceed to Subtask 5 (11-02-vn-integration-backtest): end-to-end integration and backtesting for Vietnam market
+
+
+## Session 6: Vietnam Backtest Simulation & Web UI Integration
+<!-- trellis-session: v=2 fp=d641fd4be7d01b38 -->
+
+**Date**: 2026-11-03
+**Task**: Vietnam Backtest Simulation & Web UI Integration
+**Branch**: `dev`
+
+### Summary
+
+Integrated Vietnam equity market into backtest simulation engine, CLI backtest runner, and Web UI configuration panel with point-in-time date window guards.
+
+### Main Changes
+
+- Added configurable vn_data_window_days (default 730 days) to DEFAULT_CONFIG and TRADINGAGENTS_VN_DATA_WINDOW_DAYS env override
+- Implemented validate_backtest_dates to enforce window bounds and reject out-of-range dates with clear errors across CLI and API
+- Added Market selector (US vs Vietnam) in Web UI ConfigPanel with dynamic date boundaries (min=earliestVnDate, max=today)
+- Preloaded Vietnamese presets (VN30 Core, Banking, Securities & Tech, Real Estate) and benchmark default VNINDEX
+- Rebuilt web distribution bundle (tsc && vite build)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f786bd2` | feat(vietnam): support Vietnam market in backtesting, CLI, and Web UI |
+
+### Testing
+
+- [OK] Added 9 unit tests in test_vn_backtest_web.py covering date validation, CLI error exit, and API endpoints
+- [OK] Ran all 1,493 tests in project test suite (all green) and verified ruff lint checks
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Verify all subtasks of the parent epic 11-02-vietnam-market-support are complete and ready for final review
