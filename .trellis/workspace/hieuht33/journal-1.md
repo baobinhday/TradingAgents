@@ -187,7 +187,7 @@ Fixed AlgoLab slice error in get_global_news by normalizing columnar recap items
 
 ### Git Commits
 
-(No commits - planning session)
+- `214bc98` feat(mcp): fix AlgoLab/SSI news co-sourcing and add Web MCP management with 1-click OAuth
 
 ### Status
 

@@ -29,7 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
-| 7 | 2026-11-03 | Fix AlgoLab/SSI news co-sourcing & add Web MCP auth management | - | `dev` |
+| 7 | 2026-11-03 | Fix AlgoLab/SSI news co-sourcing & add Web MCP auth management | `214bc98` | `dev` |
 | 6 | 2026-11-03 | Vietnam Backtest Simulation & Web UI Integration | `f786bd2` | `dev` |
 | 5 | 2026-11-03 | Vietnam Agent Context, Market Rules, Reporting Lag & Social Placeholder | `3088b67` | `dev` |
 | 4 | 2026-11-03 | Implement AlgoLab and SSI MCP Vendor Adapters | `97dcd30` | `dev` |
