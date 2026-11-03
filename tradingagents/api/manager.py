@@ -343,6 +343,7 @@ class BacktestManager:
                             holding=e.get("holding"),
                             pending=bool(e.get("pending", False)),
                             decision=e.get("decision"),
+                            reflection=e.get("reflection"),
                         )
                     )
             except Exception as exc:

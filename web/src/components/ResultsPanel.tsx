@@ -8,9 +8,12 @@ import {
   Filter,
   BarChart3,
   FileText,
+  Eye,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { formatAlpha, getAlphaColor, getRatingBadgeClass } from "../lib/utils";
 import { BacktestSummary, CellResult } from "../types";
@@ -39,6 +42,7 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRating, setSelectedRating] = useState<string>("ALL");
+  const [selectedCell, setSelectedCell] = useState<CellResult | null>(null);
 
   if (!summary && cells.length === 0) {
     return (
@@ -333,12 +337,13 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({
                 <th className="py-2.5 px-4 font-medium">Realized Alpha</th>
                 <th className="py-2.5 px-4 font-medium">Holding Window</th>
                 <th className="py-2.5 px-4 font-medium">Status</th>
+                <th className="py-2.5 px-4 font-medium text-right">Reasoning</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
               {filteredCells.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
                     No cells matching criteria.
                   </td>
                 </tr>
@@ -373,6 +378,20 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({
                         <span className="text-emerald-400 font-medium">Settled</span>
                       )}
                     </td>
+                    <td className="py-2.5 px-4 text-right">
+                      {cell.decision ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedCell(cell)}
+                          className="h-7 px-2 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" /> View
+                        </Button>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
@@ -380,6 +399,69 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({
           </table>
         </div>
       </Card>
+
+      {/* Decision & Reflection Modal */}
+      {selectedCell && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-border/80 rounded-xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-border/60 flex items-center justify-between bg-muted/20">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="font-mono font-bold text-sm text-foreground">
+                  {selectedCell.ticker} ({selectedCell.date})
+                </span>
+                {selectedCell.rating && (
+                  <Badge variant="outline" className={getRatingBadgeClass(selectedCell.rating)}>
+                    {selectedCell.rating}
+                  </Badge>
+                )}
+                {selectedCell.alpha && (
+                  <span className={`font-mono text-xs font-semibold ${getAlphaColor(selectedCell.alpha)}`}>
+                    Alpha: {formatAlpha(selectedCell.alpha)}
+                  </span>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCell(null)}
+                className="h-7 w-7 p-0 rounded-full"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+              {selectedCell.decision && (
+                <div>
+                  <h4 className="font-semibold text-zinc-300 mb-1.5">
+                    Agent Decision & Thesis
+                  </h4>
+                  <div className="bg-muted/30 p-3.5 rounded-lg border border-border/40 whitespace-pre-wrap font-sans text-zinc-300 leading-relaxed">
+                    {typeof selectedCell.decision === "string"
+                      ? selectedCell.decision
+                      : JSON.stringify(selectedCell.decision, null, 2)}
+                  </div>
+                </div>
+              )}
+              {selectedCell.reflection && (
+                <div>
+                  <h4 className="font-semibold text-emerald-400 mb-1.5">
+                    Settlement Reflection
+                  </h4>
+                  <div className="bg-emerald-500/5 p-3.5 rounded-lg border border-emerald-500/20 whitespace-pre-wrap font-sans text-zinc-300 leading-relaxed">
+                    {selectedCell.reflection}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="p-3 border-t border-border/40 bg-muted/10 flex justify-end">
+              <Button variant="secondary" size="sm" onClick={() => setSelectedCell(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

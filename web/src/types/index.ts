@@ -69,7 +69,8 @@ export interface CellResult {
   alpha?: string | null;
   holding?: string | null;
   pending: boolean;
-  decision?: Record<string, any> | null;
+  decision?: string | Record<string, any> | null;
+  reflection?: string | null;
 }
 
 export interface RunDetailResponse {

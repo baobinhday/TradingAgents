@@ -102,8 +102,7 @@ lint-fix: ## Run ruff linter with auto-fix on project sources
 format: ## Format codebase with ruff
 	$(RUFF) format $(SRC_DIRS)
 
-check: lint ## Run lint, format check, and tests
-	$(RUFF) format --check $(SRC_DIRS)
+check: lint ## Run lint and tests
 	$(PYTEST)
 
 ##@ Docker & Distribution

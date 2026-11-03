@@ -50,7 +50,8 @@ class CellResult(BaseModel):
     alpha: str | None = None
     holding: str | None = None
     pending: bool = False
-    decision: dict[str, Any] | None = None
+    decision: str | dict[str, Any] | None = None
+    reflection: str | None = None
 
 
 class RunDetailResponse(BaseModel):
