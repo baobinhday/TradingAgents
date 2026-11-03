@@ -7,9 +7,11 @@ from typing import Any
 
 import pandas as pd
 
+from tradingagents.dataflows.date_window import withhold_live_profile
 from tradingagents.dataflows.errors import NoMarketDataError
 from tradingagents.dataflows.symbols import normalize_symbol
 from tradingagents.dataflows.vendors.algolab.client import AlgoLabClient
+from tradingagents.dataflows.vendors.vn_lag import filter_algolab_statements_by_lag
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +65,10 @@ def get_company_profile(ticker: str) -> dict[str, Any]:
 def get_fundamentals(ticker: str, as_of_date: str = None) -> str:
     """Retrieve formatted company fundamentals overview from AlgoLab."""
     canonical = normalize_symbol(ticker)
+    withheld = withhold_live_profile(as_of_date, canonical)
+    if withheld:
+        return withheld
+
     profile = get_company_profile(canonical)
 
     fields = [
@@ -109,9 +115,12 @@ def _get_financial_statement(
         raise NoMarketDataError(symbol=ticker, canonical=canonical, detail=f"no {statement_type} data found")
 
     lines_data = data.get("lines")
+    if as_of_date and lines_data:
+        lines_data, _ = filter_algolab_statements_by_lag(lines_data, as_of_date)
+
     csv_body = _statement_to_csv(lines_data)
-    if not csv_body:
-        raise NoMarketDataError(symbol=ticker, canonical=canonical, detail=f"empty {statement_type} lines")
+    if not csv_body or (isinstance(lines_data, dict) and len(lines_data.get("columns", [])) <= 1):
+        raise NoMarketDataError(symbol=ticker, canonical=canonical, detail=f"no {statement_type} data published as of {as_of_date}")
 
     header = f"# {title} data for {canonical} ({freq})\n"
     return header + csv_body

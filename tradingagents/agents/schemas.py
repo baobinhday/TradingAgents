@@ -306,6 +306,7 @@ class SentimentBand(StrEnum):
     MIXED = "Mixed"
     MILDLY_BEARISH = "Mildly Bearish"
     BEARISH = "Bearish"
+    UNAVAILABLE = "Unavailable"
 
 
 class SentimentReport(BaseModel):
@@ -322,12 +323,14 @@ class SentimentReport(BaseModel):
     overall_band: SentimentBand = Field(
         description=(
             "Overall sentiment direction. Exactly one of: "
-            "Bullish / Mildly Bullish / Neutral / Mixed / Mildly Bearish / Bearish. "
+            "Bullish / Mildly Bullish / Neutral / Mixed / Mildly Bearish / Bearish / Unavailable. "
             "Use Mixed when sources point in clearly different directions. "
-            "Use Neutral only when all sources are genuinely silent or non-committal."
+            "Use Neutral only when all sources are genuinely silent or non-committal. "
+            "Use Unavailable when retail sentiment data feeds are unavailable for the market."
         ),
     )
-    overall_score: float = Field(
+    overall_score: float | None = Field(
+        default=None,
         ge=0.0,
         le=10.0,
         description=(
@@ -336,6 +339,7 @@ class SentimentReport(BaseModel):
             "Guideline for consistency with overall_band: "
             "Bullish ~6.5–10, Mildly Bullish ~5.5–6.4, Neutral/Mixed ~4.5–5.5, "
             "Mildly Bearish ~3.5–4.4, Bearish ~0–3.4. "
+            "None/omitted when overall_band is Unavailable. "
             "Only the 0–10 bounds are enforced."
         ),
     )
@@ -370,9 +374,13 @@ def render_sentiment_report(report: SentimentReport) -> str:
     narrative so the saved report is both human-readable and machine-parseable
     without regex.
     """
+    score_part = (
+        f" (Score: {report.overall_score:.1f}/10)"
+        if report.overall_score is not None
+        else ""
+    )
     return "\n".join([
-        f"**Overall Sentiment:** **{report.overall_band.value}** "
-        f"(Score: {report.overall_score:.1f}/10)",
+        f"**Overall Sentiment:** **{report.overall_band.value}**{score_part}",
         f"**Confidence:** {report.confidence.capitalize()}",
         "",
         report.narrative,

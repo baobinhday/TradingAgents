@@ -266,7 +266,7 @@ def test_vietnam_never_invokes_yahoo(monkeypatch):
 
         # 6. Fundamentals routing
         fund_res = route_to_vendor("get_fundamentals", "VNM", "2026-01-10")
-        assert "DATA_UNAVAILABLE" in fund_res or "NO_DATA_AVAILABLE" in fund_res
+        assert "DATA_UNAVAILABLE" in fund_res or "NO_DATA_AVAILABLE" in fund_res or "withheld" in fund_res
 
         # 7. News routing
         news_res = route_to_vendor("get_news", "VNM", "2026-01-10")

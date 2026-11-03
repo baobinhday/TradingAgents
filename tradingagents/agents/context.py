@@ -117,6 +117,7 @@ def build_instrument_context(
     asset_type: str = "stock",
     identity: Mapping[str, str] | None = None,
     trade_date: str | None = None,
+    market: str | None = None,
 ) -> str:
     """Describe the exact instrument so agents preserve identity and ticker.
 
@@ -174,6 +175,23 @@ def build_instrument_context(
             " Treat it as a crypto asset rather than a company, and do not "
             "assume company fundamentals are available."
         )
+
+    if market is None:
+        try:
+            from tradingagents.dataflows.config import get_config
+            market = get_config().get("market", "US")
+        except Exception:
+            market = "US"
+
+    if (market or "").upper() == "VN" or ticker.upper().endswith(".VN"):
+        context += (
+            " Vietnam Equity Market Rules: Trades in VND on HOSE (±7% daily price limit), "
+            "HNX (±10%), or UPCoM (±15%). Trading hours 9:00-15:00 UTC+7. Settlement cycle is T+2.5. "
+            "Foreign ownership limits (FOL/room) apply. "
+            "When data tools return co-sourced data with [Source: AlgoLab] or [Source: SSI], cite the source for any figures used; "
+            "note divergences explicitly rather than silently averaging."
+        )
+
     return context
 
 
@@ -192,6 +210,9 @@ def get_instrument_context_from_state(state: Mapping[str, Any]) -> str:
     return build_instrument_context(
         str(state["company_of_interest"]),
         state.get("asset_type", "stock"),
+        identity=state.get("identity"),
+        trade_date=state.get("trade_date"),
+        market=state.get("market"),
     )
 
 

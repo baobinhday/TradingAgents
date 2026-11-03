@@ -8,9 +8,11 @@ from typing import Any
 
 import pandas as pd
 
+from tradingagents.dataflows.date_window import withhold_live_profile
 from tradingagents.dataflows.errors import NoMarketDataError
 from tradingagents.dataflows.symbols import normalize_symbol
 from tradingagents.dataflows.vendors.ssi.client import SSIMCPClient
+from tradingagents.dataflows.vendors.vn_lag import filter_ssi_statements_by_lag
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,10 @@ def get_company_profile(ticker: str) -> dict[str, Any]:
 def get_fundamentals(ticker: str, as_of_date: str = None) -> str:
     """Retrieve formatted company fundamentals overview from SSI MCP."""
     canonical = normalize_symbol(ticker)
+    withheld = withhold_live_profile(as_of_date, canonical)
+    if withheld:
+        return withheld
+
     client = SSIMCPClient.get_instance()
 
     # 1. Profile
@@ -99,6 +105,9 @@ def _get_ssi_statement(
     res = client.call_tool(tool_name, {"symbol": canonical.upper(), "range": "1y", "pageSize": 10})
     data = res.get("data", {}) if isinstance(res, dict) else {}
     items = data.get(list_key, []) if isinstance(data, dict) else []
+
+    if as_of_date and items:
+        items = filter_ssi_statements_by_lag(items, as_of_date)
 
     if not items:
         raise NoMarketDataError(symbol=ticker, canonical=canonical, detail=f"no {title} data found on SSI")

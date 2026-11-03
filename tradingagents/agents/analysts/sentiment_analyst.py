@@ -24,7 +24,11 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from tradingagents.agents.context import get_instrument_context_from_state, get_language_instruction
 from tradingagents.agents.post_screen import jev_screen
-from tradingagents.agents.schemas import SentimentReport, render_sentiment_report
+from tradingagents.agents.schemas import (
+    SentimentBand,
+    SentimentReport,
+    render_sentiment_report,
+)
 from tradingagents.agents.structured import (
     NO_EXTERNAL_TOOLS,
     bind_structured,
@@ -44,6 +48,25 @@ def _seven_days_back(trade_date: str) -> str:
     return (datetime.strptime(trade_date, "%Y-%m-%d") - timedelta(days=7)).strftime("%Y-%m-%d")
 
 
+SENTIMENT_DATA_UNAVAILABLE = render_sentiment_report(
+    SentimentReport(
+        overall_band=SentimentBand.UNAVAILABLE,
+        overall_score=None,
+        confidence="low",
+        narrative=(
+            "### Vietnam Social Sentiment: UNAVAILABLE\n\n"
+            "Retail chatter for Vietnamese equities occurs predominantly on local platforms "
+            "(F319 forum, Facebook investment groups, Telegram/Zalo channels) which are not covered "
+            "by standard international feeds (Reddit, StockTwits).\n\n"
+            "**Notice to downstream agents**: Sentiment data is UNAVAILABLE. This is an explicit lack of data, "
+            "NOT a neutral signal (do not score as 5.0/10 or treat as flat/no-bias). "
+            "Downstream agents (Bull/Bear debaters, Research Manager, Trader) must disregard sentiment "
+            "and rely strictly on fundamentals, technical indicators, and verified news."
+        ),
+    )
+)
+
+
 def create_sentiment_analyst(llm):
     """Create a sentiment analyst node for the trading graph.
 
@@ -56,6 +79,22 @@ def create_sentiment_analyst(llm):
 
     def sentiment_analyst_node(state):
         ticker = state["company_of_interest"]
+        market = state.get("market")
+        if not market:
+            try:
+                from tradingagents.dataflows.config import get_config
+
+                market = get_config().get("market", "US")
+            except Exception:
+                market = "US"
+
+        # Vietnam equities: return explicit unavailable placeholder without network or LLM calls
+        if (market or "").upper() == "VN" or ticker.upper().endswith(".VN"):
+            return {
+                "messages": [AIMessage(content=SENTIMENT_DATA_UNAVAILABLE)],
+                "sentiment_report": SENTIMENT_DATA_UNAVAILABLE,
+            }
+
         end_date = state["trade_date"]
         start_date = _seven_days_back(end_date)
         instrument_context = get_instrument_context_from_state(state)

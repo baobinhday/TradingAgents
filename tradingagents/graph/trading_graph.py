@@ -127,7 +127,7 @@ class TradingAgentsGraph:
         """
         market = kwargs.get("market") or self.config.get("market", "US")
         identity = resolve_instrument_identity(ticker, market=market)
-        return build_instrument_context(ticker, asset_type, identity, trade_date)
+        return build_instrument_context(ticker, asset_type, identity, trade_date, market=market)
 
     def _memory_as_of(self, trade_date) -> str | None:
         """Point-in-time cutoff for past-context lessons (#1251).
