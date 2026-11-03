@@ -74,17 +74,17 @@ Run the TradingAgents pipeline on Vietnamese equities with the same agent workfl
 
 ## Acceptance Criteria
 
-- [ ] An analysis of a HOSE, an HNX and an UPCoM ticker completes end to end with no call to Yahoo, verified by a test that fails on any Yahoo access for market Vietnam.
-- [ ] A decision on a Vietnamese ticker settles with raw return and alpha against VN-Index.
-- [ ] A bank and a non-bank ticker each produce a correct fundamentals report.
-- [ ] A Vietnam run with `social` selected makes no social or LLM call for that node and shows the placeholder report.
-- [ ] A backtest on a past date passes a test proving no withheld tool or future-dated row reached an agent.
-- [ ] Outside the data window, a run reports the data as unavailable instead of failing or inventing values.
-- [ ] The existing test suite passes, and US ticker runs use their previous vendors.
-- [ ] No token or API key appears in logs or API responses.
-- [ ] With AlgoLab unavailable, a run gets prices and VN-Index from SSI, within SSI's window, and reports the vendor used.
-- [ ] A test proves no price series mixes bars from two vendors.
-- [ ] News and fundamentals reports show labeled data from both sources, and a report still completes when one source fails.
+- [x] An analysis of a HOSE, an HNX and an UPCoM ticker completes end to end with no call to Yahoo, verified by a test that fails on any Yahoo access for market Vietnam.
+- [x] A decision on a Vietnamese ticker settles with raw return and alpha against VN-Index.
+- [x] A bank and a non-bank ticker each produce a correct fundamentals report.
+- [x] A Vietnam run with `social` selected makes no social or LLM call for that node and shows the placeholder report.
+- [x] A backtest on a past date passes a test proving no withheld tool or future-dated row reached an agent.
+- [x] Outside the data window, a run reports the data as unavailable instead of failing or inventing values.
+- [x] The existing test suite passes, and US ticker runs use their previous vendors.
+- [x] No token or API key appears in logs or API responses.
+- [x] With AlgoLab unavailable, a run gets prices and VN-Index from SSI, within SSI's window, and reports the vendor used.
+- [x] A test proves no price series mixes bars from two vendors.
+- [x] News and fundamentals reports show labeled data from both sources, and a report still completes when one source fails.
 
 ## Child Tasks
 
