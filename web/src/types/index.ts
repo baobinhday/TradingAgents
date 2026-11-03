@@ -71,6 +71,26 @@ export interface CellResult {
   pending: boolean;
   decision?: string | Record<string, any> | null;
   reflection?: string | null;
+  market_report?: string | null;
+  fundamentals_report?: string | null;
+  news_report?: string | null;
+  sentiment_report?: string | null;
+  investment_debate_state?: {
+    bull_history?: string;
+    bear_history?: string;
+    history?: string;
+    current_response?: string;
+    [key: string]: any;
+  } | null;
+  investment_plan?: string | null;
+  trader_investment_plan?: string | null;
+  risk_debate_state?: {
+    aggressive_history?: string;
+    conservative_history?: string;
+    neutral_history?: string;
+    history?: string;
+    [key: string]: any;
+  } | null;
 }
 
 export interface RunDetailResponse {

@@ -52,6 +52,14 @@ class CellResult(BaseModel):
     pending: bool = False
     decision: str | dict[str, Any] | None = None
     reflection: str | None = None
+    market_report: str | None = None
+    fundamentals_report: str | None = None
+    news_report: str | None = None
+    sentiment_report: str | None = None
+    investment_debate_state: dict[str, Any] | None = None
+    investment_plan: str | None = None
+    trader_investment_plan: str | None = None
+    risk_debate_state: dict[str, Any] | None = None
 
 
 class RunDetailResponse(BaseModel):

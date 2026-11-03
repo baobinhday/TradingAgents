@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import threading
 from collections.abc import AsyncGenerator
@@ -23,6 +24,7 @@ from tradingagents.backtest import (
     summarize,
     validate_backtest_dates,
 )
+from tradingagents.dataflows.symbols import safe_ticker_component
 from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.memory import TradingMemoryLog
 
@@ -334,16 +336,47 @@ class BacktestManager:
                 summary_raw = summarize(log_file)
                 summary_resp = self._format_summary(summary_raw)
                 for e in entries:
+                    ticker = e.get("ticker", "")
+                    date = e.get("date", "")
+                    state_log: dict[str, Any] = {}
+                    if ticker and date:
+                        safe_ticker = safe_ticker_component(ticker)
+                        state_file = (
+                            base_dir
+                            / safe_ticker
+                            / "TradingAgentsStrategy_logs"
+                            / f"full_states_log_{date}.json"
+                        )
+                        if state_file.is_file():
+                            try:
+                                with open(state_file, encoding="utf-8") as sf:
+                                    state_log = json.load(sf)
+                            except Exception as state_err:
+                                logger.debug(
+                                    "Could not read full state log for %s on %s: %s",
+                                    ticker,
+                                    date,
+                                    state_err,
+                                )
+
                     cells.append(
                         CellResult(
-                            ticker=e.get("ticker", ""),
-                            date=e.get("date", ""),
+                            ticker=ticker,
+                            date=date,
                             rating=e.get("rating"),
                             alpha=e.get("alpha"),
                             holding=e.get("holding"),
                             pending=bool(e.get("pending", False)),
                             decision=e.get("decision"),
                             reflection=e.get("reflection"),
+                            market_report=state_log.get("market_report"),
+                            fundamentals_report=state_log.get("fundamentals_report"),
+                            news_report=state_log.get("news_report"),
+                            sentiment_report=state_log.get("sentiment_report"),
+                            investment_debate_state=state_log.get("investment_debate_state"),
+                            investment_plan=state_log.get("investment_plan"),
+                            trader_investment_plan=state_log.get("trader_investment_plan"),
+                            risk_debate_state=state_log.get("risk_debate_state"),
                         )
                     )
             except Exception as exc:

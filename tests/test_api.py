@@ -130,6 +130,58 @@ def test_get_run_detail_not_found(client):
 
 
 @pytest.mark.unit
+def test_get_run_detail_with_full_state_log(client, tmp_path, monkeypatch):
+    import json
+
+    from tradingagents.default_config import DEFAULT_CONFIG
+
+    monkeypatch.setitem(DEFAULT_CONFIG, "results_dir", str(tmp_path))
+
+    backtest_dir = tmp_path / "backtest"
+    run_dir = backtest_dir / "run_full_state"
+    run_dir.mkdir(parents=True)
+
+    log_entry = (
+        "[2026-10-04 | FPT | Buy | pending]\n\n"
+        "DECISION:\nBuy 100 shares\n\n<!-- ENTRY_END -->\n\n"
+    )
+    (run_dir / "trading_memory.md").write_text(log_entry, encoding="utf-8")
+
+    logs_dir = run_dir / "FPT" / "TradingAgentsStrategy_logs"
+    logs_dir.mkdir(parents=True)
+    full_state = {
+        "market_report": "Technical momentum is strong",
+        "fundamentals_report": "Revenue up 15%",
+        "news_report": "Positive market sentiment",
+        "sentiment_report": "Bullish social tone",
+        "investment_debate_state": {"history": "Bull and Bear debate text"},
+        "investment_plan": "Accumulate on dips",
+        "trader_investment_plan": "Limit order at 62.0",
+        "risk_debate_state": {"history": "Aggressive and Conservative debate"},
+    }
+    (logs_dir / "full_states_log_2026-10-04.json").write_text(
+        json.dumps(full_state), encoding="utf-8"
+    )
+
+    response = client.get("/api/backtest/runs/run_full_state")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["run_id"] == "run_full_state"
+    assert len(data["cells"]) == 1
+    cell = data["cells"][0]
+    assert cell["ticker"] == "FPT"
+    assert cell["date"] == "2026-10-04"
+    assert cell["market_report"] == "Technical momentum is strong"
+    assert cell["fundamentals_report"] == "Revenue up 15%"
+    assert cell["news_report"] == "Positive market sentiment"
+    assert cell["sentiment_report"] == "Bullish social tone"
+    assert cell["investment_debate_state"]["history"] == "Bull and Bear debate text"
+    assert cell["investment_plan"] == "Accumulate on dips"
+    assert cell["trader_investment_plan"] == "Limit order at 62.0"
+    assert cell["risk_debate_state"]["history"] == "Aggressive and Conservative debate"
+
+
+@pytest.mark.unit
 def test_static_index_html(client):
     response = client.get("/")
     assert response.status_code == 200
