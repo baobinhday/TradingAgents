@@ -64,6 +64,23 @@ def test_web_command_invokes_uvicorn(runner, monkeypatch):
 
 
 @pytest.mark.unit
+def test_web_command_missing_dependency_reports_install_hint(runner, monkeypatch):
+    import builtins
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "uvicorn":
+            raise ImportError("No module named 'uvicorn'", name="uvicorn")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    result = runner.invoke(m.app, ["web"])
+    assert result.exit_code == 1
+    assert "Web UI dependencies not found" in result.output
+    assert "tradingagents[web]" in result.output
+
+
+@pytest.mark.unit
 def test_backtest_reports_a_bad_date_instead_of_a_traceback(runner):
     result = runner.invoke(m.app, ["backtest", "NVDA", "--start", "June", "--end", "2026-06-15"])
     assert result.exit_code == 1

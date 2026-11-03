@@ -222,7 +222,21 @@ def web(
     import time
     import webbrowser
 
-    import uvicorn
+    try:
+        import uvicorn
+
+        from tradingagents.api.app import app as api_app
+    except ImportError as exc:
+        missing = getattr(exc, "name", None) or str(exc)
+        cmd = escape("pip install 'tradingagents[web]'")
+        console.print(
+            f"[red]Web UI dependencies not found (missing: {missing}).[/red]\n"
+            "Please install the web package extra:\n"
+            f"  [bold cyan]{cmd}[/bold cyan]\n"
+            "or with uv:\n"
+            "  [bold cyan]uv sync --extra web[/bold cyan]"
+        )
+        raise typer.Exit(code=1) from None
 
     url = f"http://{host}:{port}"
     console.print(f"[bold green]Starting TradingAgents Web Console at[/bold green] [cyan underline]{url}[/cyan underline]")
@@ -234,7 +248,6 @@ def web(
                 webbrowser.open(url)
         threading.Thread(target=_open, daemon=True).start()
 
-    from tradingagents.api.app import app as api_app
     uvicorn.run(api_app, host=host, port=port, reload=dev)
 
 
