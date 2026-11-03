@@ -115,7 +115,8 @@ class TradingAgentsGraph:
         self._resuming = False
 
     def resolve_instrument_context(self, ticker: str, asset_type: str = "stock",
-                                   trade_date: str | None = None) -> str:
+                                   trade_date: str | None = None,
+                                   **kwargs) -> str:
         """Resolve ticker identity once and return the full instrument context.
 
         Deterministic yfinance lookup (cached, fail-open) injected into a
@@ -124,7 +125,8 @@ class TradingAgentsGraph:
         path and the CLI call this so the resolved identity reaches the whole
         graph regardless of entry point.
         """
-        identity = resolve_instrument_identity(ticker)
+        market = kwargs.get("market") or self.config.get("market", "US")
+        identity = resolve_instrument_identity(ticker, market=market)
         return build_instrument_context(ticker, asset_type, identity, trade_date)
 
     def _memory_as_of(self, trade_date) -> str | None:
@@ -270,6 +272,7 @@ class TradingAgentsGraph:
             "max_debate_rounds": cfg.get("max_debate_rounds"),
             "max_risk_discuss_rounds": cfg.get("max_risk_discuss_rounds"),
             "output_language": cfg.get("output_language"),
+            "market": cfg.get("market", "US"),
             "data_vendors": dict(cfg.get("data_vendors") or {}),
             "tool_vendors": dict(cfg.get("tool_vendors") or {}),
         }
@@ -298,10 +301,12 @@ class TradingAgentsGraph:
         and loads them alongside the analysts (see ``_memory_step``).
         """
         trade_date = _validate_trade_date(trade_date)
+        market = self.config.get("market", "US")
         return self.propagator.create_initial_state(
             company_name,
             trade_date,
             asset_type=asset_type,
+            market=market,
             instrument_context=self.resolve_instrument_context(company_name, asset_type, trade_date),
             portfolio_context=portfolio.render(company_name) if portfolio is not None else "",
         )

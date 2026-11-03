@@ -22,6 +22,7 @@ _ENV_OVERRIDES = {
     "TRADINGAGENTS_MAX_TOOL_ROUNDS":      "max_tool_rounds",
     "TRADINGAGENTS_CHECKPOINT_ENABLED":   "checkpoint_enabled",
     "TRADINGAGENTS_BENCHMARK_TICKER":     "benchmark_ticker",
+    "TRADINGAGENTS_MARKET":               "market",
     "TRADINGAGENTS_TEMPERATURE":          "temperature",
     "TRADINGAGENTS_LLM_MAX_RETRIES":      "llm_max_retries",
     "TRADINGAGENTS_MAX_TOKENS":           "max_tokens",
@@ -129,6 +130,8 @@ def build_default_config() -> dict:
         # Output language for analyst reports and final decision
         # Internal agent debate stays in English for reasoning quality
         "output_language": "English",
+        # Target market: "US" (default) or "VN"
+        "market": "US",
         # Debate and discussion settings
         "max_debate_rounds": 1,
         "max_risk_discuss_rounds": 1,
@@ -169,6 +172,16 @@ def build_default_config() -> dict:
         "tool_vendors": {
             # Example: "get_stock_data": "alpha_vantage",  # Override category default
         },
+        # Data vendor configuration for Vietnam market ("VN")
+        "vn_data_vendors": {
+            "core_stock_apis": "algolab,ssi",
+            "technical_indicators": "algolab,ssi",
+            "fundamental_data": "algolab,ssi",
+            "news_data": "algolab,ssi",
+            "macro_data": "algolab,ssi",
+            "prediction_markets": "none",
+        },
+        "vn_tool_vendors": {},
         # Benchmark for alpha calculation in the reflection layer.
         # ``benchmark_ticker`` (when set) overrides the suffix map for all
         # tickers; leave it None to use ``benchmark_map`` for auto-detection
@@ -200,6 +213,7 @@ def build_default_config() -> dict:
             ".SS":  "000001.SS",   # Shanghai (SSE Composite)
             ".SZ":  "399001.SZ",   # Shenzhen (SZSE Component)
             ".SA":  "^BVSP",       # B3 Brazil (Ibovespa)
+            ".VN":  "VNINDEX",     # Vietnam (VN-Index)
             "":     "SPY",         # default for US-listed tickers (no suffix)
         },
 

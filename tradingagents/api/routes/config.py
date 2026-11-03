@@ -39,6 +39,7 @@ AVAILABLE_ANALYSTS = [
 ]
 
 AVAILABLE_ASSET_TYPES = ["stock", "crypto"]
+AVAILABLE_MARKETS = ["US", "VN"]
 
 
 @router.get("", response_model=ConfigResponse)
@@ -72,6 +73,7 @@ def get_config() -> ConfigResponse:
         provider_details=provider_details,
         available_analysts=AVAILABLE_ANALYSTS,
         available_asset_types=AVAILABLE_ASSET_TYPES,
+        available_markets=AVAILABLE_MARKETS,
     )
 
 

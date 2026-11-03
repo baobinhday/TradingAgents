@@ -58,6 +58,7 @@ def analyze(
     analysts: str = typer.Option(
         None, "--analysts", help="Comma-separated analysts, e.g. market,news; skips the prompt"
     ),
+    market: str = typer.Option(None, "--market", help="Target market: US or VN; skips the prompt"),
     save: bool | None = typer.Option(
         None, "--save/--no-save", help="Save the report under results_dir without asking"
     ),
@@ -89,7 +90,16 @@ def analyze(
             raise typer.Exit(code=1) from None
 
     try:
-        flags = {"ticker": ticker, "date": date, "analysts": analysts, "save": save, "show": show, "html": html}
+        flags = {
+            "ticker": ticker,
+            "date": date,
+            "analysts": analysts,
+            "save": save,
+            "show": show,
+            "html": html,
+        }
+        if market is not None:
+            flags["market"] = market
         run_analysis(checkpoint=checkpoint, portfolio=portfolio_context, flags=flags)
     except _NO_CONSOLE_ERRORS:
         # A terminal with no console buffer cannot host the interactive prompts.
@@ -120,6 +130,7 @@ def backtest(
     run_id: str = typer.Option(
         None, "--run-id", help="Continue an earlier sweep: its cells are skipped and its log reused"
     ),
+    market: str = typer.Option(None, "--market", help="Market to target: US or VN (default: configured market, US)"),
 ):
     """Score past decisions over a grid of tickers and dates."""
 
@@ -146,8 +157,12 @@ def backtest(
     kwargs = {"asset_type": kind.value, "portfolio": book, "run_id": run_id, "progress": show_progress,
               "selected_analysts": [a.value for a in chosen]}
 
+    config = DEFAULT_CONFIG.copy()
+    if market:
+        config["market"] = market.strip().upper()
+
     try:
-        result = run_backtest(names, dates, DEFAULT_CONFIG, **kwargs)
+        result = run_backtest(names, dates, config, **kwargs)
     except Exception as exc:  # a missing key or an unknown analyst is a setup error
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(code=1) from None

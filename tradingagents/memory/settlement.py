@@ -7,8 +7,9 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
+from tradingagents.dataflows.config import run_config
+from tradingagents.dataflows.router import get_closes
 from tradingagents.dataflows.symbols import normalize_symbol
-from tradingagents.dataflows.vendors.yahoo.market import get_closes
 
 logger = logging.getLogger(__name__)
 
@@ -18,22 +19,29 @@ def resolve_benchmark(ticker: str, config: dict) -> str:
 
     ``config["benchmark_ticker"]`` overrides everything when set; otherwise
     the suffix map matches the ticker's exchange suffix (e.g. ``.T`` for
-    Tokyo). US-listed tickers without a dotted suffix fall through to the
+    Tokyo, ``.VN`` for Vietnam). For Vietnam equities without a suffix
+    when ``config["market"] == "VN"``, returns ``VNINDEX``.
+    US-listed tickers without a dotted suffix fall through to the
     empty-suffix entry (SPY by default). Unrecognised suffixes, including
     US tickers with dots like ``BRK.B``, also take the empty-suffix entry.
     Returns are compared as percentages, each in its own currency.
     """
+    from tradingagents.dataflows.config import get_config
 
+    market = (config.get("market") or "").upper()
     explicit = config.get("benchmark_ticker")
     if explicit:
         # Same alias mapping as the analyzed ticker; an unmapped alias finds
         # no prices, and the decision would stay pending for good.
-        return normalize_symbol(explicit)
-    benchmark_map = config.get("benchmark_map", {})
-    ticker_upper = normalize_symbol(ticker)
+        return normalize_symbol(explicit, market=market)
+    benchmark_map = config.get("benchmark_map") or get_config().get("benchmark_map", {})
+    raw_upper = ticker.strip().upper()
+    ticker_upper = normalize_symbol(ticker, market=market)
     for suffix, benchmark in benchmark_map.items():
-        if suffix and ticker_upper.endswith(suffix.upper()):
+        if suffix and (ticker_upper.endswith(suffix.upper()) or raw_upper.endswith(suffix.upper())):
             return benchmark
+    if market == "VN" or raw_upper.endswith(".VN"):
+        return benchmark_map.get(".VN", "VNINDEX")
     return benchmark_map.get("", "SPY")
 
 
@@ -150,36 +158,42 @@ def settle_pending(ticker: str, memory_log, reflector, config: dict, wait: bool 
         pending = [e for e in memory_log.get_pending_entries() if e["ticker"] == ticker]
         if not pending:
             return result
+        market = config.get("market")
         benchmark = resolve_benchmark(ticker, config)
-        for entry in pending:
-            try:
-                raw, alpha, days, resolution_date = fetch_returns(
-                    ticker, entry["date"], config.get("holding_period_days", 5), benchmark=benchmark,
-                )
-            except Exception as exc:
-                logger.warning("Prices for settling %s on %s were unavailable: %s", ticker, entry["date"], exc)
-                result.failed.append((ticker, entry["date"], f"prices unavailable: {exc}"))
-                continue
-            if raw is None:
-                continue  # the holding window has not traded yet: try again next run
-            try:
-                reflection = reflector.reflect_on_final_decision(
-                    final_decision=entry.get("decision", ""),
-                    raw_return=raw,
-                    alpha_return=alpha,
-                    benchmark_name=benchmark,
-                    holding_days=days,
-                )
-            except Exception as exc:
-                # Reflection calls a provider: a transient failure leaves the entry
-                # pending for the next pass rather than stopping the analysis.
-                logger.warning("Reflection failed for %s on %s: %s", ticker, entry["date"], exc)
-                result.failed.append((ticker, entry["date"], f"reflection failed: {exc}"))
-                continue
-            if memory_log.update_with_outcome(ticker, entry["date"], raw, alpha, days, reflection,
-                                              resolution_date=resolution_date):
-                result.settled.append((ticker, entry["date"]))
-    return result
+        run_ctx = {"market": market} if market else {}
+        with run_config(run_ctx):
+            for entry in pending:
+                try:
+                    raw, alpha, days, resolution_date = fetch_returns(
+                        ticker,
+                        entry["date"],
+                        config.get("holding_period_days", 5),
+                        benchmark=benchmark,
+                    )
+                except Exception as exc:
+                    logger.warning("Prices for settling %s on %s were unavailable: %s", ticker, entry["date"], exc)
+                    result.failed.append((ticker, entry["date"], f"prices unavailable: {exc}"))
+                    continue
+                if raw is None:
+                    continue  # the holding window has not traded yet: try again next run
+                try:
+                    reflection = reflector.reflect_on_final_decision(
+                        final_decision=entry.get("decision", ""),
+                        raw_return=raw,
+                        alpha_return=alpha,
+                        benchmark_name=benchmark,
+                        holding_days=days,
+                    )
+                except Exception as exc:
+                    # Reflection calls a provider: a transient failure leaves the entry
+                    # pending for the next pass rather than stopping the analysis.
+                    logger.warning("Reflection failed for %s on %s: %s", ticker, entry["date"], exc)
+                    result.failed.append((ticker, entry["date"], f"reflection failed: {exc}"))
+                    continue
+                if memory_log.update_with_outcome(ticker, entry["date"], raw, alpha, days, reflection,
+                                                  resolution_date=resolution_date):
+                    result.settled.append((ticker, entry["date"]))
+        return result
 
 
 def settle_all_pending(memory_log, reflector, config: dict, wait: bool = True) -> Settlement:

@@ -354,9 +354,13 @@ def _prompt_selections(prefs, flags):
             "Configure Claude effort level", ask_anthropic_effort,
         )
 
+    market = flags.get("market") or os.environ.get("TRADINGAGENTS_MARKET") or DEFAULT_CONFIG.get("market", "US")
+    market = str(market).strip().upper()
+
     return {
         "ticker": selected_ticker,
         "asset_type": asset_type.value,
+        "market": market,
         "analysis_date": analysis_date,
         "analysts": selected_analysts,
         "research_depth": selected_research_depth,

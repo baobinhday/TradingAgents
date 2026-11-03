@@ -133,6 +133,8 @@ class BacktestManager:
             # Merge config overrides
             run_config = DEFAULT_CONFIG.copy()
             run_config.update(req.config_overrides)
+            if req.market:
+                run_config["market"] = req.market.strip().upper()
 
             # Normalize analyst keys: "sentiment" is the UX display name, core key is "social"
             clean_analysts = [

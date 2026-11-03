@@ -11,6 +11,7 @@ class BacktestRunRequest(BaseModel):
     end_date: str = Field(..., description="End date in YYYY-MM-DD format")
     every_n_days: int = Field(7, ge=1, description="Interval in days between analysis dates")
     asset_type: str = Field("stock", description="'stock' or 'crypto'")
+    market: str = Field("US", description="Target market ('US', 'VN')")
     selected_analysts: list[str] = Field(
         default_factory=lambda: ["market", "social", "news", "fundamentals"],
         description="List of analyst modules to run",
@@ -85,3 +86,4 @@ class ConfigResponse(BaseModel):
     provider_details: list[ProviderDetail] = Field(default_factory=list)
     available_analysts: list[dict[str, str]]
     available_asset_types: list[str]
+    available_markets: list[str] = Field(default_factory=lambda: ["US", "VN"])

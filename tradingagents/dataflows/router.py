@@ -1,5 +1,7 @@
 import logging
 
+import pandas as pd
+
 from tradingagents.dataflows.config import get_config
 from tradingagents.dataflows.errors import (
     NoMarketDataError,
@@ -29,17 +31,33 @@ from tradingagents.dataflows.vendors.sec_edgar import (
 from tradingagents.dataflows.vendors.yahoo.fundamentals import (
     get_balance_sheet as get_yfinance_balance_sheet,
     get_cashflow as get_yfinance_cashflow,
+    get_company_profile as get_yfinance_company_profile,
     get_fundamentals as get_yfinance_fundamentals,
     get_income_statement as get_yfinance_income_statement,
     get_insider_transactions as get_yfinance_insider_transactions,
 )
 from tradingagents.dataflows.vendors.yahoo.market import (
+    get_closes as get_yfinance_closes,
     get_stock_stats_indicators_window,
     get_YFin_data_online,
 )
 from tradingagents.dataflows.vendors.yahoo.news import get_global_news_yfinance, get_news_yfinance
+from tradingagents.dataflows.vendors.yahoo.snapshot import (
+    build_verified_market_snapshot as get_yfinance_snapshot,
+)
 
 logger = logging.getLogger(__name__)
+
+def _vn_vendor_stub(*args, **kwargs):
+    """Stub placeholder for Vietnam market MCP vendors (AlgoLab and SSI).
+
+    Raises VendorUnavailableError so fallback and failure handling operate cleanly
+    without touching Yahoo Finance.
+    """
+    raise VendorUnavailableError(
+        "Vietnam market vendor (AlgoLab / SSI) is not yet mounted in foundation phase."
+    )
+
 
 # Tools organized by category
 TOOLS_CATEGORIES = {
@@ -99,48 +117,68 @@ VENDOR_METHODS = {
     "get_stock_data": {
         "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     # technical_indicators
     "get_indicators": {
         "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     # fundamental_data
     "get_fundamentals": {
         "alpha_vantage": get_alpha_vantage_fundamentals,
         "yfinance": get_yfinance_fundamentals,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     "get_balance_sheet": {
         "alpha_vantage": get_alpha_vantage_balance_sheet,
         "sec_edgar": get_sec_edgar_balance_sheet,
         "yfinance": get_yfinance_balance_sheet,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     "get_cashflow": {
         "alpha_vantage": get_alpha_vantage_cashflow,
         "sec_edgar": get_sec_edgar_cashflow,
         "yfinance": get_yfinance_cashflow,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     "get_income_statement": {
         "alpha_vantage": get_alpha_vantage_income_statement,
         "sec_edgar": get_sec_edgar_income_statement,
         "yfinance": get_yfinance_income_statement,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     # news_data
     "get_news": {
         "alpha_vantage": get_alpha_vantage_news,
         "yfinance": get_news_yfinance,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     "get_global_news": {
         "yfinance": get_global_news_yfinance,
         "alpha_vantage": get_alpha_vantage_global_news,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     "get_insider_transactions": {
         "alpha_vantage": get_alpha_vantage_insider_transactions,
         "yfinance": get_yfinance_insider_transactions,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     # macro_data
     "get_macro_indicators": {
         "fred": get_fred_macro_data,
+        "algolab": _vn_vendor_stub,
+        "ssi": _vn_vendor_stub,
     },
     # prediction_markets
     "get_prediction_markets": {
@@ -160,8 +198,20 @@ def get_category_for_method(method: str) -> str:
 def get_vendor(category: str, method: str = None) -> str:
     """Get the configured vendor for a data category or specific tool method.
     Tool-level configuration takes precedence over category-level.
+    Market-aware: when market is 'VN', uses vn_tool_vendors / vn_data_vendors.
     """
     config = get_config()
+    market = (config.get("market") or "US").upper()
+
+    if market == "VN":
+        if method:
+            vn_tool_vendors = config.get("vn_tool_vendors", {})
+            if method in vn_tool_vendors:
+                return vn_tool_vendors[method]
+        vn_data_vendors = config.get("vn_data_vendors", {})
+        if category in vn_data_vendors:
+            return vn_data_vendors[category]
+        return "algolab,ssi"
 
     # Check tool-level configuration first (if method provided)
     if method:
@@ -199,21 +249,35 @@ def no_data_available(error: NoMarketDataError) -> str:
 
 def route_to_vendor(method: str, *args, **kwargs):
     """Route method calls to appropriate vendor implementation with fallback support."""
+    config = get_config()
+    market = (config.get("market") or "US").upper()
+    if args and isinstance(args[0], str) and args[0].upper().endswith(".VN"):
+        market = "VN"
+
     category = get_category_for_method(method)
     vendor_config = get_vendor(category, method)
-    primary_vendors = [v.strip() for v in vendor_config.split(',')]
+    primary_vendors = [v.strip() for v in vendor_config.split(',') if v.strip()]
 
     if method not in VENDOR_METHODS:
         raise ValueError(f"Method '{method}' not supported")
 
     all_available_vendors = list(VENDOR_METHODS[method].keys())
 
+    # Disabled category for this market (e.g. prediction_markets for VN)
+    if primary_vendors == ["none"]:
+        if category in OPTIONAL_CATEGORIES:
+            return (
+                f"DATA_UNAVAILABLE: optional {category} is not configured for market {market}. "
+                f"Proceed without it; do not fabricate values."
+            )
+        raise VendorUnavailableError(f"Category '{category}' is disabled for market {market}")
+
     # The configured vendor list IS the chain: we do NOT silently fall back to
     # vendors the user did not choose (#988/#289) — that returned data from an
     # unexpected source and caused cross-vendor inconsistencies. For multi-vendor
     # fallback, list them in order, e.g. data_vendors="yfinance,alpha_vantage".
     # The "default" sentinel (no explicit config) uses all available vendors.
-    explicit = [v for v in primary_vendors if v and v != "default"]
+    explicit = [v for v in primary_vendors if v and v != "default" and v != "none"]
     if explicit:
         vendor_chain = [v for v in explicit if v in VENDOR_METHODS[method]]
         if not vendor_chain:
@@ -223,6 +287,12 @@ def route_to_vendor(method: str, *args, **kwargs):
             )
     else:
         vendor_chain = all_available_vendors
+
+    # Strict enforcement: under NO circumstances may Yahoo / yfinance be called for market VN
+    if market == "VN":
+        vendor_chain = [v for v in vendor_chain if v not in ("yfinance", "yahoo")]
+        if not vendor_chain:
+            vendor_chain = [v for v in ("algolab", "ssi") if v in VENDOR_METHODS[method]]
 
     last_no_data: NoMarketDataError | None = None
     last_unavailable: VendorUnavailableError | None = None
@@ -295,3 +365,48 @@ def route_to_vendor(method: str, *args, **kwargs):
         raise first_error
 
     raise RuntimeError(f"No available vendor for '{method}'")
+
+
+def get_closes(symbol: str, start_date: str, end_date: str, market: str | None = None) -> pd.Series:
+    """Daily closes from start_date up to, not including, end_date.
+
+    Market-aware: When market is 'VN' (or symbol ends with '.VN'), routes to VN vendors
+    and never calls Yahoo Finance.
+    """
+    config = get_config()
+    target_market = (market or config.get("market", "US")).upper()
+    if target_market == "VN" or symbol.upper().endswith(".VN"):
+        raise VendorUnavailableError(
+            "Vietnam market vendor (AlgoLab / SSI) is not yet mounted in foundation phase."
+        )
+    return get_yfinance_closes(symbol, start_date, end_date)
+
+
+def get_company_profile(ticker: str, market: str | None = None) -> dict:
+    """Resolve company identity metadata via configured vendor.
+
+    Market-aware: When market is 'VN' (or ticker ends with '.VN'), routes to VN vendors
+    and never calls Yahoo Finance.
+    """
+    config = get_config()
+    target_market = (market or config.get("market", "US")).upper()
+    if target_market == "VN" or ticker.upper().endswith(".VN"):
+        return {}
+    return get_yfinance_company_profile(ticker)
+
+
+def get_verified_market_snapshot(symbol: str, as_of_date: str, look_back_days: int = 30) -> str:
+    """Market-aware verification snapshot for exact market-data claims.
+
+    Routes by market:
+    - VN: routes to VN vendors without touching Yahoo.
+    - US / default: generates verified snapshot from vendor OHLCV.
+    """
+    config = get_config()
+    target_market = (config.get("market") or "US").upper()
+    if target_market == "VN" or symbol.upper().endswith(".VN"):
+        return vendor_unavailable(
+            "get_verified_market_snapshot",
+            VendorUnavailableError("Vietnam market vendor (AlgoLab / SSI) is not yet mounted in foundation phase."),
+        )
+    return get_yfinance_snapshot(symbol, as_of_date, look_back_days)

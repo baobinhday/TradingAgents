@@ -100,19 +100,24 @@ def _normalize_crypto(s: str) -> str | None:
     return f"{base}-USD" if base else None
 
 
-def normalize_symbol(raw: str) -> str:
-    """Map a user/broker symbol to its canonical Yahoo Finance symbol.
+def normalize_symbol(raw: str, market: str | None = None) -> str:
+    """Map a user/broker symbol to its canonical symbol for the target market.
 
-    Resolution order (first match wins):
-      1. Explicit alias table (metals, energy, index CFDs).
-      2. Crypto rule: a known crypto base quoted in USD/USDT/USDC (dashed or
-         not) -> ``BASE-USD``.
-      3. Forex rule: six letters that are two ISO currency codes -> ``PAIR=X``.
-      4. HK rule: a numeric ``.HK`` code -> Yahoo's 4-digit padding
-         (``09992.HK`` -> ``9992.HK``, ``700.HK`` -> ``0700.HK``).
-      5. Shanghai rule: ``600519.SH`` -> ``600519.SS``.
-      6. Otherwise the upper-cased symbol is returned unchanged (plain
-         equities, ETFs, Yahoo-native symbols like ``GC=F`` or ``^GSPC``).
+    When market is 'VN' (or symbol carries a '.VN' suffix):
+      Vietnamese tickers (SSI, VNM, VCB, BSR, QNS, VNINDEX, VN30, etc.)
+      remain clean uppercase alphanumeric strings without '.VN' suffix,
+      ready for AlgoLab and SSI MCP vendors.
+
+    When market is 'US' (default):
+      Resolution order (first match wins):
+        1. Explicit alias table (metals, energy, index CFDs).
+        2. Crypto rule: a known crypto base quoted in USD/USDT/USDC (dashed or
+           not) -> BASE-USD.
+        3. Forex rule: six letters that are two ISO currency codes -> PAIR=X.
+        4. HK rule: a numeric .HK code -> Yahoo's 4-digit padding
+           (09992.HK -> 9992.HK, 700.HK -> 0700.HK).
+        5. Shanghai rule: 600519.SH -> 600519.SS.
+        6. Otherwise the upper-cased symbol is returned unchanged.
 
     A trailing ``+`` (broker CFD marker, e.g. ``XAUUSD+``) is stripped before
     matching. The function is purely syntactic — it performs no network
@@ -124,6 +129,21 @@ def normalize_symbol(raw: str) -> str:
     s = raw.strip().upper()
     # Broker CFD/qualifier suffixes Yahoo never uses.
     s = s.rstrip("+")
+
+    # If market not explicitly passed, check active run config if available
+    if market is None:
+        try:
+            from tradingagents.dataflows.config import get_config
+
+            market = get_config().get("market", "US")
+        except Exception:
+            market = "US"
+
+    is_vn = (market and market.upper() == "VN") or s.endswith(".VN")
+    if is_vn:
+        if s.endswith(".VN"):
+            s = s[:-3]
+        return s
 
     crypto = _normalize_crypto(s)
     if s in _ALIASES:

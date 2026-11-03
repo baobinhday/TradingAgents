@@ -11,8 +11,12 @@ from langgraph.prebuilt import InjectedState
 
 from tradingagents.dataflows.date_window import as_of, as_of_window
 from tradingagents.dataflows.errors import NoMarketDataError, VendorUnavailableError
-from tradingagents.dataflows.router import no_data_available, route_to_vendor, vendor_unavailable
-from tradingagents.dataflows.vendors.yahoo.snapshot import build_verified_market_snapshot
+from tradingagents.dataflows.router import (
+    get_verified_market_snapshot as build_verified_market_snapshot,
+    no_data_available,
+    route_to_vendor,
+    vendor_unavailable,
+)
 
 
 @tool

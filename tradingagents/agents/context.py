@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from tradingagents.dataflows.date_window import is_historical
-from tradingagents.dataflows.vendors.yahoo.fundamentals import get_company_profile
+from tradingagents.dataflows.router import get_company_profile
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def _clean_identity_value(value: Any) -> str | None:
     return cleaned
 
 
-def resolve_instrument_identity(ticker: str) -> dict:
+def resolve_instrument_identity(ticker: str, market: str | None = None) -> dict:
     """Resolve deterministic identity metadata (company name, sector, …) for a ticker.
 
     This exists to stop the pipeline from hallucinating a *different* company
@@ -75,17 +75,25 @@ def resolve_instrument_identity(ticker: str) -> dict:
     Identity resolves for the same instrument the price path fetches
     (``XAUUSD`` -> ``GC=F``, #983).
     """
+    if market is None:
+        try:
+            from tradingagents.dataflows.config import get_config
+
+            market = get_config().get("market", "US")
+        except Exception:
+            market = "US"
+
     try:
-        return _identity(ticker)
+        return _identity(ticker, market)
     except Exception as exc:  # noqa: BLE001 — fail open, never block the run
         logger.debug("Could not resolve instrument identity for %s: %s", ticker, exc)
         return {}
 
 
 @functools.lru_cache(maxsize=256)
-def _identity(ticker: str) -> dict:
+def _identity(ticker: str, market: str = "US") -> dict:
     """The vendor's identity fields for ``ticker``; raises if the lookup fails."""
-    info = get_company_profile(ticker)
+    info = get_company_profile(ticker, market=market)
     identity: dict[str, str] = {}
     company_name = _clean_identity_value(info.get("longName")) or _clean_identity_value(
         info.get("shortName")

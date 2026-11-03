@@ -21,7 +21,7 @@ Add an explicit market concept (`market="VN" | "US" | ...`) and route every data
 
 ## Acceptance Criteria
 
-- [ ] All direct Yahoo call sites route through market-aware vendor abstraction.
-- [ ] Passing a Vietnamese ticker with `market="VN"` never invokes Yahoo Finance.
-- [ ] Existing US market behavior and regression tests remain 100% green.
-- [ ] Unit tests verify market parameter propagation from CLI, API schemas, and runtime agents.
+- [x] All direct Yahoo call sites route through market-aware vendor abstraction.
+- [x] Passing a Vietnamese ticker with `market="VN"` never invokes Yahoo Finance.
+- [x] Existing US market behavior and regression tests remain 100% green.
+- [x] Unit tests verify market parameter propagation from CLI, API schemas, and runtime agents.
