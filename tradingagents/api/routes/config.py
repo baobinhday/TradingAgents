@@ -63,8 +63,8 @@ def get_config() -> ConfigResponse:
             )
         )
 
-    # Sort so providers with active keys appear first
-    provider_details.sort(key=lambda p: (not p.has_key, p.name))
+    # Sort so providers with active keys (or openai_compatible) appear first
+    provider_details.sort(key=lambda p: (not (p.id == "openai_compatible" or p.has_key), p.name))
     supported_providers = [p.id for p in provider_details]
 
     return ConfigResponse(
@@ -78,8 +78,12 @@ def get_config() -> ConfigResponse:
 
 
 @router.get("/models")
-def get_provider_models(provider: str):
+def get_provider_models(
+    provider: str,
+    base_url: str | None = None,
+    api_key: str | None = None,
+):
     """Return available models for a given provider, querying live APIs when available."""
     from tradingagents.api.model_service import get_models_for_provider
-    return get_models_for_provider(provider)
+    return get_models_for_provider(provider, base_url=base_url, api_key=api_key)
 

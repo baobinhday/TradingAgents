@@ -200,3 +200,27 @@ def test_get_provider_models(client):
     assert len(data["quick_models"]) > 0
 
 
+@pytest.mark.unit
+def test_get_openai_compatible_models_api(client, monkeypatch):
+    from unittest.mock import MagicMock
+
+    import requests
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "data": [{"id": "vllm-model-1"}, {"id": "vllm-model-2-8b"}]
+    }
+    monkeypatch.setattr(requests, "get", lambda *a, **kw: mock_resp)
+
+    response = client.get("/api/config/models?provider=openai_compatible&base_url=http://localhost:8000/v1")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["provider"] == "openai_compatible"
+    assert data["is_live"] is True
+    ids = [m["id"] for m in data["all_models"]]
+    assert "vllm-model-1" in ids
+    assert "vllm-model-2-8b" in ids
+
+
+

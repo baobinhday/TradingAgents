@@ -96,3 +96,46 @@ def test_structured_output_suppresses_object_tool_choice(monkeypatch):
     assert out == "BOUND"
     assert captured["method"] == "function_calling"
     assert captured["tool_choice"] is None  # not the object form
+
+
+@pytest.mark.unit
+def test_build_llm_kwargs_forwards_api_key():
+    from tradingagents.llm_clients.factory import build_llm_kwargs
+    kw = build_llm_kwargs({"llm_provider": "openai_compatible", "api_key": "my-secret-key"})
+    assert kw["api_key"] == "my-secret-key"
+
+    kw2 = build_llm_kwargs({"llm_provider": "openai_compatible", "openai_compatible_api_key": "my-secret-key-2"})
+    assert kw2["api_key"] == "my-secret-key-2"
+
+
+@pytest.mark.unit
+def test_get_models_for_openai_compatible(monkeypatch):
+    from unittest.mock import MagicMock
+
+    import requests
+
+    from tradingagents.api.model_service import get_models_for_provider
+
+    # Without base_url, returns curated defaults
+    res = get_models_for_provider("openai_compatible")
+    assert res["provider"] == "openai_compatible"
+    assert len(res["quick_models"]) > 0
+    assert len(res["deep_models"]) > 0
+
+    # With base_url, hits mock endpoint
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "data": [
+            {"id": "meta-llama/Llama-3.1-8B-Instruct"},
+            {"id": "deepseek-ai/DeepSeek-V3"},
+        ]
+    }
+    monkeypatch.setattr(requests, "get", lambda *a, **kw: mock_resp)
+
+    res_live = get_models_for_provider("openai_compatible", base_url="http://mock-server:8000/v1")
+    assert res_live["is_live"] is True
+    model_ids = [m["id"] for m in res_live["all_models"]]
+    assert "meta-llama/Llama-3.1-8B-Instruct" in model_ids
+    assert "deepseek-ai/DeepSeek-V3" in model_ids
+

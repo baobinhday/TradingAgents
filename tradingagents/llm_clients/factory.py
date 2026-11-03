@@ -131,6 +131,11 @@ def build_llm_kwargs(config: dict) -> dict[str, Any]:
         key = "max_output_tokens" if provider == "google" else "max_tokens"
         kwargs[key] = _coerce_max_tokens(max_tokens)
 
+    # API key override from config dictionary (e.g. web console or programmatic override)
+    api_key = config.get("api_key") or config.get("openai_compatible_api_key")
+    if api_key:
+        kwargs["api_key"] = api_key
+
     return kwargs
 
 

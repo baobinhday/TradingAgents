@@ -14,8 +14,15 @@ export async function fetchConfig(): Promise<ConfigResponse> {
   return res.json();
 }
 
-export async function fetchProviderModels(provider: string): Promise<ProviderModelsResponse> {
-  const res = await fetch(`${BASE_URL}/config/models?provider=${encodeURIComponent(provider)}`);
+export async function fetchProviderModels(
+  provider: string,
+  baseUrl?: string,
+  apiKey?: string
+): Promise<ProviderModelsResponse> {
+  const params = new URLSearchParams({ provider });
+  if (baseUrl) params.set("base_url", baseUrl);
+  if (apiKey) params.set("api_key", apiKey);
+  const res = await fetch(`${BASE_URL}/config/models?${params.toString()}`);
   if (!res.ok) throw new Error(`Failed to fetch models for ${provider}`);
   return res.json();
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Play, Settings2, Users, Calendar, AlertCircle, RefreshCw, Cpu, Database } from "lucide-react";
+import { Play, Settings2, Users, Calendar, AlertCircle, RefreshCw, Cpu, Database, Server } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -26,6 +26,34 @@ const VN_PRESET_TICKERS = [
   { label: "Securities & Tech", tickers: "SSI, VND, VCI, HCM, FPT" },
   { label: "Real Estate & Steel", tickers: "VHM, VIC, KDH, HPG, HSG" },
 ];
+
+function getStorageItem(key: string, defaultVal: string = ""): string {
+  try {
+    return localStorage.getItem(key) || defaultVal;
+  } catch {
+    return defaultVal;
+  }
+}
+
+function setStorageItem(key: string, val: string): void {
+  try {
+    if (val) {
+      localStorage.setItem(key, val);
+    } else {
+      localStorage.removeItem(key);
+    }
+  } catch (e) {
+    console.warn("Could not write to localStorage", e);
+  }
+}
+
+function removeStorageItem(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.warn("Could not remove from localStorage", e);
+  }
+}
 
 export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onStart, onNavigateToMcp }) => {
   // Today's date YYYY-MM-DD
@@ -63,24 +91,43 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
   const [customDeep, setCustomDeep] = useState(false);
   const [customQuick, setCustomQuick] = useState(false);
 
+  // OpenAI-compatible endpoint state
+  const [rememberCredentials, setRememberCredentials] = useState<boolean>(() => {
+    const saved = getStorageItem("remember_llm_credentials", "true");
+    return saved === "true";
+  });
+  const [openaiBaseUrl, setOpenaiBaseUrl] = useState<string>(() => {
+    return getStorageItem("openai_compatible_base_url", "http://localhost:8000/v1");
+  });
+  const [openaiApiKey, setOpenaiApiKey] = useState<string>(() => {
+    return getStorageItem("openai_compatible_api_key", "");
+  });
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   // Fetch models whenever provider changes
-  const loadModels = async (provider: string) => {
+  const loadModels = async (provider: string, baseUrlOverride?: string, apiKeyOverride?: string) => {
     setLoadingModels(true);
+    setFetchError(null);
     try {
-      const data = await fetchProviderModels(provider);
+      const bUrl = baseUrlOverride !== undefined ? baseUrlOverride : (provider === "openai_compatible" ? openaiBaseUrl : undefined);
+      const aKey = apiKeyOverride !== undefined ? apiKeyOverride : (provider === "openai_compatible" ? openaiApiKey : undefined);
+      const data = await fetchProviderModels(provider, bUrl, aKey);
       setProviderModels(data);
 
       const deepIds = (data.deep_models || []).map((m) => m.id);
       const quickIds = (data.quick_models || []).map((m) => m.id);
 
-      if (!deepIds.includes(deepThinkLlm) && !customDeep) {
+      if (!deepIds.includes(deepThinkLlm) && !customDeep && data.default_deep) {
         setDeepThinkLlm(data.default_deep);
       }
-      if (!quickIds.includes(quickThinkLlm) && !customQuick) {
+      if (!quickIds.includes(quickThinkLlm) && !customQuick && data.default_quick) {
         setQuickThinkLlm(data.default_quick);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Could not load provider models", err);
+      if (provider === "openai_compatible") {
+        setFetchError(err.message || "Could not connect to custom OpenAI-compatible endpoint");
+      }
     } finally {
       setLoadingModels(false);
     }
@@ -119,6 +166,40 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
     setLlmProvider(newProvider);
     setCustomDeep(false);
     setCustomQuick(false);
+    setFetchError(null);
+  };
+
+  const handleToggleRemember = (enabled: boolean) => {
+    setRememberCredentials(enabled);
+    setStorageItem("remember_llm_credentials", String(enabled));
+    if (enabled) {
+      setStorageItem("openai_compatible_base_url", openaiBaseUrl);
+      if (openaiApiKey) setStorageItem("openai_compatible_api_key", openaiApiKey);
+    } else {
+      removeStorageItem("openai_compatible_base_url");
+      removeStorageItem("openai_compatible_api_key");
+    }
+  };
+
+  const handleClearStorage = () => {
+    removeStorageItem("openai_compatible_base_url");
+    removeStorageItem("openai_compatible_api_key");
+    setOpenaiBaseUrl("http://localhost:8000/v1");
+    setOpenaiApiKey("");
+  };
+
+  const handleBaseUrlChange = (url: string) => {
+    setOpenaiBaseUrl(url);
+    if (rememberCredentials) {
+      setStorageItem("openai_compatible_base_url", url);
+    }
+  };
+
+  const handleApiKeyChange = (key: string) => {
+    setOpenaiApiKey(key);
+    if (rememberCredentials) {
+      setStorageItem("openai_compatible_api_key", key);
+    }
   };
 
   const handleMarketChange = (newMarket: string) => {
@@ -189,6 +270,11 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
       return;
     }
 
+    if (llmProvider === "openai_compatible" && !openaiBaseUrl.trim()) {
+      setError("Please specify a Base URL for the OpenAI-compatible endpoint.");
+      return;
+    }
+
     const req: BacktestRunRequest = {
       tickers: tickerList,
       start_date: startDate,
@@ -205,6 +291,12 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
         max_risk_discuss_rounds: Number(maxRiskRounds),
         market: market,
         ...(market === "VN" ? { benchmark_ticker: "VNINDEX" } : {}),
+        ...(llmProvider === "openai_compatible"
+          ? {
+              backend_url: openaiBaseUrl.trim(),
+              ...(openaiApiKey.trim() ? { api_key: openaiApiKey.trim() } : {}),
+            }
+          : {}),
       },
       run_id: runId.trim() ? runId.trim() : null,
     };
@@ -583,6 +675,93 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
               )}
             </div>
           </div>
+
+          {/* OpenAI-Compatible Endpoint Settings */}
+          {llmProvider === "openai_compatible" && (
+            <div className="p-3.5 rounded-lg border border-primary/25 bg-primary/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Server className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">OpenAI-Compatible Endpoint Settings</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-mono">vLLM · Ollama · LM Studio · LiteLLM · Relays</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                    Base URL (required)
+                  </label>
+                  <div className="flex space-x-2">
+                    <Input
+                      value={openaiBaseUrl}
+                      onChange={(e) => handleBaseUrlChange(e.target.value)}
+                      placeholder="http://localhost:8000/v1"
+                      disabled={isRunning}
+                      className="text-xs font-mono h-9"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => loadModels("openai_compatible", openaiBaseUrl, openaiApiKey)}
+                      disabled={loadingModels || isRunning || !openaiBaseUrl.trim()}
+                      className="px-3 py-1 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 rounded-md text-xs font-medium whitespace-nowrap flex items-center space-x-1.5 transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${loadingModels ? "animate-spin" : ""}`} />
+                      <span>Fetch Models</span>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                    API Key (optional for keyless local endpoints)
+                  </label>
+                  <Input
+                    type="password"
+                    value={openaiApiKey}
+                    onChange={(e) => handleApiKeyChange(e.target.value)}
+                    placeholder="sk-... (leave blank if not required)"
+                    disabled={isRunning}
+                    className="text-xs font-mono h-9"
+                  />
+                </div>
+              </div>
+
+              {/* LocalStorage persistence controls */}
+              <div className="flex flex-wrap items-center justify-between pt-1 border-t border-border/30 text-xs gap-2">
+                <label className="flex items-center space-x-2 cursor-pointer select-none text-muted-foreground hover:text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={rememberCredentials}
+                    onChange={(e) => handleToggleRemember(e.target.checked)}
+                    className="rounded accent-primary w-3.5 h-3.5"
+                  />
+                  <span>Lưu Base URL & Key vào localStorage của trình duyệt</span>
+                </label>
+                <div className="flex items-center space-x-2">
+                  {rememberCredentials && (openaiBaseUrl || openaiApiKey) && (
+                    <span className="text-[11px] text-emerald-400 font-medium flex items-center space-x-1">
+                      <span>✓ Đã lưu localStorage</span>
+                    </span>
+                  )}
+                  {(openaiBaseUrl !== "http://localhost:8000/v1" || openaiApiKey) && (
+                    <button
+                      type="button"
+                      onClick={handleClearStorage}
+                      className="text-[11px] text-muted-foreground hover:text-rose-400 underline transition-colors"
+                    >
+                      Xóa dữ liệu đã lưu
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {fetchError && (
+                <div className="text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded flex items-center space-x-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{fetchError} (You can enter custom model IDs manually above)</span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>

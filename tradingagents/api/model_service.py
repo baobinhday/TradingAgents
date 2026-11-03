@@ -42,6 +42,18 @@ CURATED_DEFAULTS: dict[str, dict[str, list[tuple[str, str]]]] = {
             ("Mixtral 8x7B 32K", "mixtral-8x7b-32768"),
         ],
     },
+    "openai_compatible": {
+        "quick": [
+            ("Llama 3.1 8B Instruct", "meta-llama/llama-3.1-8b-instruct"),
+            ("Qwen 2.5 7B Instruct", "qwen/qwen-2.5-7b-instruct"),
+            ("Mistral 7B Instruct", "mistralai/mistral-7b-instruct"),
+        ],
+        "deep": [
+            ("Llama 3.3 70B Instruct", "meta-llama/llama-3.3-70b-instruct"),
+            ("DeepSeek V3 / R1", "deepseek-ai/deepseek-r1"),
+            ("Qwen 2.5 72B Instruct", "qwen/qwen-2.5-72b-instruct"),
+        ],
+    },
 }
 
 
@@ -96,14 +108,62 @@ def _fetch_live_ollama_models() -> list[str]:
     return []
 
 
-def get_models_for_provider(provider: str) -> dict[str, Any]:
+def _fetch_live_openai_compatible_models(base_url: str, api_key: str | None = None) -> list[str]:
+    """Fetch live model IDs from an OpenAI-compatible endpoint."""
+    raw = base_url.strip().rstrip("/")
+    if not raw:
+        return []
+    if raw.endswith("/models"):
+        urls = [raw]
+    elif raw.endswith("/v1"):
+        urls = [f"{raw}/models"]
+    else:
+        urls = [f"{raw}/v1/models", f"{raw}/models"]
+
+    headers = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    for url in urls:
+        try:
+            resp = requests.get(url, headers=headers, timeout=4)
+            if resp.status_code == 200:
+                payload = resp.json()
+                items = []
+                if isinstance(payload, dict):
+                    items = payload.get("data") or payload.get("models") or []
+                elif isinstance(payload, list):
+                    items = payload
+
+                models = []
+                for item in items:
+                    if isinstance(item, dict):
+                        mid = item.get("id") or item.get("name")
+                        if mid:
+                            models.append(str(mid))
+                    elif isinstance(item, str):
+                        models.append(item)
+                if models:
+                    return sorted(models)
+        except Exception as exc:
+            logger.debug("Failed checking models on %s: %s", url, exc)
+            continue
+    return []
+
+
+def get_models_for_provider(
+    provider: str,
+    base_url: str | None = None,
+    api_key: str | None = None,
+) -> dict[str, Any]:
     """Return available quick and deep models for a provider, using live API when possible."""
     p = provider.lower()
     now = time.time()
+    cache_key = f"{p}:{base_url}" if (p == "openai_compatible" and base_url) else p
 
     # Check cache
-    if p in _MODEL_CACHE:
-        timestamp, cached_data = _MODEL_CACHE[p]
+    if cache_key in _MODEL_CACHE:
+        timestamp, cached_data = _MODEL_CACHE[cache_key]
         if now - timestamp < CACHE_TTL:
             return cached_data
 
@@ -130,12 +190,15 @@ def get_models_for_provider(provider: str) -> dict[str, Any]:
             deep_options = [{"id": mid, "name": name} for name, mid in curated["deep"]]
 
     # 2. Try live fetching if API key or service is available
-    env_var = get_api_key_env(p)
-    api_key = os.getenv(env_var) if env_var else None
+    if not api_key:
+        env_var = get_api_key_env(p)
+        api_key = os.getenv(env_var) if env_var else None
 
     live_models: list[str] = []
     try:
-        if p == "nvidia" and api_key:
+        if p == "openai_compatible" and base_url:
+            live_models = _fetch_live_openai_compatible_models(base_url, api_key)
+        elif p == "nvidia" and api_key:
             live_models = _fetch_live_nvidia_models(api_key)
         elif p == "groq" and api_key:
             live_models = _fetch_live_groq_models(api_key)
@@ -186,5 +249,5 @@ def get_models_for_provider(provider: str) -> dict[str, Any]:
         "all_models": all_options,
     }
 
-    _MODEL_CACHE[p] = (now, res)
+    _MODEL_CACHE[cache_key] = (now, res)
     return res
