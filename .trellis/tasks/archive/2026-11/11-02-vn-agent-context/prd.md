@@ -30,8 +30,8 @@ Add Vietnam equity market rules, analyst tool capabilities, simulated reporting 
 
 ## Acceptance Criteria
 
-- [ ] Fundamental Analyst prompt and tool invocations observe the reporting lag.
-- [ ] News Analyst handles source window limits without throwing validation errors.
-- [ ] A test fixture with conflicting source figures produces a report that shows both values with their sources.
-- [ ] Social Analyst placeholder cleanly outputs standardized signal without crashing the pipeline.
-- [ ] Unit tests verify prompt templates and context filtering for Vietnam market.
+- [x] Fundamental Analyst prompt and tool invocations observe the reporting lag.
+- [x] News Analyst handles source window limits without throwing validation errors.
+- [x] A test fixture with conflicting source figures produces a report that shows both values with their sources.
+- [x] Social Analyst placeholder cleanly outputs standardized signal without crashing the pipeline.
+- [x] Unit tests verify prompt templates and context filtering for Vietnam market.
