@@ -214,3 +214,25 @@ Extended backend schemas and get_run_detail to read full_states_log_{date}.json 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 9: Integrate OpenAI-compatible provider with live discovery and localStorage persistence
+<!-- trellis-session: v=2 fp=11c2fae30d817362 -->
+
+**Date**: 2026-11-03
+**Task**: Integrate OpenAI-compatible provider with live discovery and localStorage persistence
+**Branch**: `dev`
+
+### Summary
+
+Integrated generic OpenAI-compatible provider across Web console and backend execution engine. Added live /v1/models dynamic discovery, curated defaults for local models, direct api_key forwarding from config_overrides, dedicated Base URL and API Key controls in ConfigPanel with toggleable browser localStorage persistence and clear actions, and verified full test coverage with 47 passing tests.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6092a58` | feat(llm): integrate OpenAI-compatible provider with live model discovery and browser persistence |
+
+### Status
+
+[OK] **Completed**
