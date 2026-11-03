@@ -46,10 +46,10 @@ Implement AlgoLab and SSI MCP clients and vendor adapters for Vietnamese data. A
 
 ## Acceptance Criteria
 
-- [ ] AlgoLab and SSI vendor adapters pass mock and unit tests with offline fixtures.
-- [ ] Live integration test can fetch daily bars for HOSE (`SSI`), HNX (`PVS`), and a verified UPCoM ticker.
-- [ ] Auto-refresh logic seamlessly rotates tokens without requiring re-authentication.
-- [ ] Rate limiter handles burst calls without unhandled 429 exceptions.
-- [ ] A failed AlgoLab price call falls back to SSI for the whole series.
-- [ ] Multi-source results stay labeled, and a single-source failure still returns the other source.
-- [ ] The API key never appears in logs or errors.
+- [x] AlgoLab and SSI vendor adapters pass mock and unit tests with offline fixtures.
+- [x] Live integration test can fetch daily bars for HOSE (`SSI`), HNX (`PVS`), and a verified UPCoM ticker.
+- [x] Auto-refresh logic seamlessly rotates tokens without requiring re-authentication.
+- [x] Rate limiter handles burst calls without unhandled 429 exceptions.
+- [x] A failed AlgoLab price call falls back to SSI for the whole series.
+- [x] Multi-source results stay labeled, and a single-source failure still returns the other source.
+- [x] The API key never appears in logs or errors.
