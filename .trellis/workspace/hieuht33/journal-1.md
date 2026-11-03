@@ -94,3 +94,42 @@ Implemented official vendor integration for Vietnam stock market support (11-02-
 ### Status
 
 [OK] **Completed**
+
+
+## Session 5: Vietnam Agent Context, Market Rules, Reporting Lag & Social Placeholder
+<!-- trellis-session: v=2 fp=d1ddddebd61fe1e0 -->
+
+**Date**: 2026-11-03
+**Task**: Vietnam Agent Context, Market Rules, Reporting Lag & Social Placeholder
+**Branch**: `dev`
+
+### Summary
+
+Implemented Vietnam equity market trading rules, simulated statutory reporting lag for financial statements, social analyst unavailable placeholder, and multi-source co-sourcing prompts.
+
+### Main Changes
+
+- Injected Vietnam market rules (HOSE +-7%, HNX +-10%, UPCoM +-15%, T+2.5, VND, foreign room) into instrument context
+- Created vn_lag.py with 45-day quarterly and 90-day annual simulated statutory reporting lag filtering
+- Applied reporting lag filter to AlgoLab and SSI financial statements and withheld live valuation profile on historical dates
+- Implemented structured Social Analyst placeholder for Vietnam equities with zero network/LLM calls
+- Updated News and Fundamentals Analyst prompts for source window limits and multi-source co-sourcing comparison
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3088b67` | feat(vietnam): implement Vietnam market rules, reporting lag, and social placeholder |
+
+### Testing
+
+- [OK] Added 16 unit tests in test_vn_agent_context.py covering rules, lag filtering, social placeholder, and conflicting figures
+- [OK] Ran all 1,484 tests in project test suite (all green) and verified ruff lint checks
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Proceed to Subtask 5 (11-02-vn-integration-backtest): end-to-end integration and backtesting for Vietnam market
