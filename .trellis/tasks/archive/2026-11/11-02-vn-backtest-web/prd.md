@@ -27,7 +27,7 @@ Support Vietnam runs in backtest simulation, CLI runner, and Web console with po
 
 ## Acceptance Criteria
 
-- [ ] Web UI displays Market selector and adjusts date constraints dynamically for Vietnam.
-- [ ] Backtest runner accepts `market="VN"`, ticker="VNM", and executes end-to-end without errors.
-- [ ] Attempting to backtest beyond the configured window shows a clear, actionable validation error in both CLI and Web UI.
-- [ ] SSE progress streaming and final performance reports render Vietnamese backtest results correctly.
+- [x] Web UI displays Market selector and adjusts date constraints dynamically for Vietnam.
+- [x] Backtest runner accepts `market="VN"`, ticker="VNM", and executes end-to-end without errors.
+- [x] Attempting to backtest beyond the configured window shows a clear, actionable validation error in both CLI and Web UI.
+- [x] SSE progress streaming and final performance reports render Vietnamese backtest results correctly.
