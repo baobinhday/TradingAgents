@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Sliders, Activity, BarChart2, History } from "lucide-react";
+import { Sliders, Activity, BarChart2, History, Database } from "lucide-react";
 import { Header } from "./components/Header";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { LiveMonitor } from "./components/LiveMonitor";
 import { ResultsPanel } from "./components/ResultsPanel";
 import { HistoryPanel } from "./components/HistoryPanel";
+import { McpPanel } from "./components/McpPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
 import {
   fetchConfig,
@@ -212,6 +213,10 @@ export function App() {
                 <History className="w-4 h-4" />
                 <span>History</span>
               </TabsTrigger>
+              <TabsTrigger value="mcp" className="flex items-center space-x-2">
+                <Database className="w-4 h-4" />
+                <span>Data & MCP</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -220,6 +225,7 @@ export function App() {
               config={config}
               isRunning={status === "running"}
               onStart={handleStart}
+              onNavigateToMcp={() => setActiveTab("mcp")}
             />
           </TabsContent>
 
@@ -251,6 +257,10 @@ export function App() {
               viewingRunId={viewingRunId}
               status={status}
             />
+          </TabsContent>
+
+          <TabsContent value="mcp">
+            <McpPanel />
           </TabsContent>
         </Tabs>
       </main>

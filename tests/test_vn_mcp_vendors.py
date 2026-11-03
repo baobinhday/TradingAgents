@@ -402,3 +402,57 @@ def test_secrets_never_leaked_in_exceptions_or_logs(monkeypatch, caplog):
     # Check captured logs
     for record in caplog.records:
         assert secret_key not in record.message
+
+
+# ==============================================================================
+# 8. News Slicing & PageSize Verification
+# ==============================================================================
+
+@pytest.mark.unit
+def test_algolab_get_global_news_handles_columnar_items():
+    from tradingagents.dataflows.vendors.algolab.news import get_global_news as algolab_global_news
+
+    mock_recap_data = {
+        "status": "success",
+        "data": {
+            "kind": "recap",
+            "items": {
+                "columns": ["kind", "id", "content", "audio_url", "message_count", "published_at"],
+                "rows": [
+                    ["daily_recap", "1", "🌟 DAILY RECAP 🌟\n\nVN-Index up 1.5%", None, 0, "2026-11-01"],
+                    ["daily_recap", "2", "🌟 MARKET WRAP 🌟\n\nBanking sector rallies", None, 0, "2026-10-31"],
+                ],
+            },
+        },
+    }
+
+    with patch.object(AlgoLabClient, "call_tool", return_value=mock_recap_data):
+        out = algolab_global_news("2026-11-01", look_back_days=7, limit=5)
+        assert "Vietnam Market Recap News" in out
+        assert "DAILY RECAP" in out
+        assert "VN-Index up 1.5%" in out
+
+
+@pytest.mark.unit
+def test_ssi_get_global_news_clamps_page_size():
+    from tradingagents.dataflows.vendors.ssi.news import get_global_news as ssi_global_news
+
+    mock_news_data = {
+        "status": "ok",
+        "data": {
+            "news": [
+                {"title": "SSI Market Report", "news_source": "SSI", "short_content": "Market summary"},
+            ]
+        },
+    }
+
+    with patch.object(SSIMCPClient, "call_tool") as mock_call:
+        mock_call.return_value = mock_news_data
+        out = ssi_global_news("2026-11-01", look_back_days=7, limit=5)
+        assert "Vietnam Market News" in out
+        assert "SSI Market Report" in out
+        # Check that pageSize passed to tool is clamped to valid SSI options (10)
+        assert mock_call.call_args[0][0] == "marketdata_list_company_news"
+        args = mock_call.call_args[0][1]
+        assert args["pageSize"] == 10
+

@@ -21,6 +21,10 @@ from tradingagents.dataflows.errors import (
 logger = logging.getLogger(__name__)
 
 ALGOLAB_MCP_URL = os.getenv("ALGOLAB_MCP_URL", "https://mcp.algolab.vn")
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/120.0.0.0 Safari/537.36 TradingAgents/1.0"
+)
 
 
 def get_algolab_api_key() -> str | None:
@@ -94,6 +98,7 @@ class AlgoLabClient:
             )
 
         headers = {
+            "User-Agent": DEFAULT_USER_AGENT,
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
             "Accept": "application/json, text/event-stream",

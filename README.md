@@ -59,7 +59,7 @@ Full release notes are in [CHANGELOG.md](CHANGELOG.md).
 
 <div align="center">
 
-🚀 [TradingAgents](#tradingagents-framework) | ⚡ [Installation & CLI](#installation-and-cli) | 🎬 [Demo](https://www.youtube.com/watch?v=90gr5lwjIho) | 📦 [Package Usage](#tradingagents-package) | 🤝 [Contributing](#contributing) | 📄 [Citation](#citation)
+🚀 [TradingAgents](#tradingagents-framework) | ⚡ [Installation & CLI](#installation-and-cli) | 🌐 [Web Console](#web-console-and-backtesting-ui) | 🎬 [Demo](https://www.youtube.com/watch?v=90gr5lwjIho) | 📦 [Package Usage](#tradingagents-package) | 🤝 [Contributing](#contributing) | 📄 [Citation](#citation)
 
 </div>
 
@@ -220,6 +220,36 @@ Each flag skips only its own question. Run without a terminal, a missing answer 
 At start-up the interactive CLI mentions a newer release and notices from Tauric Research. It checks at most once a day, in the background, and sends nothing about your runs; set `TRADINGAGENTS_NO_UPDATE_CHECK=1` to turn it off. Runs without a terminal never check.
 
 A saved report also includes `complete_report.html`, the report as one page with its sections listed beside the text, for reading in a browser, on a phone or in print. Answering the save question at the prompt also asks about the page and can open it in your browser; `--no-html` skips it, and so does `ta.save_reports(state, "NVDA", html=False)` from Python.
+
+### Web Console and Backtesting UI
+
+TradingAgents provides a modern, real-time Web Console powered by FastAPI and React. It allows you to configure backtests, stream agent debates and execution logs live via Server-Sent Events (SSE), and inspect Alpha benchmark analytics.
+
+#### 1. Install Web Dependencies
+
+```bash
+pip install ".[web]"
+# or with development dependencies:
+pip install -e ".[dev,web]"
+```
+
+#### 2. Launch the Web Server
+
+```bash
+tradingagents web                  # starts server and opens browser at http://127.0.0.1:8000
+tradingagents web --port 8080      # specify custom port
+tradingagents web --host 0.0.0.0   # allow remote or LAN access
+tradingagents web --no-open        # headless / remote server (disables auto-opening browser)
+python -m cli.main web             # run directly from source
+```
+
+The Web UI includes:
+- **Configuration Panel:** Select tickers with built-in presets (Tech Giants, Semiconductors, Commodities/Gold, Crypto), date ranges, intervals, and dynamically select LLM models (NVIDIA NIM, Groq, OpenRouter, Ollama, OpenAI, Anthropic, Gemini).
+- **Live Monitor:** Track cell execution progress, stream debate logs in real-time, and control runs with **Stop Sweep** and **Reset Engine**.
+- **Results & Analytics:** Directional Hit Rate (%), Mean Alpha (%), and rating distribution charts evaluated against market benchmark index closes.
+- **Run History:** Browse and inspect past backtest logs and decisions.
+
+For full architecture details and frontend development guides, see [web/README.md](web/README.md).
 
 ### Markets and tickers
 

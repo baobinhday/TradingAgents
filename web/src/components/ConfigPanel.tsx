@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Play, Settings2, Users, Calendar, AlertCircle, RefreshCw, Cpu } from "lucide-react";
+import { Play, Settings2, Users, Calendar, AlertCircle, RefreshCw, Cpu, Database } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
@@ -10,6 +10,7 @@ interface ConfigPanelProps {
   config: ConfigResponse | null;
   isRunning: boolean;
   onStart: (req: BacktestRunRequest) => void;
+  onNavigateToMcp?: () => void;
 }
 
 const US_PRESET_TICKERS = [
@@ -26,7 +27,7 @@ const VN_PRESET_TICKERS = [
   { label: "Real Estate & Steel", tickers: "VHM, VIC, KDH, HPG, HSG" },
 ];
 
-export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onStart }) => {
+export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onStart, onNavigateToMcp }) => {
   // Today's date YYYY-MM-DD
   const today = new Date().toISOString().split("T")[0];
   const defaultStart = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().split("T")[0];
@@ -340,6 +341,25 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, isRunning, onS
               </button>
             ))}
           </div>
+
+          {market === "VN" && (
+            <div className="flex items-center justify-between p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs mt-2">
+              <div className="flex items-center space-x-2 text-blue-300">
+                <Database className="w-4 h-4 text-blue-400 shrink-0" />
+                <span>Vietnam Market active: AlgoLab MCP + SSI MCP data pipeline</span>
+              </div>
+              {onNavigateToMcp && (
+                <button
+                  type="button"
+                  onClick={onNavigateToMcp}
+                  className="text-[11px] font-semibold text-primary hover:underline flex items-center space-x-1"
+                >
+                  <span>Manage MCP Auth</span>
+                  <span>→</span>
+                </button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 

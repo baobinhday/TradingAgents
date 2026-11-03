@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 SSI_MCP_BASE = os.getenv("SSI_MCP_BASE", "https://mcp.ssi.com.vn")
 SSI_MCP_URL = f"{SSI_MCP_BASE}/mcp"
 SSI_TOKEN_URL = f"{SSI_MCP_BASE}/oauth/token"
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/120.0.0.0 Safari/537.36 TradingAgents/1.0"
+)
 
 PRIMARY_TOKEN_FILE = Path.home() / ".tradingagents" / "ssi_tokens.json"
 FALLBACK_TOKEN_FILE = Path("scripts/spike_mcp/.ssi_auth_cache.json")
@@ -112,9 +116,10 @@ class SSITokenManager:
             "client_id": client_id,
             "refresh_token": refresh_token,
         }
+        headers = {"User-Agent": DEFAULT_USER_AGENT}
         try:
             with httpx.Client(timeout=15.0) as client:
-                res = client.post(SSI_TOKEN_URL, data=payload)
+                res = client.post(SSI_TOKEN_URL, data=payload, headers=headers)
         except Exception as exc:
             raise VendorUnavailableError(f"SSI OAuth token refresh request failed: {exc}") from exc
 
@@ -198,6 +203,7 @@ class SSIMCPClient:
         """Send JSON-RPC call over Streamable HTTP POST and parse SSE event stream with auto-retry."""
         token = self.token_manager.get_access_token()
         headers = {
+            "User-Agent": DEFAULT_USER_AGENT,
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "Accept": "application/json, text/event-stream",

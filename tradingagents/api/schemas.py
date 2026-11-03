@@ -87,3 +87,56 @@ class ConfigResponse(BaseModel):
     available_analysts: list[dict[str, str]]
     available_asset_types: list[str]
     available_markets: list[str] = Field(default_factory=lambda: ["US", "VN"])
+
+
+class AlgolabStatus(BaseModel):
+    configured: bool
+    connected: bool
+    api_key_masked: str | None = None
+    quota: dict[str, Any] | None = None
+    error: str | None = None
+
+
+class SsiStatus(BaseModel):
+    configured: bool
+    connected: bool
+    client_id: str | None = None
+    expires_in: int | None = None
+    refreshed_at: float | None = None
+    token_file: str | None = None
+    error: str | None = None
+
+
+class McpStatusResponse(BaseModel):
+    algolab: AlgolabStatus
+    ssi: SsiStatus
+    market: str = "VN"
+
+
+class SsiAuthStartRequest(BaseModel):
+    redirect_uri: str | None = None
+
+
+class SsiAuthStartResponse(BaseModel):
+    auth_url: str
+    state: str
+    client_id: str
+
+
+class SsiTokensSubmitRequest(BaseModel):
+    access_token: str
+    refresh_token: str | None = None
+    client_id: str | None = None
+
+
+class AlgolabKeySubmitRequest(BaseModel):
+    api_key: str
+
+
+class McpTestResponse(BaseModel):
+    status: str
+    vendor: str
+    latency_ms: float | None = None
+    tools_count: int | None = None
+    message: str | None = None
+    quota: dict[str, Any] | None = None

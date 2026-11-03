@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from tradingagents.api.manager import backtest_manager
 from tradingagents.api.routes.backtest import router as backtest_router
 from tradingagents.api.routes.config import router as config_router
+from tradingagents.api.routes.mcp import router as mcp_router
 
 
 @asynccontextmanager
@@ -41,6 +42,7 @@ app.add_middleware(
 # Register API routes
 app.include_router(config_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
+app.include_router(mcp_router, prefix="/api")
 
 
 @app.get("/api/health")

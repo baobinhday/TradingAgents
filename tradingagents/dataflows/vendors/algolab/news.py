@@ -15,11 +15,28 @@ from tradingagents.dataflows.vendors.algolab.client import AlgoLabClient
 logger = logging.getLogger(__name__)
 
 
+def _normalize_items(items: Any) -> list[dict[str, Any]]:
+    """Normalize news items into a list of dictionaries whether returned as list or columnar dict."""
+    if isinstance(items, list):
+        return items
+    if isinstance(items, dict) and "columns" in items and "rows" in items:
+        cols = items.get("columns", [])
+        rows = items.get("rows", [])
+        return [dict(zip(cols, row, strict=False)) for row in rows]
+    return []
+
+
 def _format_articles(articles: list[dict[str, Any]]) -> str:
     """Format news article items into structured markdown."""
     out = []
     for art in articles:
-        title = art.get("title") or "No title"
+        content = art.get("content") or art.get("summary") or ""
+        title = art.get("title")
+        if not title and content:
+            lines = [line.strip("#* \t") for line in str(content).splitlines() if line.strip()]
+            title = lines[0] if lines else "Market Recap"
+        title = title or "No title"
+
         source = art.get("source") or "AlgoLab"
         sentiment = art.get("sentiment")
         sentiment_str = f", sentiment: {sentiment}" if sentiment else ""
@@ -27,9 +44,8 @@ def _format_articles(articles: list[dict[str, Any]]) -> str:
         date_str = f" ({pub_at[:10]})" if pub_at else ""
 
         out.append(f"### {title} (source: {source}{sentiment_str}){date_str}")
-        summary = art.get("summary")
-        if summary:
-            out.append(summary)
+        if content and content != title:
+            out.append(content)
         url = art.get("url")
         if url:
             out.append(f"Link: {url}")
@@ -48,7 +64,7 @@ def get_news(ticker: str, start_date: str, end_date: str) -> str:
     )
 
     data = res.get("data", {}) if isinstance(res, dict) else {}
-    items = data.get("items", []) if isinstance(data, dict) else []
+    items = _normalize_items(data.get("items") if isinstance(data, dict) else [])
 
     # Filter articles within [start_date, end_date]
     in_window = []
@@ -78,7 +94,7 @@ def get_global_news(as_of_date: str, look_back_days: int = 7, limit: int = 10) -
     )
 
     data = res.get("data", {}) if isinstance(res, dict) else {}
-    items = data.get("items", []) if isinstance(data, dict) else []
+    items = _normalize_items(data.get("items") if isinstance(data, dict) else [])
 
     if not items:
         # Fallback to expert news
@@ -87,7 +103,7 @@ def get_global_news(as_of_date: str, look_back_days: int = 7, limit: int = 10) -
             {"kind": "expert", "from_date": start_date, "limit": limit},
         )
         data = res.get("data", {}) if isinstance(res, dict) else {}
-        items = data.get("items", []) if isinstance(data, dict) else []
+        items = _normalize_items(data.get("items") if isinstance(data, dict) else [])
 
     if not items:
         return f"No market recap news found between {start_date} and {as_of_date}"

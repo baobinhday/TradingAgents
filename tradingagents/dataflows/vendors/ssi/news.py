@@ -73,7 +73,16 @@ def get_global_news(as_of_date: str, look_back_days: int = 7, limit: int = 10) -
     except Exception:
         to_str = None
 
-    args: dict[str, Any] = {"range": "1m", "pageSize": limit}
+    # SSI requires pageSize to be one of: 10, 20, 50, 100
+    page_size = 10
+    if limit > 50:
+        page_size = 100
+    elif limit > 20:
+        page_size = 50
+    elif limit > 10:
+        page_size = 20
+
+    args: dict[str, Any] = {"range": "1m", "pageSize": page_size}
     if to_str:
         args["to"] = to_str
 

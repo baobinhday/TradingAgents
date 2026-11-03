@@ -105,3 +105,44 @@ export interface LogMessage {
   level: string;
   message: string;
 }
+
+export interface AlgolabStatus {
+  configured: boolean;
+  connected: boolean;
+  api_key_masked?: string | null;
+  quota?: {
+    used: number;
+    limit: number;
+    remaining?: number;
+  } | null;
+  error?: string | null;
+}
+
+export interface SsiStatus {
+  configured: boolean;
+  connected: boolean;
+  client_id?: string | null;
+  expires_in?: number | null;
+  refreshed_at?: number | null;
+  token_file?: string | null;
+  error?: string | null;
+}
+
+export interface McpStatusResponse {
+  algolab: AlgolabStatus;
+  ssi: SsiStatus;
+  market: string;
+}
+
+export interface McpTestResponse {
+  status: string;
+  vendor: string;
+  latency_ms?: number | null;
+  tools_count?: number | null;
+  message?: string | null;
+  quota?: {
+    used: number;
+    limit: number;
+    remaining?: number;
+  } | null;
+}
