@@ -1,0 +1,640 @@
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+
+
+
+       Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+       1. Giới thiệu TCBS MCP Connector
+       Model Context Protocol (MCP) là một giao thức chuẩn hóa mở được phát triển để kết nối các mô hình AI
+       phổ biến như Claude, Gemini, ChatGPT với dữ liệu bên ngoài. Cổng TCBS MCP Connector mang đến giải
+       pháp tích hợp toàn diện, giúp các mô hình AI có thể chủ động giao tiếp, đọc hiểu dữ liệu phức tạp trên
+       TCInvest mà không cần người dùng sao chép dữ liệu thủ công.
+
+
+       Các tính năng chính được cung cấp qua TCBS MCP gồm:
+
+             Dữ liệu thị trường real-time: Đồng bộ liên tục dữ liệu bảng giá cổ phiếu, lịch thực hiện quyền,
+             tin tức sự kiện doanh nghiệp và các chỉ báo phân tích kỹ thuật.
+             Dữ liệu doanh nghiệp: Truy xuất hồ sơ doanh nghiệp toàn diện từ lịch sử phát triển, ban lãnh
+             đạo, cấu trúc sở hữu, danh sách cổ đông lớn đến dữ liệu báo cáo tài chính doanh nghiệp.
+             Phân tích cổ phiếu chuyên sâu: Báo cáo phân tích doanh nghiệp, công cụ định giá cổ phiếu đã
+             tích hợp dữ liệu các chỉ số của các công ty trên thị trường và trong ngành và mô hình dự
+             phóng dòng tiền.
+             Tin tức chứng khoán: Cập nhật liên tục tin tức và sự kiện liên quan đến các doanh nghiệp niêm
+             yết cùng các nhận định, khuyến nghị của đội ngũ chuyên gia phân tích.
+
+
+
+       2. Danh sách AI Agent hỗ trợ và hướng dẫn kết nối MCP
+       Nhằm đảm bảo an toàn tuyệt đối cho tài khoản khách hàng, TCBS áp dụng quy trình xác thực ủy quyền
+       tập trung tiêu chuẩn OAuth 2.0. Hướng dẫn kết nối và danh sách AI Agent có hỗ trợ TCBS MCP
+       Connector được liệt kê dưới đây và sẽ được TCBS cập nhật tùy thuộc vào tình trạng kết nối với các đối
+       tác AI Agent:
+
+
+       Claude Desktop / Claude.ai
+
+       🔗 4 BƯỚC KẾT NỐI TCBS VỚI CLAUDE
+       Bước 1: Truy cập claude.ai hoặc mở app Claude Desktop trên máy tính
+
+       → Đăng nhập tài khoản Claude của bạn (hoặc tạo tài khoản nếu chưa có)
+
+       Bước 2: Vào Settings hoặc Customize → Chọn ‘Connectors ‘ → Chọn ‘Add custom connector’
+
+       Điền thông tin TCBS MCP
+
+             Name: Tự chọn (VD: TCBS MCP)
+             Remote MCP server URL: https://mcp.tcbs.com.vn/mcp/tcinvest/
+
+       Bước 3: Hệ thống chuyển bạn đến trang đăng nhập TCBS → Nhấn ‘Xác nhận’ để cho phép Claude kết nối
+       với TCBS MCP và xác thực iOTP TCBS
+
+       Bước 4: Xác nhận thành công, quay về Claude để bắt đầu tương tác
+
+       → Cung cấp cho AI câu lệnh (VD: “Phân tích TCX và các đối thủ cùng ngành, mức giá hiện tại là cao hay
+       thấp so với định giá cơ bản?”)
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                          1/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+       ChatGPT
+
+       🔗 4 BƯỚC KẾT NỐI TCBS VỚI CHATGPT
+       Bước 1: Truy cập ứng dụng ChatGPT trên máy tính hoặc chatgpt.com*
+
+       → Đăng nhập tài khoản ChatGPT của bạn (hoặc tạo tài khoản nếu chưa có)
+
+       Bước 2: Chọn biểu tượng ‘ Plugins‘ (trên thanh menu chính hoặc vào phần Profile → Settings →
+       Integration → Plugins → Browse directory) → Chọn ‘Add custom MCP server’ → Điền thông tin TCBS
+       MCP và chọn ‘Create as a plugin’
+
+       Điền thông tin TCBS MCP
+
+             Name: Tự chọn (VD: TCBS MCP)
+             Connection (Server URL): https://mcp.tcbs.com.vn/mcp/tcinvest/
+
+       Bước 3: Chọn ‘Connect TCBS MCP’ để chuyển đến trang đăng nhập TCBS → Nhấn ‘Xác nhận’ để cho phép
+       ChatGPT kết nối với TCBS MCP và xác thực iOTP TCBS
+
+       Bước 4:Xác nhận thành công, quay về ChatGPT để bắt đầu tương tác
+
+       → Sử dụng MCP bằng cách gõ @TCBS MCP (hoặc tên gọi MCP đã được đặt tại Bước 3) và cung cấp cho
+       AI câu lệnh
+
+       * OpenAI chưa cho phép người dùng thiết lập kết nối custom MCP servers trên ứng dụng điện thoại.
+       Sau khi kết nối ChatGPT với TCBS MCP, khách hàng có thể sử dụng MCP trên tất cả các phiên bản Web,
+       ứng dụng desktop hoặc điện thoại. Tham khảo hướng dẫn kết nối Custom MCP Servers của OpenAI tại
+       đây
+
+
+
+       3. Các công cụ MCP
+       TCBS MCP Connector cung cấp bộ công cụ (tools) chuyên biệt, được tổ chức thành các nhóm chức năng
+       bao gồm: dữ liệu tổng quan cổ phiếu và doanh nghiệp, phân tích báo cáo tài chính (theo kỳ và so sánh
+       ngành), dự báo tài chính, đánh giá kỹ thuật và xếp hạng đa chiều, theo dõi giao dịch nội bộ và khối
+       ngoại, cùng cập nhật tin tức và sự kiện doanh nghiệp. Khi người dùng đặt câu hỏi cho AI, hệ thống sẽ tự
+       động nhận diện yêu cầu và gọi đúng công cụ phù hợp để truy xuất dữ liệu trực tiếp từ nền tảng
+       TCInvest. Danh sách các công cụ hiện hành cùng mô tả chức năng chi tiết được trình bày trong bảng
+       dưới đây:
+
+
+        Mã Tool                                                   Tên Tiếng Anh               Mô Tả Chức Năng Hệ Thống
+
+        getTickerOverview                                         Stock Overview              Truy xuất tổng quan 22 trường
+                                                                                              thông tin cốt lõi của mã chứng
+                                                                                              khoán (Sàn giao dịch, phân
+                                                                                              ngành, số lượng nhân viên, biến
+                                                                                              động giá tuần/tháng/năm, tỷ lệ
+                                                                                              sở hữu nước ngoài…).
+
+        getCompanyOverview                                        Company Profile             Xem hồ sơ chi tiết doanh nghiệp
+                                                                                              bao gồm lịch sử hình thành,
+                                                                                              triển vọng phát triển, rủi ro cốt
+                                                                                              lõi và chiến lược kinh doanh dài
+                                                                                              hạn.
+
+        getStockRatio                                             Key Financial Ratios        Phân tích hơn 35 chỉ số tài chính
+                                                                                              cơ bản quan trọng: MarketCap,
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                                        2/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+                                                                                              P/E, P/B, ROE, ROA, EPS, BVPS
+                                                                                              thời gian thực.
+
+        getStockSameIndustry                                      Peer Comparison             So sánh đối chiếu danh sách các
+                                                                                              cổ phiếu cùng phân ngành kỹ
+                                                                                              thuật kèm theo chỉ số P/E, P/B,
+                                                                                              ROE, hệ số beta và tương quan
+                                                                                              tương đối.
+
+        getSubCompany                                             Subsidiaries &              Tra cứu danh sách toàn bộ các
+                                                                  Associates                  công ty con, công ty liên kết và
+                                                                                              tỷ lệ sở hữu cổ phần tương ứng
+                                                                                              (hỗ trợ phân trang).
+
+        getKeyOfficers                                            Board &                     Danh sách ban lãnh đạo, thành
+                                                                  Management                  viên Hội đồng quản trị điều
+                                                                                              hành bao gồm họ tên và chức vụ
+                                                                                              chi tiết.
+
+        getLargeShareHolders                                      Major Shareholders          Thống kê danh sách các cổ đông
+                                                                                              lớn sở hữu cổ phần doanh
+                                                                                              nghiệp: họ tên/tổ chức, số lượng
+                                                                                              cổ phiếu nắm giữ và tỷ lệ %.
+
+        getListAuditFirm                                          Audit History               Tra cứu lịch sử đơn vị kiểm toán
+                                                                                              độc lập thực hiện báo cáo tài
+                                                                                              chính của doanh nghiệp qua
+                                                                                              từng năm tài chính.
+
+        getIncomeStatementForNonBank                              Income Statement –          Báo cáo kết quả kinh doanh khối
+                                                                  Non-bank                    phi ngân hàng: Doanh thu
+                                                                                              thuần, lợi nhuận gộp, lợi nhuận
+                                                                                              hoạt động, LNST và EBITDA.
+
+        getIncomeStatementForBank                                 Income Statement –          Báo cáo kết quả kinh doanh khối
+                                                                  Bank                        ngân hàng: Thu nhập lãi thuần
+                                                                                              (NII), tổng thu nhập hoạt động
+                                                                                              (TOI), chi phí dự phòng và LNST.
+
+        getBalanceSheetForNonBank                                 Balance Sheet –             Bảng cân đối kế toán khối phi
+                                                                  Non-bank                    ngân hàng: Chi tiết tài sản, nợ
+                                                                                              phải trả, vốn chủ sở hữu, lượng
+                                                                                              tiền mặt và hàng tồn kho.
+
+        getBalanceSheetForBank                                    Balance Sheet –             Bảng cân đối kế toán khối ngân
+                                                                  Bank                        hàng: Các khoản cho vay khách
+                                                                                              hàng, tiền gửi của khách hàng,
+                                                                                              chứng khoán đầu tư và dự
+                                                                                              phòng.
+
+        getCashFlowForNonBank                                     Cash Flow – Non-            Báo cáo lưu chuyển tiền tệ khối
+                                                                  bank                        phi ngân hàng: Dòng tiền từ
+                                                                                              hoạt động kinh doanh, đầu tư,
+                                                                                              tài chính và dòng tiền tự do
+                                                                                              (FCF).
+
+        getCashFlowForBank                                        Cash Flow – Bank            Báo cáo lưu chuyển tiền tệ
+                                                                                              chuyên biệt thiết kế dành riêng
+                                                                                              cho cấu trúc ngành ngân hàng.
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                                          3/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+        getCashFlowAnalyze                                        Cash Flow Analysis          Phân tích chuyên sâu cấu trúc
+                                                                                              dòng tiền: Tương quan giữa
+                                                                                              EBITDA, chi phí vốn (CAPEX), chi
+                                                                                              trả cổ tức, biến động nợ và vốn
+                                                                                              lưu động.
+
+        getFinancialRatioForNonBank                               Financial Ratios –          Chuỗi lịch sử các chỉ số định giá
+                                                                  Non-bank                    chuyên sâu cho khối sản
+                                                                                              xuất/dịch vụ: P/E, P/B,
+                                                                                              EV/EBITDA, EPS, BVPS, ROE qua
+                                                                                              các kỳ.
+
+        getFinancialRatioForBank                                  Financial Ratios –          Chuỗi lịch sử các chỉ số tài chính
+                                                                  Bank                        ngành ngân hàng: Thu nhập cận
+                                                                                              biên (NIM), tỷ lệ chi phí trên thu
+                                                                                              nhập (CIR), nợ xấu (NPL), LDR.
+
+        getProjectionRatio                                        Projected Financial         Mô hình dự báo các chỉ số tài
+                                                                  Ratios                      chính tương lai: P/E, P/B, ROE,
+                                                                                              ROA, EPS dự kiến và tỷ suất cổ
+                                                                                              tức kế hoạch.
+
+        getFinancialdata                                          Financial Forecasts         Dự báo định lượng về doanh
+                                                                                              thu, lợi nhuận hoạt động, lợi
+                                                                                              nhuận cổ đông thiểu số, dòng
+                                                                                              tiền tự do FCF và cấu trúc vốn
+                                                                                              chủ sở hữu tương lai.
+
+        getIncomeStatementIndustryForNonBank                      Industry Income             Dữ liệu tổng hợp báo cáo kết
+                                                                  Statement – Non-            quả kinh doanh trung bình
+                                                                  bank                        ngành dành cho khối doanh
+                                                                                              nghiệp phi ngân hàng.
+
+        getIncomeStatementIndustryForBank                         Industry Income             Dữ liệu tổng hợp báo cáo kết
+                                                                  Statement – Bank            quả kinh doanh trung bình
+                                                                                              ngành dành cho khối các ngân
+                                                                                              hàng thương mại.
+
+        getBalanceSheetIndustryForNonBank                         Industry Balance            Dữ liệu tổng hợp bảng cân đối
+                                                                  Sheet – Non-bank            kế toán bình quân ngành của
+                                                                                              khối các doanh nghiệp phi ngân
+                                                                                              hàng.
+
+        getBalanceSheetIndustryForBank                            Industry Balance            Dữ liệu tổng hợp bảng cân đối
+                                                                  Sheet – Bank                kế toán bình quân toàn ngành
+                                                                                              hệ thống các tổ chức tín dụng và
+                                                                                              ngân hàng.
+
+        getCashFlowIndustryForNonBank                             Industry Cash Flow –        Dữ liệu tổng hợp báo cáo lưu
+                                                                  Non-bank                    chuyển tiền tệ trung bình ngành
+                                                                                              của các doanh nghiệp phi ngân
+                                                                                              hàng.
+
+        getCashFlowIndustryForBank                                Industry Cash Flow –        Dữ liệu tổng hợp báo cáo lưu
+                                                                  Bank                        chuyển tiền tệ trung bình ngành
+                                                                                              dành cho khối ngân hàng.
+
+
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                                          4/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+        getFinancialRatioIndustryForNonBank                       Industry Financial          Hệ thống chỉ số định giá bình
+                                                                  Ratios – Non-bank           quân ngành phi ngân hàng: P/E,
+                                                                                              P/B, EV/EBITDA, ROE toàn ngành
+                                                                                              để tìm biên an toàn.
+
+        getFinancialRatioIndustryForBank                          Industry Financial          Hệ thống chỉ số tài chính bình
+                                                                  Ratios – Bank               quân ngành ngân hàng: NIM,
+                                                                                              CIR, NPL, LDR trung bình của
+                                                                                              toàn bộ hệ thống.
+
+        getTooltip                                                Industry Benchmark          Công cụ đối chiếu nhanh 14 chỉ
+                                                                  Comparison                  số tài chính cốt lõi của một
+                                                                                              doanh nghiệp cụ thể so với Top
+                                                                                              200 doanh nghiệp dẫn dắt và
+                                                                                              bình quân ngành.
+
+        getGeneralRating                                          Multi-dimension             Hệ thống chấm điểm cổ phiếu
+                                                                  Stock Rating                toàn diện theo 7 chiều không
+                                                                                              gian: Điểm tổng hợp, mô hình
+                                                                                              kinh doanh, hiệu quả hoạt động,
+                                                                                              sức khỏe tài chính, định giá,
+                                                                                              thanh khoản thị trường và sức
+                                                                                              mạnh giá.
+
+        getHistoryRecommendation                                  Analyst                     Lịch sử tổng hợp các khuyến
+                                                                  Recommendation              nghị đầu tư từ các công ty
+                                                                  History                     chứng khoán trên thị trường:
+                                                                                              Mua/Bán/Theo dõi kèm giá mục
+                                                                                              tiêu.
+
+        getStockRecommend                                         Related Stock               Gợi ý danh mục các mã cổ phiếu
+                                                                  Recommendations             liên quan được cộng đồng nhà
+                                                                                              đầu tư quan tâm cùng ngành
+                                                                                              kèm chỉ số P/E, P/B và hệ số beta
+                                                                                              tương ứng.
+
+        getAssetProPortion                                        Asset Structure             Phân tích cấu trúc phân bổ tài
+                                                                  Analysis                    sản ngắn hạn/dài hạn và cấu
+                                                                                              trúc tối ưu hóa nguồn vốn
+                                                                                              (Nợ/Vốn chủ sở hữu) của doanh
+                                                                                              nghiệp.
+
+        getVolumeAndForeign                                       Foreign Trading &           Thống kê khối lượng giao dịch
+                                                                  RS Rank                     mua bán của khối ngoại, giá trị
+                                                                                              giao dịch ròng (Net Foreign) và
+                                                                                              điểm xếp hạng sức mạnh giá RS
+                                                                                              theo ngày.
+
+        getInsiderDealing                                         Insider Transaction         Lịch sử chi tiết các giao dịch cổ
+                                                                  History                     phiếu của cổ đông nội bộ và
+                                                                                              người có liên quan: ngày thực
+                                                                                              hiện, phương thức, khối lượng,
+                                                                                              mức giá và tỷ lệ sở hữu sau giao
+                                                                                              dịch.
+
+        getDividendPaymentHistories                               Dividend History            Dữ liệu lịch sử chi trả cổ tức của
+                                                                                              doanh nghiệp: ngày giao dịch
+                                                                                              không hưởng quyền, hình thức
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                                         5/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+                                                                                              chi trả (tiền mặt/cổ phiếu) và tỷ
+                                                                                              lệ thực hiện chi tiết.
+
+        getPriceVolatility                                        Price Volatility            Phân tích biên độ biến động giá
+                                                                  Analysis                    cổ phiếu: Biên độ cao/thấp trong
+                                                                                              52 tuần, độ lệch chuẩn giá và
+                                                                                              phân tích rủi ro biến động ngắn
+                                                                                              hạn.
+
+        getTechnicalIndicator                                     Technical Indicators        Cung cấp các chỉ báo phân tích
+                                                                                              kỹ thuật thời gian thực bao gồm
+                                                                                              đường trung bình MA, chỉ báo
+                                                                                              RSI, MACD, Bollinger Bands, xu
+                                                                                              hướng chung và tín hiệu hành
+                                                                                              động.
+
+        getBusinessResults                                        Business Results            Cấu trúc dữ liệu kết quả hoạt
+                                                                  Chart Data                  động kinh doanh đã được tối ưu
+                                                                                              hóa chuyên biệt phục vụ cho
+                                                                                              việc trực quan hóa biểu đồ
+                                                                                              (Chart Visualization).
+
+        getTickerActivityNews                                     Corporate Activity          Danh sách các tin tức hoạt động
+                                                                  News                        nội bộ, thông cáo báo chí và tóm
+                                                                                              tắt nội dung cốt lõi của doanh
+                                                                                              nghiệp (hỗ trợ phân trang).
+
+        getActivityNewsDetail                                     Activity News Detail        Truy xuất nội dung chi tiết đầy
+                                                                                              đủ của một bài viết tin tức hoạt
+                                                                                              động cụ thể của doanh nghiệp
+                                                                                              dựa trên mã định danh bài tin.
+
+        getTickerEventNews                                        Corporate Events            Cập nhật lịch trình các sự kiện
+                                                                                              trọng đại của doanh nghiệp: Đại
+                                                                                              hội cổ đông thường niên, lịch
+                                                                                              chốt danh sách thực hiện quyền,
+                                                                                              phát hành cổ phiếu thưởng.
+
+        getEventNewsDetail                                        Event Detail                Xem thông tin chi tiết của một
+                                                                                              sự kiện: ngày giao dịch không
+                                                                                              hưởng quyền, ngày đăng ký cuối
+                                                                                              cùng và nội dung nghị quyết
+                                                                                              đính kèm.
+
+        calculate_pe_ratio                                        P/E Ratio Calculator        Công cụ tính toán chỉ số P/E của
+                                                                                              cổ phiếu theo thời gian thực
+                                                                                              (Real-time P/E Calculator) dựa
+                                                                                              trên mức giá khớp lệnh hiện tại
+                                                                                              trên sàn.
+
+        calculate_pb_ratio                                        P/B Ratio Calculator        Công cụ tính toán chỉ số P/B của
+                                                                                              cổ phiếu theo thời gian thực
+                                                                                              (Real-time P/B Calculator) dựa
+                                                                                              trên biến động giá khớp lệnh
+                                                                                              liên tục.
+
+        tca-tcanalysis_tcanalysis_getGaugeChart                   Gauge Chart                 Trả về composite rating score và
+                                                                  Analyzer                    technical analysis summary cho
+                                                                                              một cổ phiếu
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                                            6/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+        tca-                                                      Long-term Candle            Cung cấp historical candlestick
+        tcanalysis_tcanalysis_getLongTermCandleChart              Chart Link                  price bars (Daily, Weekly,
+                                                                                              Monthly) cho phân tích xu
+                                                                                              hướng dài hạn
+
+        tca-tcanalysis_tcanalysis_getIndustries                   Industry List Lookup        Lấy danh sách tất cả các industry
+                                                                                              classifications có sẵn trên sàn
+                                                                                              chứng khoán Việt Nam
+
+        tca-tcanalysis_tools_get_current_timestamp                System Timestamp            Lấy thời gian hiện tại dưới dạng
+                                                                  Checker                     Unix timestamp (seconds) và ISO
+                                                                                              format để dùng làm reference
+
+
+
+       4. Bảo vệ dữ liệu cá nhân
+       Techcom Securities (TCBS) thực hiện nghĩa vụ thông báo theo khoản 3 Điều 10, Nghị định 356/2025/NĐ-
+       CP về Bảo vệ Dữ liệu Cá nhân.
+
+
+       (i) Dữ liệu cá nhân được chia sẻ và xử lý
+
+       Sau khi chủ thể dữ liệu kích hoạt kết nối TCBS MCP, TCBS sẽ chia sẻ dữ liệu với ứng dụng AI thông qua
+       giao thức MCP. Dữ liệu được chia sẻ có thể bao gồm cả dữ liệu cá nhân cơ bản (thông tin định danh, tài
+       khoản số) và dữ liệu cá nhân nhạy cảm (thông tin tài chính, lịch sử giao dịch chứng khoán, tỷ lệ phân bổ
+       tài sản).
+
+       Hoạt động chia sẻ dữ liệu nêu trên chỉ được thực hiện trên cơ sở sự đồng ý của chủ thể dữ liệu. Bằng
+       cách nhấn “Xác nhận kết nối” trong bước xác thực OAuth, chủ thể dữ liệu đã thực hiện hành vi đồng ý có
+       kiểm chứng. Hệ thống chỉ cho phép chủ thể dữ liệu truy vấn dữ liệu tài khoản của chính mình và không
+       thể truy cập dữ liệu của bất kỳ khách hàng nào khác.
+
+
+       (ii) Nguyên tắc hoạt động của thuật toán
+
+       Lớp 1 — Truy xuất dữ liệu thông qua công cụ MCP: Các công cụ kết nối trực tiếp với hệ thống TCInvest,
+       lấy dữ liệu theo phiên xác thực OAuth 2.0 của bạn và trả về thông tin tài chính, thị trường, danh mục
+       theo thời gian thực. Hệ thống hoạt động ở chế độ chỉ đọc (Read-Only) — không thực hiện giao dịch,
+       không sửa đổi tài khoản.
+
+       Lớp 2 — Phân tích bằng AI (Mô hình ngôn ngữ lớn): Mô hình AI sử dụng dữ liệu truy xuất được để tổng
+       hợp, so sánh, tính toán các chỉ số và đưa ra nhận xét phân tích. Thuật toán không tự ra quyết định đầu
+       tư thay cho bạn — toàn bộ đầu ra là phân tích hỗ trợ tham khảo. Dữ liệu cá nhân không được lưu trữ lại
+       trên môi trường AI sau khi phiên làm việc kết thúc (Zero-Persistent Storage).
+
+
+       (iii) Ảnh hưởng đối với quyền và lợi ích hợp pháp của chủ thể dữ liệu
+
+             Kết quả phân tích phụ thuộc vào chất lượng dữ liệu đầu vào và tính chính xác của mô hình AI
+             tại thời điểm sử dụng. Đây không phải tư vấn tài chính chuyên nghiệp và không phải cam kết
+             về lợi nhuận hay kết quả đầu tư.
+             Chủ thể dữ liệu có quyền truy cập và chỉnh sửa dữ liệu cá nhân; yêu cầu xóa dữ liệu; phản đối
+             việc xử lý tự động; và rút lại sự đồng ý bất kỳ lúc nào mà không bị ảnh hưởng đến tài khoản
+             TCBS.
+
+
+       (iv) Quyền không tham gia
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                                          7/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+       Chủ thể dữ liệu có thể ngừng việc AI truy cập dữ liệu cá nhân của mình bất kỳ lúc nào bằng cách ngắt
+       kết nối TCBS MCP trong danh sách Connectors/Plugins của AI Agent hoặc tại phần Quản lý danh sách
+       kết nối AI Agent trên TCInvest. Thao tác này có hiệu lực ngay lập tức và không ảnh hưởng đến tài khoản
+       TCBS hay lịch sử giao dịch của chủ thể dữ liệu.
+
+
+
+       5. Hướng dẫn khắc phục sự cố
+       Trong quá trình vận hành kết nối giữa AI Agent và hệ thống TCBS MCP Connector, nếu xảy ra gián đoạn
+       dữ liệu, người dùng có thể tự tra cứu nhanh nguyên nhân và giải pháp xử lý theo cẩm nang dưới đây:
+
+
+       ■ Lỗi xác thực OAuth / Token hết hạn
+
+       Hiện tượng: AI báo lỗi không có quyền truy cập thông tin hoặc yêu cầu cấu hình lại Access Token.
+
+       Giải pháp: Truy cập menu quản lý kết nối (Plugins/Connectors) trên giao diện của AI Agent hoặc
+       TCInvest để ngắt kết nối với TCBS MCP, tiến hành bấm kết nối lại để làm mới phiên ủy quyền trên hệ
+       thống bảo mật TCInvest.
+
+
+       ■ Dữ liệu phản hồi bị lệch mốc thời gian
+
+       Hiện tượng: Số liệu báo cáo tài chính hoặc mức giá thị trường hiển thị không khớp với bảng điện hiện
+       tại.
+
+       Giải pháp: Thực hiện câu lệnh Prompt yêu cầu AI chạy trực tiếp công cụ hệ thống ‘tca-
+       tcanalysis_tools_get_current_timestamp’ để đồng bộ và kiểm tra tính chính xác của mốc thời gian thực
+       tế trên máy chủ xử lý.
+
+
+       ■ Lỗi từ chối kết nối IP (CORS / Firewall)
+
+       Hiện tượng: Không thể thiết lập kết nối ban đầu đến Universal URL của TCBS.
+
+       Giải pháp: Kiểm tra lại cấu hình phân quyền mạng và đảm bảo bạn đang sử dụng phiên bản ứng dụng
+       chính thức được hỗ trợ.
+
+
+
+       6. FAQ – Các câu hỏi thường gặp
+
+       Kết nối & Thiết lập
+
+       1. TCBS MCP Connector là gì? TCBS MCP Connector là cầu nối giữa Claude AI hoặc bất kỳ AI Agent nào
+       có hỗ trợ kết nối TCBS MCP Connector và nền tảng dữ liệu chứng khoán của Techcom Securities (TCBS).
+       Sau khi kết nối, bạn có thể hỏi AI Agent về giá cổ phiếu, báo cáo tài chính, phân tích kỹ thuật, tin tức
+       doanh nghiệp và nhiều hơn nữa — bằng ngôn ngữ tự nhiên, không cần tra cứu thủ công.
+
+
+       2. Tôi cần có tài khoản gì để sử dụng? Bạn cần đồng thời có:
+
+             Tài khoản Claude (claude.ai) hoặc bất kỳ AI Agent nào có hỗ trợ kết nối TCBS MCP Connector*
+             Tài khoản TCBS (tcbs.com.vn) — đăng ký miễn phí
+
+       * AI Agent có thể yêu cầu bạn đăng ký tài khoản trả phí (Premium/Pro) để được sử dụng tính năng MCP
+       Connector. Xem danh sách AI Agent hỗ trợ TCBS MCP Connector tại Mục 2.
+
+       3. Kết nối TCBS Connector với AI Agent như thế nào?
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                            8/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+          1. Đăng nhập vào AI Agent (Claude, ChatGPT, v.v)
+          2. Vào thư viện Connectors hoặc Plugins để cấu hình MCP của AI Agent
+          3. Tìm TCBS trong danh sách MCP (nếu áp dụng) hoặc sử dụng TCBS MCP URL để kết nối thủ
+             công
+          4. Nhấn Connect và đăng nhập bằng tài khoản TCBS của bạn
+          5. Nhấn ‘Xác nhận’ để cho phép AI Agent kết nối với TCBS MCP và xác thực iOTP TCBS.
+
+       4. Có cần cài đặt phần mềm nào không? TCBS MCP Connector hoạt động hoàn toàn trên trình duyệt
+       hoặc phiên bản ứng dụng điện thoại/máy tính của AI Agent.
+
+       5. Connector này có mất phí không? Connector TCBS hoàn toàn miễn phí sử dụng. Bạn chỉ cần có tài
+       khoản TCBS hợp lệ. Chi phí duy nhất (nếu có) là gói Pro/Premium của AI Agent trong trường hợp AI
+       Agent của bạn yêu cầu trả phí để được sử dụng MCP Connector.
+
+
+       6. TCBS Connector cung cấp những loại dữ liệu nào? Connector cung cấp 9 nhóm dữ
+       liệu với tổng cộng nhiều công cụ phân tích, bao gồm:
+
+             Thông tin cơ bản: Hồ sơ doanh nghiệp, ban lãnh đạo, cổ đông lớn
+             Báo cáo tài chính: Kết quả kinh doanh, bảng cân đối kế toán, dòng tiền (theo quý/năm)
+             Chỉ số định giá: P/E, P/B, EV/EBITDA, ROE, ROA, EPS theo chuỗi lịch sử
+             Bảng giá thị trường: Giá real-time HOSE & HNX, khối lượng, biến động 52 tuần
+             Phân tích kỹ thuật: RSI, MACD, Bollinger Bands, tín hiệu mua/bán
+             Giao dịch nội bộ: Insider dealing của ban lãnh đạo
+             Tin tức & sự kiện: Corporate actions, cổ tức, ĐHCĐ, kết quả kinh doanh
+             Benchmark ngành: So sánh với trung bình ngành và top 200 cổ phiếu
+             Dự báo: Dự phóng tài chính và chỉ số định giá tương lai
+
+       Xem chi tiết ở các Công cụ MCP
+
+       7. Dữ liệu giá cổ phiếu có real-time không? Có. Dữ liệu bảng giá cổ phiếu trên HOSE và HNX được cập
+       nhật real-time trong giờ giao dịch. Dữ liệu báo cáo tài chính được cập nhật theo chu kỳ công bố của
+       doanh nghiệp (hàng quý/năm).
+
+
+       8. Connector hỗ trợ những sàn giao dịch nào? Hiện tại TCBS MCP Connector hỗ trợ
+       đầy đủ dữ liệu cổ phiếu trên:
+
+             HOSE (Sở Giao dịch Chứng khoán TP.HCM)
+             HNX (Sở Giao dịch Chứng khoán Hà Nội)
+             UPCOM (thị trường giao dịch chứng khoán chưa niêm yết)
+
+
+       9. Connector có hỗ trợ ngân hàng và doanh nghiệp phi ngân hàng riêng không? Có.
+       TCBS Connector phân biệt rõ hai nhóm với bộ chỉ số chuyên biệt:
+
+             Ngân hàng: NIM, CIR, NPL, LDR, tăng trưởng tín dụng, dự phòng rủi ro
+             Phi ngân hàng: Biên lợi nhuận, EBITDA, Nợ/VCSH, vòng quay tài sản
+
+       AI sẽ tự động nhận diện loại hình doanh nghiệp và trả về đúng bộ chỉ số phù hợp.
+
+
+       Cách sử dụng
+
+       10. Tôi có thể hỏi Claude bằng tiếng Việt không? Hoàn toàn có thể. Bạn có thể đặt câu hỏi tự nhiên bằng
+       tiếng Việt.
+
+       11. AI có thể so sánh nhiều cổ phiếu cùng lúc không? Có. Đây là một trong những điểm mạnh nhất của
+       TCBS Connector. Bạn có thể yêu cầu AI tạo bảng so sánh nhiều cổ phiếu cùng lúc theo bất kỳ chỉ số nào.
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                           9/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+       Ví dụ: “So sánh VCB, BID, CTG, MBB về ROE, NIM và tỷ lệ nợ xấu” — AI sẽ trả về bảng phân tích đầy đủ
+       chỉ trong vài giây.
+
+
+       Bảo mật & Quyền riêng tư
+
+       12. TCBS Connector có thể thực hiện lệnh mua/bán thay tôi không? Không. TCBS MCP Connector chỉ có
+       quyền đọc dữ liệu (read-only). Connector không thể đặt lệnh, chuyển tiền, hay thực hiện bất kỳ giao
+       dịch tài chính nào thay bạn. Tài khoản và tài sản của bạn hoàn toàn an toàn.
+
+       13. Dữ liệu tài khoản TCBS của tôi có được chia sẻ với AI Agent không?
+
+       Kết nối được thực hiện qua giao thức OAuth 2.0 — tiêu chuẩn bảo mật quốc tế. TCBS chỉ cấp token truy
+       cập dữ liệu thị trường công khai, không chia sẻ thông tin cá nhân hay số dư tài khoản với Anthropic. Để
+       biết thêm chi tiết, xem Chính sách Bảo mật tại tcbs.com.vn/privacy-policy.
+
+
+
+       7. Cách ngắt kết nối TCBS MCP Connector
+
+       Cách 1 — Ngắt kết nối từ TCBS (TCInvest)
+
+       Đây là cách được khuyến nghị vì sẽ thu hồi hoàn toàn quyền truy cập dữ liệu từ phía nguồn.
+
+       Bước 1. Đăng nhập vào TCInvest tại tcinvest.tcbs.com.vn hoặc mở ứng dụng TCInvest trên điện thoại.
+
+       Bước 2. Nhấn vào ảnh đại diện / tên tài khoản ở góc trên bên phải để mở menu cá nhân.
+
+       Bước 3. Trong menu, chọn “AI Connector”.
+
+       Bước 4. Trang “Danh sách AI Agent đã kết nối” sẽ thể hiện danh sách token để kết nối AI Agent với MCP
+       TCBS kèm trạng thái và ngày đăng ký.
+
+       Bước 5. Nhấn nút “HỦY CHIA SẺ” tại token mà bạn muốn hủy kết nối.
+
+       Bước 6. Xác nhận hủy kết nối khi hệ thống hỏi lại.
+
+       Lưu ý: Việc hủy chia sẻ từ TCBS chỉ thu hồi quyền truy cập dữ liệu. Connector TCBS vẫn hiển thị trong
+       danh sách Connectors trên AI Agent của bạn cho đến khi bạn xóa ở bước tiếp theo.
+
+
+       Cách 2 — Ngắt kết nối từ AI Agent
+
+       Thực hiện cách này nếu bạn muốn xóa hoàn toàn TCBS Connector khỏi tài khoản AI Agent.
+
+       Bước 1. Đăng nhập vào AI Agent của bạn.
+
+       Bước 2. Vào Settings (Cài đặt) → chọn Connectors hoặc Plugins.
+
+       Bước 3. Trong danh sách Connectors/Plugins đang hoạt động, tìm TCBS.
+
+       Bước 4. Nhấn nút Disconnect/Remove/Delete plugin tại kết nối với TCBS
+
+       Bước 5. Xác nhận ngắt kết nối khi hộp thoại xuất hiện.
+
+       ✅ Sau khi hoàn tất, TCBS Connector sẽ không còn hoạt động trong các cuộc hội thoại của bạn trên AI
+       Agent.
+
+       Lưu ý: Ngắt kết nối từ AI Agent không tự động thu hồi quyền truy cập trên hệ thống TCBS. Để đảm bảo
+       bảo mật tuyệt đối, bạn nên thực hiện cả hai cách trên.
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                           10/11
+11/2/26, 4:39 PM                                           Tài liệu hỗ trợ sử dụng TCBS MCP server
+
+       8. Liên hệ hỗ trợ
+       Thông tin đầu mối hỗ trợ kỹ thuật chính thức: qua các kênh được đề cập tại
+       https://www.tcbs.com.vn/ve-chung-toi/lien-he/
+
+       Lưu ý pháp lý: Toàn bộ các Điều khoản Dịch vụ (Terms of Service) và Chính sách Quyền riêng tư bảo mật
+       dữ liệu khách hàng (Privacy Policy) được áp dụng đồng bộ theo các tiêu chuẩn vận hành chung của nền
+       tảng TCInvest đã được công bố công khai tại website chính thức của TCBS.
+
+       I am text block. Click edit button to change this text. Lorem ipsum dolor sit amet, consectetur adipiscing
+       elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
+       ◼
+
+
+
+
+read://https_help.tcbs.com.vn/?url=https%3A%2F%2Fhelp.tcbs.com.vn%2Ftcbs-mcp-server%2F                              11/11
+

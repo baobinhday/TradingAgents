@@ -1,0 +1,209 @@
+ 
+ Search ⌘ K 
+ Giới thiệu
+ Tổng quan SSI MCP Đối tượng khách hàng Điều khoản sử dụng Hướng dẫn
+ Hướng dẫn kết nối 
+ Hướng dẫn công cụ (tools) Hướng dẫn sử dụng prompts Tài nguyên tra cứu (resources) Bảo mật & Hỗ trợ
+ Bảo mật khi kết nối Câu hỏi thường gặp 
+ Tài nguyên tra cứu (resources) 
+ Tài nguyên tra cứu (resources)
+ 9 sổ tay tra cứu AI tự tra trước khi trả lời để không đoán bừa, gồm nội dung, khi nào dùng và ví dụ.
+ Resources (dữ liệu tham chiếu) là các "sổ tay tra cứu" tĩnh do SSI MCP cung cấp. AI đọc chúng
+ trước khi gọi Tool để dùng đúng giá trị hợp lệ (mã sàn, tiêu chí xếp hạng, giới hạn ngày...) và
+giải thích đúng thuật ngữ, thay vì "đoán bừa" rồi bị từ chối giữa chừng.
+ Resources không chứa dữ liệu thị trường (giá, chỉ số...), chỉ là danh mục tham chiếu cố định. Bạn
+hầu như không cần tự đọc, nhưng biết chúng giúp bạn hỏi chính xác hơn.
+ Tổng quan 9 Resource 
+ Resource | Địa chỉ (URI) | Dùng để làm gì | 
+ Danh sách sàn giao dịch | ssi://marketdata/reference/exchanges | Biết mã sàn hợp lệ | 
+ Tiêu chí sắp xếp/xếp hạng | ssi://marketdata/reference/sort-criteria | Biết giá trị hợp lệ khi hỏi "top tăng/giảm", sắp xếp | 
+ Khung thời gian (range) | ssi://marketdata/reference/date-range-caps | Biết giá trị range hợp lệ và giới hạn toDate của từng Tool | 
+ Từ điển thuật ngữ tài chính | ssi://marketdata/reference/term-glossary | Giải thích thuật ngữ (P/E, ROE...) đúng định nghĩa chuẩn | 
+ Danh mục Prompt | ssi://marketdata/reference/prompt-catalog | Liệt kê toàn bộ Prompt ( ssi.marketdata.* , ssi.fundamental.* , ssi.research.* ) kèm mục đích, tham số | 
+ Danh mục Tool | ssi://marketdata/reference/tool-catalog | Liệt kê toàn bộ Tool khả dụng với tài khoản thông thường kèm mô tả | 
+ Danh mục Resource | ssi://marketdata/reference/resource-catalog | Liệt kê toàn bộ Resource (kể cả chính nó) kèm mục đích và khi nào nên đọc | 
+ Hướng dẫn đọc điểm FA/TA của SSI Research | ssi://research/reference/rating-guide | Hiểu đúng điểm FA/TA: thứ hạng tương đối, các điểm thành phần, thang TA, cách đọc từng cột của các tool research_* | 
+ Ghi chú đọc dữ liệu tài chính | ssi://fundamental/reference/financial-data-notes | Chọn đúng kỳ báo cáo, hiểu kỳ lũy kế 6/9 tháng, giá trị 0 theo loại hình, thang đo chỉ số của nhóm tool fundamental_* | 
+ Khi nào AI dùng Resources? 
+ Bạn hỏi | AI tra Resource nào | Để làm gì | 
+ "Top 10 cổ phiếu tăng mạnh nhất sàn HOSE" | Tiêu chí sắp xếp, Danh sách sàn | Chọn đúng tiêu chí xếp hạng và mã sàn | 
+ "Giá SSI từ đầu năm 2024 đến nay" | Khung thời gian (range) | Nhận ra vượt 730 ngày và gọi nhiều lần với toDate lùi dần | 
+ "P/E là gì? ROE bao nhiêu thì tốt?" | Từ điển thuật ngữ | Giải thích đúng định nghĩa, trung lập, không nhận định tốt/xấu | 
+ "Có Prompt nào tra báo cáo lưu chuyển tiền tệ không?" | Danh mục Prompt | Trả lời chính xác có/không hỗ trợ | 
+ "SSI MCP tra được lãi suất ngân hàng không?" | Danh mục Tool | Đối chiếu Tool hiện có | 
+ "Có sổ tay nào giải thích điểm FA/TA không?" | Danh mục Resource | Biết có Resource nào và khi nào nên đọc | 
+ "SSI Research chấm điểm FPT thế nào? Điểm FA 4 có phải doanh nghiệp yếu?" | Hướng dẫn đọc điểm FA/TA | Hiểu điểm là thứ hạng tương đối, không phải chất lượng tuyệt đối | 
+ "ROE quý gần nhất của FPT?" | Ghi chú đọc dữ liệu tài chính | Chọn đúng kỳ mới nhất, biết ROE của dòng quý tính trên 12 tháng gần nhất, bỏ qua giá trị 0 không áp dụng | 
+ 1. Danh sách sàn giao dịch 
+ Địa chỉ: ssi://marketdata/reference/exchanges 
+ Mã sàn được các Tool chấp nhận ở tham số exchange :
+ Mã sàn | Ghi chú | 
+ HOSE | Sở Giao dịch Chứng khoán TP.HCM | 
+ HNX | Sở Giao dịch Chứng khoán Hà Nội | 
+ UPCOM | Thị trường UPCoM | 
+ 2. Tiêu chí sắp xếp/xếp hạng 
+ Địa chỉ: ssi://marketdata/reference/sort-criteria 
+ Thứ tự sắp xếp ( order ) , dùng chung cho 6 Tool:
+ Giá trị hợp lệ: ASC , DESC (tăng dần / giảm dần).
+ Áp dụng cho: 
+ marketdata_list_company_leaderships 
+ marketdata_list_company_news 
+ marketdata_list_corporate_actions 
+ marketdata_list_finance_indicator 
+ marketdata_list_ratio_index 
+ marketdata_list_share_holder_detail 
+ Tên cột sắp xếp ( orderBy ) của các Tool này chưa có danh sách chuẩn ; nếu không chắc, AI để trống
+thay vì đoán.
+ Tiêu chí xếp hạng ( criteria ) , chỉ dùng cho marketdata_list_top_stocks :
+ Giá trị | Ý nghĩa | 
+ topIncreaseByValue | Top tăng theo giá trị | 
+ topDecreaseByValue | Top giảm theo giá trị | 
+ topIncreaseByPercent | Top tăng theo % | 
+ topDecreaseByPercent | Top giảm theo % | 
+ topByVolume | Top theo khối lượng giao dịch | 
+ topbytradingamount | Top theo giá trị giao dịch | 
+ 3. Khung thời gian (range) và giới hạn ngày 
+ Địa chỉ: ssi://marketdata/reference/date-range-caps 
+ Các tool dữ liệu theo thời gian không nhận fromDate : AI chọn range (độ dài tính lùi từ toDate ) và toDate tuỳ chọn (bỏ trống = hôm nay).
+ SSI MCP chỉ hỗ trợ tối đa 730 ngày (~2 năm) : toDate phải nằm trong 730 ngày gần nhất và không được ở tương lai; max_range (730 ngày) là khung lớn nhất.
+ Định dạng ngày: DD/MM/YYYY (VD 31/03/2026 ). Riêng marketdata_list_vn_index_performance tính theo tháng , toDate dạng MM/YYYY , tối đa 24 tháng.
+ Tool intraday chỉ nhận ngày; hệ thống tự lấy cả ngày (00:00:00 đến 23:59:59).
+ Cần dữ liệu dài hơn khung lớn nhất? AI gọi nhiều lần với toDate lùi dần.
+ Chi tiết từng Tool (28 tool có tham số range) Tool | Trường ngày | toDate lùi tối đa | Định dạng | Giá trị range (độ dài) | 
+ marketdata_list_bank_interest_rate | toDate | 730 ngày | DD/MM/YYYY | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_corporate_bond_profile | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_covered_warrant_information | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày | 
+ marketdata_list_etf_inav_chart | toDate | 730 ngày | DD/MM/YYYY | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_foreign_currency_converter | toDate | 730 ngày | DD/MM/YYYY | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_fundamental_analysis_index | toDate | 730 ngày | DD/MM/YYYY | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_index_daily_data | to | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_intraday_stock_infor | toDate | 730 ngày | DD/MM/YYYY | 1d = cả ngày, 1w = 7 ngày, 1m = 30 ngày (+ latest=true ) | 
+ marketdata_list_stock_infor | toDate | 730 ngày | DD/MM/YYYY | 1d = cả ngày, 1w = 7 ngày, 1m = 30 ngày | 
+ marketdata_list_stock_performance | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_stock_statistic_by_range | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 1m = 30 ngày | 
+ marketdata_list_vn_index_performance | toDate | 24 tháng | MM/YYYY | 3m = 3 tháng, 6m = 6 tháng, 1y = 12 tháng, max_range = 24 tháng | 
+ marketdata_list_adjusted_rate | toDate | 730 ngày | DD/MM/YYYY | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_company_news | to | 730 ngày | DD/MM/YYYY | 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày | 
+ marketdata_list_corporate_actions | toDate | 730 ngày | DD/MM/YYYY | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_corporate_cw | toDate | 730 ngày | DD/MM/YYYY | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_private_corporate_bond | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_share_issue | toDate | 730 ngày | DD/MM/YYYY | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_cw_proprietary_trading | toDate | 730 ngày | DD/MM/YYYY | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_daily_stock_infor | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_finance_balance_sheet | to | 730 ngày | DD/MM/YYYY | 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_finance_cash_flow | to | 730 ngày | DD/MM/YYYY | 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_finance_income_statement | to | 730 ngày | DD/MM/YYYY | 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_fundamental_ratio_history | toDate | 730 ngày | DD/MM/YYYY | 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_ratio_index | toDate | 730 ngày | DD/MM/YYYY | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_stock_daily_data | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_top_stocks | toDate | 730 ngày | DD/MM/YYYY | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày | 
+ marketdata_list_world_index | toDate | 730 ngày | DD/MM/YYYY | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ 4. Từ điển thuật ngữ tài chính 
+ Địa chỉ: ssi://marketdata/reference/term-glossary 
+ 21 thuật ngữ được định nghĩa chuẩn hoá, trung lập : chỉ mô tả khái niệm và công thức,
+không nhận định tốt/xấu hay nên mua/bán.
+ Thuật ngữ | Định nghĩa | 
+ P/E (Price to Earnings) | Tỷ lệ giữa thị giá cổ phiếu và lợi nhuận trên mỗi cổ phiếu (EPS). Công thức: Giá thị trường / EPS. Dùng để so sánh mức định giá tương đối giữa các cổ phiếu cùng ngành. Các tool MCP trả P/E và P/B là số lần. | 
+ P/B (Price to Book) | Tỷ lệ giữa thị giá cổ phiếu và giá trị sổ sách trên mỗi cổ phiếu. Công thức: Giá thị trường / Giá trị sổ sách mỗi cổ phần. | 
+ ROE (Return on Equity) | Tỷ suất sinh lời trên vốn chủ sở hữu. Công thức: Lợi nhuận sau thuế / Vốn chủ sở hữu bình quân. Đo hiệu quả sử dụng vốn của cổ đông. Các tool MCP trả ROE dạng phân số (0.11 = 11%), nhân 100 khi trình bày %. | 
+ ROA (Return on Assets) | Tỷ suất sinh lời trên tổng tài sản. Công thức: Lợi nhuận sau thuế / Tổng tài sản bình quân. Đo hiệu quả sử dụng tài sản của doanh nghiệp. Các tool MCP trả ROA dạng phân số (0.05 = 5%), nhân 100 khi trình bày %. | 
+ EPS (Earnings Per Share) | Lợi nhuận sau thuế phân bổ trên mỗi cổ phiếu đang lưu hành. Công thức: Lợi nhuận sau thuế / Số cổ phiếu lưu hành bình quân. | 
+ Beta | Hệ số đo mức độ biến động của cổ phiếu so với biến động chung của thị trường (thường so với VNINDEX). Beta > 1: biến động mạnh hơn thị trường; Beta < 1: biến động yếu hơn. | 
+ Room khối ngoại (Foreign Room) | Số lượng cổ phiếu tối đa mà nhà đầu tư nước ngoài còn được phép mua thêm, dựa trên tỷ lệ sở hữu nước ngoài tối đa cho phép của mã đó trừ đi tỷ lệ đã sở hữu. | 
+ Khối ngoại | Cách gọi chung cho nhà đầu tư nước ngoài (tổ chức và cá nhân) giao dịch trên thị trường chứng khoán Việt Nam. | 
+ Vốn hoá thị trường (Market Cap) | Tổng giá trị thị trường của toàn bộ cổ phiếu đang lưu hành. Công thức: Giá thị trường mỗi cổ phiếu × Số cổ phiếu đang lưu hành. | 
+ NAV (Net Asset Value) | Giá trị tài sản ròng của một quỹ đầu tư: tổng giá trị tài sản của quỹ trừ đi các khoản nợ phải trả. NAV trên mỗi chứng chỉ quỹ = Tổng NAV / Số chứng chỉ quỹ đang lưu hành. | 
+ GDKHQ (Giao dịch không hưởng quyền) | Ngày mà người mua cổ phiếu từ ngày đó trở đi không còn được hưởng quyền (cổ tức, quyền mua, họp cổ đông...) của đợt sự kiện doanh nghiệp tương ứng. | 
+ Tỷ suất cổ tức (Dividend Yield) | Tỷ lệ giữa cổ tức tiền mặt trên mỗi cổ phiếu và thị giá cổ phiếu. Công thức: Cổ tức tiền mặt mỗi cổ phiếu / Giá thị trường. | 
+ D/E (Debt to Equity) | Tỷ lệ giữa tổng nợ phải trả và vốn chủ sở hữu. Công thức: Tổng nợ / Vốn chủ sở hữu. Phản ánh mức độ sử dụng đòn bẩy tài chính của doanh nghiệp. | 
+ EV/EBITDA | Tỷ lệ giữa giá trị doanh nghiệp (Enterprise Value = vốn hoá thị trường + nợ - tiền và tương đương tiền) và lợi nhuận trước lãi vay, thuế, khấu hao (EBITDA). Dùng để so sánh mức định giá tương đối giữa các doanh nghiệp. | 
+ Giá tham chiếu | Mức giá của phiên giao dịch liền trước dùng làm cơ sở tính biên độ dao động giá (trần/sàn) cho phiên hiện tại. Thường là giá đóng cửa (HOSE) hoặc giá giao dịch bình quân của phiên trước (HNX, UPCoM) — cách xác định cụ thể theo quy chế giao dịch của từng sở. | 
+ Giá trần / Giá sàn | Mức giá cao nhất (trần) / thấp nhất (sàn) mà một cổ phiếu được phép giao dịch trong phiên, tính theo biên độ dao động quy định trên giá tham chiếu. | 
+ Thanh khoản | Mức độ dễ dàng mua/bán một cổ phiếu mà không làm thay đổi đáng kể giá của nó — thường đo qua khối lượng/giá trị giao dịch bình quân. | 
+ ISIN (International Securities Identification Number) | Mã định danh chứng khoán theo chuẩn quốc tế (ISO 6166), duy nhất cho mỗi loại chứng khoán. | 
+ Chứng quyền có đảm bảo (Covered Warrant) | Chứng khoán do công ty chứng khoán phát hành, cho phép người nắm giữ quyền (không phải nghĩa vụ) mua/bán cổ phiếu cơ sở tại mức giá xác định trước, trong thời hạn nhất định. | 
+ iNAV (Indicative Net Asset Value) | Giá trị tài sản ròng tham chiếu theo thời gian thực của một quỹ ETF, dùng để nhà đầu tư ước tính giá trị hợp lý của chứng chỉ quỹ trong phiên giao dịch. | 
+ ICB (Industry Classification Benchmark) | Hệ thống phân loại ngành nghề chuẩn quốc tế, phân cấp từ ngành lớn (supersector) tới phân ngành chi tiết — dùng để nhóm các doanh nghiệp cùng lĩnh vực hoạt động. | 
+ Định nghĩa mang tính chất giáo dục/tham khảo, KHÔNG phải khuyến nghị đầu tư. Quyết định đầu tư thuộc về người dùng.
+ 5. Danh mục Prompt 
+ Địa chỉ: ssi://marketdata/reference/prompt-catalog 
+ Liệt kê toàn bộ 55 Prompt (nhóm ssi.marketdata.* , ssi.fundamental.* và ssi.research.* ) kèm tên hiển thị, mục đích và tham số. Danh sách trình bày chi tiết có tại
+ Hướng dẫn sử dụng prompts . Hỏi AI "Có Prompt nào để ...?" là AI tự đối
+chiếu với danh mục này.
+ 6. Danh mục Tool 
+ Địa chỉ: ssi://marketdata/reference/tool-catalog 
+ Liệt kê toàn bộ 56 Tool khả dụng (nhóm marketdata_* , fundamental_* và research_* ; tên và mô tả). Danh sách trình bày chi tiết có tại
+ Hướng dẫn công cụ (tools) .
+ 7. Hướng dẫn đọc điểm FA/TA của SSI Research 
+ Địa chỉ: ssi://research/reference/rating-guide 
+ Giúp AI hiểu đúng ý nghĩa điểm đánh giá của SSI Research (nhóm tool research_* ) và không suy diễn thêm .
+Nội dung lấy từ hai tài liệu công khai của SSI Research về phương pháp chấm điểm phân tích cơ bản (FA) và
+phân tích kỹ thuật (TA).
+ Nguyên tắc đọc điểm (áp dụng cho cả FA và TA): 
+ Điểm là phân vị xếp hạng tương đối (thang 0-100) trong tập cổ phiếu được chấm cùng ngày, không phải số %, giá hay xác suất sinh lời.
+ Điểm thấp không có nghĩa doanh nghiệp yếu tuyệt đối; điểm cao không đảm bảo giá tăng hay hết rủi ro.
+ Chỉ so sánh các mã cùng ngày chấm. Điểm có thể đổi dù số liệu doanh nghiệp ít đổi, vì thứ hạng còn phụ thuộc kết quả của các cổ phiếu khác.
+ Hai mã có điểm gần nhau vẫn có thể mạnh ở các điểm thành phần khác nhau. Số sao là nhãn phân nhóm tương đối, không phải xác suất sinh lời.
+ Điểm FA tổng hợp từ 3 điểm thành phần:
+ Thành phần | Ý nghĩa | Cột ở tool SSI100 | Cột ở research_list_fa_rating | 
+ Marketwide | Điểm hiệu quả và quy mô: ROE, vốn hoá, tổng tài sản, vốn chủ sở hữu, lợi nhuận sau thuế 12 tháng | efficiency_score | effective | 
+ Historical | Điểm kết quả kinh doanh và định giá của chính doanh nghiệp trong lịch sử gần đây | business_performance_score | business_result | 
+ Industry | Điểm triển vọng và vị thế so với các đối thủ cùng ngành | industry_score | prospect | 
+ Ngân hàng không dùng Historical Score; ngành chưa có bộ Industry Score riêng chỉ được đánh giá bằng Marketwide và Historical.
+Vì vậy thành phần trống ở các nhóm này là bình thường.
+ Điểm TA (thang 0-100) là trung bình của hai nhóm Đà tăng và Tích lũy:
+ Nhóm | Chỉ tiêu | Cột | Ý nghĩa | 
+ Đà tăng | Sức mạnh giá trên thị trường | price_power | Sức mạnh tăng giá so với mặt bằng chung | 
+ Đà tăng | Sức mạnh xu hướng | trend_strength | Khoảng cách giá với MA20, MA50, MA200 | 
+ Đà tăng | Vị thế ngắn hạn | short_position | Mức giá hiện tại so với đỉnh 20 phiên | 
+ Tích lũy | Dòng tiền | cash_flow | Mức tham gia chủ động của dòng tiền quanh nền giá | 
+ Tích lũy | Độ biến động | volatility | Biến động thấp phản ánh cân bằng cung cầu ngắn hạn | 
+ Tích lũy | Biên nền giá | price_base | Nền chặt cho thấy lực bán được kiểm soát tốt | 
+ Thang đánh giá TA (cũng là nhãn của technical_status ):
+ Điểm | Nhãn | 
+ lớn hơn 80 | Vượt trội | 
+ 61 - 80 | Khả quan | 
+ 41 - 60 | Trung lập | 
+ 21 - 40 | Thận trọng | 
+ từ 20 trở xuống | Hạn chế | 
+ TA chỉ áp dụng cho top 500 cổ phiếu HOSE, HNX, UPCOM theo giá trị giao dịch bình quân 20 phiên (niêm yết từ 1 năm, có giao dịch đủ 20 phiên gần nhất).
+Mã còn lại hiển thị "Không xếp hạng", không phải điểm thấp.
+ Cột nào là điểm, cột nào là sao: 
+ Cột | Kiểu giá trị | 
+ fa_rating_score , rating_ta và các cột *_score | Điểm 0-100 | 
+ fa_rating (tool SSI100), rate , 6 chỉ tiêu TA ở bảng trên | Số sao 1-5 | 
+ fa_rating ở research_list_fa_rating | Điểm FA tổng hợp 0-100, không phải số sao | 
+ 8. Ghi chú đọc dữ liệu tài chính 
+ Địa chỉ: ssi://fundamental/reference/financial-data-notes 
+ Giúp AI đọc đúng dữ liệu của nhóm tool bản gọn fundamental_* . Đây là quan sát trên dữ liệu thật 
+(không phải tài liệu của đơn vị cung cấp dữ liệu); mỗi ghi chú trong resource nêu rõ mức xác nhận.
+ Chủ đề | Ghi chú | 
+ Kỳ báo cáo | length_report 1-4 là quý, 5 là cả năm, 6 và 9 là lũy kế 6 và 9 tháng (không phải quý, không tự cộng trừ để suy ra quý). Muốn thấy dòng 6, 9 thì bỏ trống lengthReport | 
+ Chọn kỳ mới nhất | AI không tin thứ tự dòng: tự sắp theo năm rồi kỳ. Riêng fundamental_list_financial_ratios , orderBy=YearReport chỉ đúng thứ tự năm | 
+ Ngày lọc | Với 3 báo cáo, khoảng ngày lọc theo ngày công bố báo cáo, không phải ngày cuối kỳ | 
+ Kiểm toán | Cùng kỳ có cả báo cáo đã và chưa kiểm toán thì ưu tiên bản đã kiểm toán; báo cáo quý thường chưa kiểm toán vẫn được dùng | 
+ Giá trị 0 và field vắng | 0 có thể là "không áp dụng" hoặc nguồn không điền, không phải số thật. Field vắng là không có dữ liệu, không phải 0 | 
+ Kết quả kinh doanh theo loại hình | Ngân hàng và bảo hiểm: doanh số, lãi gộp, lợi nhuận hoạt động là 0 (doanh thu nằm ở total_operating_income của ngân hàng, net_revenue_from_insurance_business của bảo hiểm, chỉ có ở tool đầy đủ). Chứng khoán có số thật nhưng gross_profit bằng doanh thu trừ chi phí hoạt động. EPS của một quý có thể là 0 kể cả khi báo cáo đã công bố: dùng dòng cả năm | 
+ Bảng cân đối, chỉ số theo loại hình | Ngân hàng: cash_and_cash_equivalents chỉ là tiền mặt, vàng bạc; một số khoản ngắn/dài hạn, vay, phải thu, tồn kho là 0 . Chứng khoán: vay dài hạn, phải thu, tồn kho là 0 | 
+ Thang đo chỉ số | roe , roa , roic , các biên lợi nhuận, debt_to_asset , dividend_yield là phân số (0.134 = 13,4%); debt_to_equity , current_ratio , quick_ratio , pe , pb là số lần; eps , book_value , market_cap tính bằng VND. debt_to_equity là tổng nợ phải trả chia vốn chủ sở hữu (không chỉ nợ vay). Ở dòng quý, ROE, ROA và các biên lợi nhuận tính trên 12 tháng gần nhất (TTM) | 
+ Dòng tiền | Các khoản chi ( purchase_of_fixed_and_long_term_assets , dividends_paid ) là số âm. Tiền cuối kỳ gồm cả chênh lệch tỷ giá nên có thể không đúng bằng đầu kỳ cộng lưu chuyển thuần. EPS có thể lệch khoảng 8% so với lợi nhuận cổ đông mẹ chia số cổ phiếu | 
+ Chuỗi định giá | fundamental_list_valuation_history sắp theo ngày tăng dần; dữ liệu thưa; các dòng P/E, P/B làm tròn 2 chữ số và trùng ngày nhau nhiều khả năng là số theo kỳ báo cáo, không dùng làm P/E hiện tại | 
+ 9. Danh mục Resource 
+ Địa chỉ: ssi://marketdata/reference/resource-catalog 
+ Liệt kê toàn bộ 9 Resource đang có (kể cả chính danh mục này): địa chỉ, tên, mục đích và khi nào nên đọc . Hỏi AI "Có sổ tay nào để ...?" là AI tự đối chiếu với danh mục này, giống Danh mục Prompt và Danh mục Tool.
+ Cả ba danh mục (Prompt, Tool, Resource) được kiểm tra tự động đối chiếu với Prompt, Tool, Resource thật nên luôn đầy đủ.
+ Câu hỏi thường gặp về Resources 
+ Tôi có cần đọc Resources không? 
+Không. AI tự dùng khi cần. Bạn chỉ cần biết để hỏi chính xác hơn.
+ Resources có cập nhật theo thời gian thực không? 
+Không. Đây là dữ liệu tham chiếu tĩnh, thay đổi khi SSI cập nhật dịch vụ (thêm Tool, Prompt, đổi giới hạn).
+ Resources có chứa thông tin tài khoản của tôi không? 
+Không. Resources chỉ chứa danh mục công khai, không có dữ liệu cá nhân.
+ Bước tiếp theo 
+ Bảo mật khi kết nối
+ Câu hỏi thường gặp
+ Hướng dẫn sử dụng prompts
+ Cách chọn và dùng 55 kịch bản dựng sẵn (Prompt) của SSI MCP cho các nhu cầu thường gặp.
+ Bảo mật khi kết nối
+ Bảo vệ tài khoản và dữ liệu cá nhân khi dùng SSI MCP.
+ 
