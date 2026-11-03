@@ -50,3 +50,25 @@ Connect and evaluate AlgoLab, SSI, and TCBS MCP servers for Vietnamese market da
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: Vietnam market routing foundation and Yahoo call sites elimination
+<!-- trellis-session: v=2 fp=bc55af6d927f8a86 -->
+
+**Date**: 2026-11-03
+**Task**: Vietnam market routing foundation and Yahoo call sites elimination
+**Branch**: `dev`
+
+### Summary
+
+Added market='VN'|'US' abstraction across config, API schemas, and state. Decoupled agents/context.py, agents/tools.py, and memory/settlement.py from direct Yahoo imports. Updated symbol normalization and benchmark resolution for Vietnam (VNINDEX). Verified zero Yahoo calls for market='VN' with 1,450 passing unit tests.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3228d33` | feat(vietnam): market-aware routing foundation and eliminate direct Yahoo call sites |
+
+### Status
+
+[OK] **Completed**

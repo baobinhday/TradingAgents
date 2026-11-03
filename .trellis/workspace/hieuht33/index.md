@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 2
+- **Total Sessions**: 3
 - **Last Active**: 2026-11-03
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~52 | Active |
+| `journal-1.md` | ~74 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 3 | 2026-11-03 | Vietnam market routing foundation and Yahoo call sites elimination | `3228d33` | `dev` |
 | 2 | 2026-11-03 | Spike AlgoLab, SSI and TCBS MCP access | `f188b4c`, `0b557fc` | `dev` |
 | 1 | 2026-11-02 | Add Web UI for Backtest and Config | `0f4990d` | `dev` |
 <!-- @@@/auto:session-history -->
