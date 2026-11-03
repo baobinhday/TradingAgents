@@ -72,3 +72,25 @@ Added market='VN'|'US' abstraction across config, API schemas, and state. Decoup
 ### Status
 
 [OK] **Completed**
+
+
+## Session 4: Implement AlgoLab and SSI MCP Vendor Adapters
+<!-- trellis-session: v=2 fp=9a598706d4969737 -->
+
+**Date**: 2026-11-03
+**Task**: Implement AlgoLab and SSI MCP Vendor Adapters
+**Branch**: `dev`
+
+### Summary
+
+Implemented official vendor integration for Vietnam stock market support (11-02-vn-mcp-vendors). Built AlgoLab MCP client with TTL caching and SSE stream parsing, and SSI MCP client with OAuth token store, single-use refresh token rotation, and rate limiter. Implemented market adapters with zero-volume unfinished bar filtering, fundamentals, financial statements, news, macro, technical indicators, and verified market snapshot. Wired whole-series price fallback and multi-source co-sourcing with URL/title deduplication into router. Added 18 unit tests; all 1,468 tests green.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `97dcd30` | feat(vietnam): implement AlgoLab and SSI MCP vendor adapters |
+
+### Status
+
+[OK] **Completed**
