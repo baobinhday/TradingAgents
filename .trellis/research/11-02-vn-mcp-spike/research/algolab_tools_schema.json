@@ -1,0 +1,707 @@
+[
+  {
+    "name": "get_market_overview",
+    "description": "Toàn cảnh thị trường chứng khoán Việt Nam trong MỘT lượt: chỉ số (điểm, % thay đổi, P/E–P/B), top tăng/giảm, độ rộng kỹ thuật, 5 mã RS dẫn đầu, combo tín hiệu đang khớp, khối ngoại toàn thị trường, hợp đồng phái sinh gần nhất và bản tổng kết phiên mới nhất.\nDùng khi: \"thị trường hôm nay\", \"VN-Index thế nào\", cần bối cảnh trước khi phân tích mã. · Không dùng khi: cần chuỗi giá (→ get_price_history) hoặc khối ngoại từng mã chi tiết (→ call_function get_foreign_flows_detail).\nTham số: as_of (YYYY-MM-DD, mặc định phiên mới nhất — ngày cũ thì điểm và P/E–P/B đúng phiên đó); index (mặc định VNINDEX; VN30, HNX, UPCOM…).\nKết quả: chỉ số tính điểm; giá trị VND; khối lượng cổ phiếu; trong phiên là số realtime.\nXem thêm: get_technical_signals, get_news, get_intelligence.",
+    "inputSchema": {
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Ngày YYYY-MM-DD; mặc định phiên mới nhất (số realtime trong phiên).",
+          "title": "As Of"
+        },
+        "index": {
+          "default": "VNINDEX",
+          "description": "Chỉ số chính: VNINDEX (mặc định), VN30, HNX, UPCOM, VN100…",
+          "title": "Index",
+          "type": "string"
+        }
+      },
+      "title": "get_market_overviewArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Market overview",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_price_history",
+    "description": "Chuỗi nến OHLCV của một mã bất kỳ: cổ phiếu (từ 2013), ETF, chứng quyền, chỉ số (từ 2013), phái sinh liên tục VN30F1M/VN30F2M (lưu từ 2017) hoặc từng hợp đồng; khung ngày/tuần/tháng và phút–giờ (cổ phiếu 50 phiên gần nhất có nến ATC 14:45, phái sinh từ 04/2026, chỉ số ~55 phiên gần nhất). Truy vấn được toàn bộ lịch sử.\nDùng khi: xu hướng, hỗ trợ/kháng cự, hiệu suất theo thời gian, khối ngoại theo ngày của một mã. · Không dùng khi: chỉ cần giá hiện tại (→ get_quotes).\nTham số: symbol; interval 1m|5m|15m|30m|1h|1d|1w|1mo; from_date/to_date; limit (mặc định 250, tối đa 1000); cursor lấy trang CŨ hơn.\nKết quả: bars dạng bảng, limit nến MỚI NHẤT, cũ trước mới sau; nến ngày là giá điều chỉnh (VND), có cổ tức/chia thưởng sau đó thì kèm c_actual = giá khớp thực tế; nến phút là giá thô; cổ phiếu kèm khối ngoại ròng, sự kiện quyền; chỉ số kèm pe, pb theo ngày.\nXem thêm: get_company_profile, get_technical_signals.",
+    "inputSchema": {
+      "properties": {
+        "symbol": {
+          "description": "Mã bất kỳ: cổ phiếu (HPG), ETF, chứng quyền, chỉ số (VNINDEX, VN30), phái sinh (VN30F1M, VN30F2M hoặc mã hợp đồng).",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "interval": {
+          "default": "1d",
+          "description": "Khung nến: 1m, 5m, 15m, 30m, 1h, 1d (mặc định), 1w, 1mo.",
+          "enum": [
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "1d",
+            "1w",
+            "1mo"
+          ],
+          "title": "Interval",
+          "type": "string"
+        },
+        "from_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Từ ngày YYYY-MM-DD (tuỳ chọn).",
+          "title": "From Date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Đến ngày YYYY-MM-DD; mặc định hôm nay.",
+          "title": "To Date"
+        },
+        "limit": {
+          "default": 250,
+          "description": "Số nến MỚI NHẤT cần lấy (mặc định 250, tối đa 1000).",
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "meta.next_cursor của lượt trước để lấy tiếp các nến CŨ hơn.",
+          "title": "Cursor"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "get_price_historyArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Price history",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_quotes",
+    "description": "Giá realtime của tối đa 50 mã trong MỘT lượt — cổ phiếu, ETF, chứng quyền, chỉ số và phái sinh (kể cả VN30F1M/VN30F2M): giá khớp, % thay đổi, khối lượng, tốc độ khớp (RVOL), basis và OI phái sinh.\nDùng khi: \"giá HPG bây giờ\", so sánh nhanh nhiều mã, soi danh mục. · Không dùng khi: cần lịch sử (→ get_price_history) hoặc hồ sơ doanh nghiệp (→ get_company_profile).\nTham số: symbols — danh sách mã, vd [\"HPG\",\"VN30F1M\",\"VNINDEX\"].\nKết quả: mỗi mã một dòng; giá VND, chỉ số và phái sinh tính điểm; updated_at theo giờ sàn.\nXem thêm: get_market_overview, get_price_history.",
+    "inputSchema": {
+      "properties": {
+        "symbols": {
+          "description": "Danh sách mã (tối đa 50), vd [\"HPG\",\"VN30F1M\",\"VNINDEX\"].",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Symbols",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbols"
+      ],
+      "title": "get_quotesArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Realtime quotes",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_company_profile",
+    "description": "Hồ sơ một doanh nghiệp niêm yết: thông tin chung và ngành ICB 4 cấp, cơ cấu sở hữu, định giá (P/E, P/B, EPS, BVPS do AlgolabX tự tính với số cổ phiếu đúng thời điểm, kèm số của nhà cung cấp), hiệu suất giá, thanh khoản, giá mục tiêu đồng thuận CTCK và AlgolabX, sự kiện quyền/cổ tức.\nDùng khi: \"HPG là công ty gì\", \"định giá VCB\", bắt đầu phân tích một mã. · Không dùng khi: cần số liệu BCTC chi tiết (→ get_financial_statements).\nTham số: symbol; sections — chọn trong overview, ownership, valuation, performance, targets, events (mặc định tất cả trừ events).\nKết quả: mỗi section một khối; tiền VND, tỷ lệ % (hậu tố _pct).\nXem thêm: get_financial_statements, get_research_reports.",
+    "inputSchema": {
+      "properties": {
+        "symbol": {
+          "description": "Mã cổ phiếu hoặc ETF, vd HPG.",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "sections": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "overview",
+                  "ownership",
+                  "valuation",
+                  "performance",
+                  "targets",
+                  "events"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Chọn trong overview, ownership, valuation, performance, targets, events; mặc định tất cả trừ events.",
+          "title": "Sections"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "get_company_profileArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Company profile",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_financial_statements",
+    "description": "Báo cáo tài chính theo đúng mẫu ngành (doanh nghiệp, ngân hàng, chứng khoán, bảo hiểm) của hơn 1.500 mã từ 2016: kết quả kinh doanh, cân đối kế toán, lưu chuyển tiền tệ theo quý hoặc năm; KQKD kèm dự phóng các quý tới của AlgolabX (tách riêng, không trộn với số đã công bố).\nDùng khi: tăng trưởng doanh thu/lợi nhuận, biên lợi nhuận, nợ vay, dòng tiền. · Không dùng khi: chỉ cần P/E, P/B, vốn hoá (→ get_company_profile).\nTham số: symbol; statement income|balance|cash (mặc định income); period quarter|annual; limit số kỳ (mặc định 8, tối đa 20); detail summary (dòng chính) | full (cả cây).\nKết quả: lines dạng bảng dòng × kỳ, đơn vị tỷ VND; dòng EPS tính đồng.\nXem thêm: search(kind=\"field\") để tra mã chỉ tiêu.",
+    "inputSchema": {
+      "properties": {
+        "symbol": {
+          "description": "Mã cổ phiếu, vd VCB.",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "statement": {
+          "default": "income",
+          "description": "income = KQKD (mặc định), balance = cân đối kế toán, cash = lưu chuyển tiền tệ.",
+          "enum": [
+            "income",
+            "balance",
+            "cash"
+          ],
+          "title": "Statement",
+          "type": "string"
+        },
+        "period": {
+          "default": "quarter",
+          "description": "quarter (mặc định) hoặc annual.",
+          "enum": [
+            "quarter",
+            "annual"
+          ],
+          "title": "Period",
+          "type": "string"
+        },
+        "limit": {
+          "default": 8,
+          "description": "Số kỳ gần nhất (mặc định 8, tối đa 20).",
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "detail": {
+          "default": "summary",
+          "description": "summary = dòng chính (cấp 1–2 + EPS); full = toàn bộ cây kèm dòng cha.",
+          "enum": [
+            "summary",
+            "full"
+          ],
+          "title": "Detail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "get_financial_statementsArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Financial statements",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_research_reports",
+    "description": "Báo cáo phân tích của 50 CTCK và AlgolabX (gần 7.000 báo cáo từ 2022): danh sách kèm khuyến nghị, giá mục tiêu và link đọc; khi có symbol thì kèm đồng thuận giá mục tiêu, khuyến nghị mới nhất của từng CTCK, AlgolabX theo kỳ hạn và upside so với giá hiện tại.\nDùng khi: \"CTCK nói gì về VCB\", \"giá mục tiêu HPG\", báo cáo ngành/vĩ mô mới. · Không dùng khi: cần đọc toàn văn (→ call_function get_report_content với id).\nTham số: symbol; broker (vd SSI, VCI, HSC, ALGOLABX); from_date; limit (mặc định 20); cursor.\nKết quả: reports dạng bảng; giá VND; url là trang đọc trên algolab.vn — dùng link này khi dẫn nguồn.\nXem thêm: get_company_profile.",
+    "inputSchema": {
+      "properties": {
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Mã cổ phiếu — kèm đồng thuận giá mục tiêu và upside.",
+          "title": "Symbol"
+        },
+        "broker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Mã CTCK, vd SSI, VCI, HSC, MBS, ALGOLABX.",
+          "title": "Broker"
+        },
+        "from_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Từ ngày YYYY-MM-DD.",
+          "title": "From Date"
+        },
+        "limit": {
+          "default": 20,
+          "description": "Số báo cáo mỗi trang (mặc định 20, tối đa 100).",
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "meta.next_cursor của lượt trước.",
+          "title": "Cursor"
+        }
+      },
+      "title": "get_research_reportsArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Broker research",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_news",
+    "description": "Tin tức chứng khoán Việt Nam: tin doanh nghiệp kèm chấm điểm sentiment (Tích cực/Trung tính/Tiêu cực), bản tổng kết phiên cuối ngày và bản tin cập nhật trong phiên của AlgolabX; khi có symbol thì lọc theo mã.\nDùng khi: \"tin mới về HPG\", \"hôm nay thị trường có gì\", tìm chất xúc tác/rủi ro. · Không dùng khi: cần báo cáo phân tích (→ get_research_reports).\nTham số: symbol; kind company|recap|intraday|expert (recap + intraday); from_date; limit (mặc định 20 tin doanh nghiệp / 5 bản tin, tối đa 100); cursor.\nKết quả: items mới nhất trước; published_at dạng ISO.\nXem thêm: get_market_overview.",
+    "inputSchema": {
+      "properties": {
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Lọc theo mã.",
+          "title": "Symbol"
+        },
+        "kind": {
+          "default": "company",
+          "description": "company = tin doanh nghiệp có sentiment (mặc định); recap = tổng kết cuối ngày; intraday = bản tin trong phiên; expert = recap + intraday.",
+          "enum": [
+            "company",
+            "recap",
+            "intraday",
+            "expert"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "from_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Từ thời điểm (YYYY-MM-DD hoặc ISO datetime).",
+          "title": "From Date"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Số mục (mặc định 20 tin doanh nghiệp / 5 bản tin; tối đa 100).",
+          "title": "Limit"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "meta.next_cursor của lượt trước.",
+          "title": "Cursor"
+        }
+      },
+      "title": "get_newsArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "News",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_technical_signals",
+    "description": "Phân tích kỹ thuật định lượng của AlgolabX: xếp hạng sức mạnh giá RS đa khung, MACD, tín hiệu bắt đáy, beta, độ lệch chuẩn lợi suất; độ rộng thị trường; các combo tín hiệu đã backtest từ 2020 (tỉ lệ thắng, lợi suất vượt VN-Index) kèm danh sách mã đang khớp hôm nay.\nDùng khi: tìm mã mạnh/yếu, xác nhận xu hướng, quét cơ hội theo bằng chứng lịch sử. · Không dùng khi: cần chuỗi giá (→ get_price_history).\nTham số: symbol (một mã) hoặc top (mặc định 20, tối đa 200); as_of; min_adtv (sàn thanh khoản VND, mặc định 10 tỷ); detail summary|full.\nKết quả: tickers dạng bảng (RS là percentile 0–100, lợi suất %); signal_combos; market_breadth.\nXem thêm: get_market_overview.",
+    "inputSchema": {
+      "properties": {
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Một mã — trả riêng phân tích của mã đó (bỏ qua top/min_adtv).",
+          "title": "Symbol"
+        },
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Ngày YYYY-MM-DD; mặc định phiên mới nhất.",
+          "title": "As Of"
+        },
+        "top": {
+          "default": 20,
+          "description": "Số mã RS mạnh nhất (mặc định 20, tối đa 200).",
+          "minimum": 1,
+          "title": "Top",
+          "type": "integer"
+        },
+        "min_adtv": {
+          "default": 10000000000.0,
+          "description": "Sàn thanh khoản — GTGD trung bình 1 tháng (VND), mặc định 10 tỷ; 0 = không lọc.",
+          "minimum": 0,
+          "title": "Min Adtv",
+          "type": "number"
+        },
+        "detail": {
+          "default": "summary",
+          "description": "summary = cột chính; full = mọi khung RS/beta/độ lệch chuẩn và mọi combo.",
+          "enum": [
+            "summary",
+            "full"
+          ],
+          "title": "Detail",
+          "type": "string"
+        }
+      },
+      "title": "get_technical_signalsArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Technical signals",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_macro",
+    "description": "Vĩ mô nhanh: Việt Nam (CPI, GDP, M2, tỷ giá trung tâm, IIP, bán lẻ) và thế giới (vàng, dầu Brent/WTI, S&P 500, Nasdaq, lợi suất TPCP Mỹ 10 năm, DXY, USD/VND) kèm FedWatch — xác suất Fed cắt/giữ/tăng lãi suất các kỳ họp tới.\nDùng khi: bối cảnh vĩ mô, tác động tỷ giá/lãi suất lên thị trường. · Không dùng khi: cần chỉ tiêu khác — kho có hơn 1.300 chỉ tiêu (→ search kind=\"macro\" rồi call_function get_macro_series).\nTham số: scope vietnam|world|all; symbols (vd [\"CPI\",\"GOLD\"]); from_date/to_date; limit số quan sát MỚI NHẤT mỗi chuỗi (mặc định 24).\nKết quả: series có latest, previous và obs dạng bảng; fed_outlook.\nXem thêm: call_function browse_macro; pha chu kỳ kinh tế → get_economic_cycle.",
+    "inputSchema": {
+      "properties": {
+        "scope": {
+          "default": "all",
+          "description": "vietnam, world hoặc all (mặc định).",
+          "enum": [
+            "vietnam",
+            "world",
+            "all"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "symbols": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Lọc chuỗi — Việt Nam: CPI, GDP, M2, FX, IIP, RETAIL; thế giới: GOLD, BRENT, WTI, SP500, NASDAQ, US10Y, DXY, USDVND.",
+          "title": "Symbols"
+        },
+        "from_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Từ ngày YYYY-MM-DD.",
+          "title": "From Date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Đến ngày YYYY-MM-DD.",
+          "title": "To Date"
+        },
+        "limit": {
+          "default": 24,
+          "description": "Số quan sát MỚI NHẤT mỗi chuỗi (mặc định 24, tối đa 500).",
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "title": "get_macroArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Macro snapshot",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_intelligence",
+    "description": "★ Sản phẩm độc quyền AlgolabX (không phải dữ liệu thô): dự báo VN-Index các tháng tới (đường dự báo + dải tin cậy 50/80/95%) kèm luận điểm và kịch bản — cập nhật định kỳ, không phải mỗi phiên (gọi tên bản theo edition_date, không theo as_of); tín hiệu phái sinh VN30F từ 4 mô hình (xu hướng, hồi quy, carry, chênh lệch); 5 danh mục do PM AlgolabX quản lý theo triết lý đầu tư (tỷ trọng, luận điểm, hiệu suất).\nDùng khi: \"VN-Index cuối năm bao nhiêu\", \"AlgolabX đang nghĩ gì\", khẩu vị rủi ro trung hạn. · Không dùng khi: cần giá hiện tại (→ get_quotes).\nTham số: as_of (mặc định bản mới nhất); section — đọc toàn văn một mục luận điểm (số mục hoặc từ khoá); detail summary|full.\nKết quả: forecast (chỉ số chính + đường dự báo lấy mẫu, điểm), thesis (tóm tắt + mục lục), derivatives_signals, suggested_portfolios — tham khảo, không phải khuyến nghị cá nhân.\nXem thêm: get_market_overview, get_economic_cycle.",
+    "inputSchema": {
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Ngày bản dự báo YYYY-MM-DD; mặc định bản mới nhất.",
+          "title": "As Of"
+        },
+        "detail": {
+          "default": "summary",
+          "description": "summary (mặc định) = đường dự báo lấy mẫu + tóm tắt luận điểm + mục lục; full = toàn bộ (luận điểm rất dài, có thể bị cắt ở 200 KB).",
+          "enum": [
+            "summary",
+            "full"
+          ],
+          "title": "Detail",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Đọc toàn văn MỘT mục luận điểm: số mục (vd \"1\", \"I.1\", \"III.B.2\") hoặc từ khoá tiêu đề (vd \"tín dụng\"); xem thesis.sections.",
+          "title": "Section"
+        }
+      },
+      "title": "get_intelligenceArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "AlgolabX Intelligence",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "search",
+    "description": "Tìm mọi thứ trong kho dữ liệu Algolab bằng từ khoá tiếng Việt (có/không dấu) hoặc tiếng Anh: hàm dữ liệu (kèm tham số và ví dụ gọi), mã chứng khoán (toàn bộ mã đang niêm yết: cổ phiếu, ETF, chứng quyền, phái sinh, chỉ số), ngành ICB, chỉ tiêu BCTC (hơn 3.300), chỉ tiêu vĩ mô (hơn 1.300).\nDùng khi: không chắc tên mã/hàm/chỉ tiêu; muốn biết Algolab có dữ liệu gì về một chủ đề. · Không dùng khi: đã biết công cụ cần gọi.\nTham số: query; kind auto|function|symbol|sector|field|macro; limit (mặc định 10).\nKết quả: nhóm functions / symbols / sectors / fields / macro; hàm danh mục gọi qua call_function.\nXem thêm: call_function.\nDanh mục chuyên sâu:\n• get_index_intraday — chuỗi điểm trong phiên của chỉ số (mỗi phút)\n• get_foreign_flows_detail — khối ngoại toàn thị trường một phiên, top mua/bán ròng\n• get_corporate_events — sự kiện quyền, cổ tức, ĐHCĐ, giao dịch nội bộ của một mã\n• list_symbols — danh sách mã theo loại, sàn, ngành ICB\n• screen_stocks — lọc cổ phiếu theo định giá, sinh lời, hiệu suất giá, RS, thanh khoản, khối ngoại, ngành, cờ tín hiệu\n• get_sector_valuation — P/E, P/B, ROE trung vị và P/E gia quyền theo ngành ICB; lọc sàn, rổ VN30, vốn hoá; xem từng mã một ngành\n• get_report_content — toàn văn báo cáo phân tích (markdown) theo id\n• get_stock_style — hộp phong cách 3x3 (Lớn/Vừa/Nhỏ × Giá trị/Cân bằng/Tăng trưởng), điểm V/G và 8 factor z-score theo mã\n• get_warrants — bảng giá chứng quyền kèm giá thực hiện, đáo hạn, ITM/OTM, hoà vốn\n• get_derivatives_snapshot — mọi hợp đồng tương lai: giá, basis, OI, CVD mua/bán chủ động\n• browse_macro — duyệt cây chỉ tiêu vĩ mô theo nhóm\n• get_macro_series — chuỗi số liệu một chỉ tiêu vĩ mô bất kỳ theo key\n• get_economic_cycle — ★ pha chu kỳ kinh tế Việt Nam (đồng hồ đầu tư), ngành thắng theo pha, xếp hạng 19 ngành, vòng xoay ngành, tâm lý thị trường\n• get_knowledge — tra cứu khái niệm: IPS, phân bổ tài sản, hành lang tái cân bằng, phong cách value/growth, factor, chu kỳ kinh tế, đo hiệu suất, phái sinh, đạo đức\n• get_quota — hạn mức của khoá đang dùng: đã dùng, còn lại, giờ đặt lại\n• report_issue — báo lỗi hoặc dữ liệu sai cho đội AlgolabX, kèm ngữ cảnh lượt gọi gần nhất",
+    "inputSchema": {
+      "properties": {
+        "query": {
+          "description": "Từ khoá tiếng Việt (có hoặc không dấu) hoặc tiếng Anh, vd \"lãi suất liên ngân hàng\", \"Hoà Phát\", \"chứng quyền\", \"CPI\".",
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "kind": {
+          "default": "auto",
+          "description": "auto (mặc định, mọi loại) · function · symbol · sector · field (chỉ tiêu BCTC) · macro.",
+          "enum": [
+            "auto",
+            "function",
+            "symbol",
+            "sector",
+            "field",
+            "macro"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "Số kết quả mỗi nhóm (mặc định 10, tối đa 50).",
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "searchArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Search",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "call_function",
+    "description": "Chạy một hàm trong danh mục dữ liệu chuyên sâu của Algolab theo tên, với tham số dạng object. Sai tên → gợi ý tên gần nhất; sai tham số → trả danh sách tham số và ví dụ đúng.\nDùng khi: cần dữ liệu ngoài 10 công cụ chính (danh mục bên dưới). · Không dùng khi: công cụ trực tiếp đã đủ.\nTham số: name; arguments (object).\nKết quả: cùng dạng {status, data, meta} như mọi công cụ.\nXem thêm: search.\nVí dụ: call_function(name=\"get_warrants\", arguments={\"underlying\": \"HPG\"}).\nDanh mục:\n• get_index_intraday — chuỗi điểm trong phiên của chỉ số (mỗi phút)\n• get_foreign_flows_detail — khối ngoại toàn thị trường một phiên, top mua/bán ròng\n• get_corporate_events — sự kiện quyền, cổ tức, ĐHCĐ, giao dịch nội bộ của một mã\n• list_symbols — danh sách mã theo loại, sàn, ngành ICB\n• screen_stocks — lọc cổ phiếu theo định giá, sinh lời, hiệu suất giá, RS, thanh khoản, khối ngoại, ngành, cờ tín hiệu\n• get_sector_valuation — P/E, P/B, ROE trung vị và P/E gia quyền theo ngành ICB; lọc sàn, rổ VN30, vốn hoá; xem từng mã một ngành\n• get_report_content — toàn văn báo cáo phân tích (markdown) theo id\n• get_stock_style — hộp phong cách 3x3 (Lớn/Vừa/Nhỏ × Giá trị/Cân bằng/Tăng trưởng), điểm V/G và 8 factor z-score theo mã\n• get_warrants — bảng giá chứng quyền kèm giá thực hiện, đáo hạn, ITM/OTM, hoà vốn\n• get_derivatives_snapshot — mọi hợp đồng tương lai: giá, basis, OI, CVD mua/bán chủ động\n• browse_macro — duyệt cây chỉ tiêu vĩ mô theo nhóm\n• get_macro_series — chuỗi số liệu một chỉ tiêu vĩ mô bất kỳ theo key\n• get_economic_cycle — ★ pha chu kỳ kinh tế Việt Nam (đồng hồ đầu tư), ngành thắng theo pha, xếp hạng 19 ngành, vòng xoay ngành, tâm lý thị trường\n• get_knowledge — tra cứu khái niệm: IPS, phân bổ tài sản, hành lang tái cân bằng, phong cách value/growth, factor, chu kỳ kinh tế, đo hiệu suất, phái sinh, đạo đức\n• get_quota — hạn mức của khoá đang dùng: đã dùng, còn lại, giờ đặt lại\n• report_issue — báo lỗi hoặc dữ liệu sai cho đội AlgolabX, kèm ngữ cảnh lượt gọi gần nhất",
+    "inputSchema": {
+      "properties": {
+        "name": {
+          "description": "Tên hàm trong danh mục, vd \"get_warrants\".",
+          "title": "Name",
+          "type": "string"
+        },
+        "arguments": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tham số của hàm dạng object, vd {\"underlying\": \"HPG\"}.",
+          "title": "Arguments"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "call_functionArguments",
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Call a catalog function",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]

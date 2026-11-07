@@ -1,21 +1,36 @@
 <!-- TRELLIS:START -->
-# Trellis Instructions
+# Lean Trellis Memory Layer
 
-These instructions are for AI assistants working in this project.
+This project uses Lean Trellis as a memory layer. Working knowledge lives under `.trellis/`:
 
-This project is managed by Trellis. The working knowledge you need lives under `.trellis/`:
+- `.trellis/spec/` — durable contracts (short markdown; read `index.md` first)
+- `.trellis/research/` — topic inbox (`<topic>.md`; `README.md` is not a topic)
+- `.trellis/workspace/` — per-developer journals
 
-- `.trellis/workflow.md` — development phases, when to create tasks, skill routing
-- `.trellis/spec/` — package- and layer-scoped coding guidelines (read before writing code in a given layer)
-- `.trellis/workspace/` — per-developer journals and session traces
-- `.trellis/tasks/` — active and archived tasks (PRDs, research, jsonl context)
+Record a session with the `lean-trellis-remember` skill, `/lean-trellis-remember`, or `$lean-trellis-remember`. When earlier decisions or relevant project rules are needed, use `lean-trellis mem recall "<topic or path>"`; expand evidence with `lean-trellis mem read "<ref>"`. Promote lasting boundaries into spec with `lean-trellis-update-spec`.
 
-If a Trellis command is available on your platform (e.g. `/trellis:finish-work`, `/trellis:continue`), prefer it over manual steps. Not every platform exposes every command.
-
-If you're using Codex or another agent-capable tool, additional project-scoped helpers may live in:
-- `.agents/skills/` — reusable Trellis skills
-- `.codex/agents/` — optional custom subagents
-
-Managed by Trellis. Edits outside this block are preserved; edits inside may be overwritten by a future `trellis update`.
-
+For a confirmed update, follow this short order: read the existing topic; edit that file; read it back and check the new rule; run `python3 ./.trellis/scripts/add_session.py --title "..." --summary "..." --topic <actual-topic-path>`.
 <!-- TRELLIS:END -->
+
+
+<!-- LEAN_TRELLIS_WORKFLOW:START -->
+## Large Feature Development Workflow (Lean Trellis Workflow)
+100% Conversational UX via Natural Chat (no manual terminal commands required by user):
+1. When user chats: "Create task/feature <name>", "Plan <name>", "/plan <name>", "Tạo task <tên>", or "Lập kế hoạch <tên>":
+   - Automatically initialize `.trellis/research/<slug>/` with `prd.md` (Status: Draft), `design.md` (Status: Draft), `implement.md` (Status: Planning).
+   - Inspect codebase before asking questions; ask at most 1 high-value question with recommendation & trade-off.
+   - Upon user confirmation of PRD, promote `prd.md` and `design.md` to Status: Approved.
+2. When user chats: "Implement task <name>", "Triển khai task <tên>":
+   - Update `implement.md` header to Status: In Progress.
+   - Read `implement.md`, execute step-by-step directly in the current session.
+   - Test each step and check off `[x]` upon completion (strictly in Section 1 checklist; keep Risk Watchlist as plain bullet points).
+   - Once all tasks are checked off (before verification/nghiệm thu):
+     - Update `implement.md` header to Status: Verification.
+     - Output 2 ready-to-run Git commands:
+       1. `git add <specific touched files>` (list specific files, avoid `git add .`)
+       2. `git commit -m "<conventional commit message>"`
+3. When user chats: "Check task <name>", "Verify task <name>", "Nghiệm thu task <tên>":
+   - Verify Acceptance Criteria in `prd.md`, run test suite.
+   - Upon successful verification, update `prd.md`, `design.md`, and `implement.md` to Status: Completed.
+   - Update specs and log session with `add_session.py` (referencing the commit hash if committed).
+<!-- LEAN_TRELLIS_WORKFLOW:END -->

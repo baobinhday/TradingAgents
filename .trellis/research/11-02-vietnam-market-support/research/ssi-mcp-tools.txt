@@ -1,0 +1,202 @@
+ 
+ Search ⌘ K 
+ Giới thiệu
+ Tổng quan SSI MCP Đối tượng khách hàng Điều khoản sử dụng Hướng dẫn
+ Hướng dẫn kết nối 
+ Hướng dẫn công cụ (tools) Hướng dẫn sử dụng prompts Tài nguyên tra cứu (resources) Bảo mật & Hỗ trợ
+ Bảo mật khi kết nối Câu hỏi thường gặp 
+ Hướng dẫn công cụ (tools) 
+ Hướng dẫn công cụ (tools)
+ Toàn bộ Tools của SSI MCP, làm được gì, cần cung cấp thông tin gì và cách hỏi để có kết quả tốt nhất.
+ Tools (công cụ) là năng lực cốt lõi của SSI MCP: mỗi Tool làm đúng 1 việc cụ thể (VD: tra giá cổ
+phiếu, lấy báo cáo tài chính) và lấy dữ liệu thật từ hệ thống SSI. Hiện có 56 tool đang hoạt động
+(Phase 1): 45 tool dữ liệu thị trường ( marketdata_* ), 6 tool SSI Research ( research_* ) và 5 tool phân tích cơ bản bản gọn ( fundamental_* ).
+ Bạn không cần nhớ tên tool
+ Chỉ cần hỏi tự nhiên bằng tiếng Việt. AI tự chọn đúng Tool, điền tham số, gọi dữ liệu SSI rồi trình
+bày lại bằng ngôn ngữ dễ hiểu. Bảng bên dưới giúp bạn biết SSI MCP trả lời được những gì và
+ nên nêu rõ thông tin nào trong câu hỏi.
+ Tool hoạt động thế nào 
+ Bạn đặt câu hỏi trong khung chat (VD "Giá SSI hôm nay thế nào?").
+ AI chọn Tool phù hợp và tự điền tham số (mã cổ phiếu, khoảng ngày...).
+ SSI MCP kiểm tra quyền truy cập, gọi hệ thống dữ liệu SSI và trả kết quả về cho AI.
+ AI tóm tắt kết quả cho bạn. Số liệu lấy nguyên từ Tool, AI không tự bịa số.
+ Tất cả Tool đều chỉ đọc dữ liệu (read-only), không ghi hay thay đổi bất cứ thứ gì. Dữ liệu tính theo
+múi giờ Việt Nam (UTC+7); đơn vị tiền là VND (trừ tỷ giá và chỉ số thế giới, tính theo đơn vị của thị
+trường gốc).
+ Mẹo hỏi để có kết quả tốt 
+ Nêu rõ mã cổ phiếu (VD SSI, VNM, VCB) thay vì "cổ phiếu ngân hàng đó".
+ Nêu rõ khoảng thời gian (VD "từ 01/09/2026 đến 15/09/2026", "3 tháng gần nhất").
+ Nêu rõ loại dữ liệu (VD "báo cáo kết quả kinh doanh quý", "tỷ lệ sở hữu khối ngoại").
+ Hỏi từng chủ đề một, hoặc dùng Prompt dựng sẵn cho các nhu cầu phức tạp.
+ Câu hỏi mơ hồ (VD "thị trường hôm nay") có thể khiến AI hỏi lại; bổ sung thông tin là được.
+ Quy ước chung của các tham số 
+ Tham số | Ý nghĩa và quy ước | 
+ symbol | Mã cổ phiếu (VD SSI, VNM, VCB). | 
+ range , toDate (hoặc to ) | Các tool dữ liệu theo thời gian không nhận fromDate . AI chọn range (độ dài tính lùi từ toDate : 1d , 1w , 1m , 3m , 6m , 1y , max_range ; mỗi tool chỉ có một số giá trị hợp lệ) và toDate tuỳ chọn (bỏ trống = hôm nay), định dạng DD/MM/YYYY (VD 31/03/2026 ), không nhận yyyy-mm-dd . Riêng marketdata_list_vn_index_performance tính theo tháng , toDate dạng MM/yyyy . Tool intraday chỉ nhận ngày — hệ thống tự lấy cả ngày từ 00:00:00 đến 23:59:59. | 
+ Giới hạn thời gian | SSI MCP chỉ hỗ trợ tối đa 730 ngày (~2 năm) : toDate chỉ được nằm trong 730 ngày gần nhất và không được ở tương lai; max_range (730 ngày) là khung lớn nhất. Ngoài khoảng này, tool trả lỗi nêu rõ khoảng hợp lệ để AI tự chỉnh lại. Một số tool có giới hạn riêng của nguồn dữ liệu: tin tức tối đa 6 tháng, thống kê giá theo khoảng tối đa 1 tháng, intraday tối đa 1 tháng. Xem Resources . | 
+ exchange | Sàn giao dịch: HOSE , HNX , UPCOM . | 
+ language | Ngôn ngữ nội dung: VN hoặc EN . | 
+ pageSize , pageIndex (hoặc pageNumber ) | Phân trang cho danh sách dài: số dòng mỗi trang và trang thứ mấy. | 
+ order , orderBy | Thứ tự sắp xếp: ASC (tăng dần) hoặc DESC (giảm dần), và cột dùng để sắp xếp. | 
+ yearReport , lengthReport , isAudit | Báo cáo tài chính: năm báo cáo; kỳ báo cáo (1 đến 4 = quý, 5 = cả năm); 1 = đã kiểm toán, 0 = chưa. | 
+ criteria | Tiêu chí xếp hạng của marketdata_list_top_stocks : topIncreaseByValue , topDecreaseByValue , topIncreaseByPercent , topDecreaseByPercent , topByVolume , topbytradingamount . | 
+ latest | true để chỉ lấy dữ liệu intraday mới nhất, thay cho range / toDate (chỉ có ở marketdata_list_intraday_stock_infor ). | 
+ Cột Bắt buộc trong các bảng dưới là thông tin AI phải có mới gọi được Tool; nếu bạn chưa
+nêu, AI sẽ hỏi lại. Cột Tuỳ chọn dùng để lọc, sắp xếp, phân trang. Bạn không cần tự gõ tên tham
+số, chỉ cần mô tả bằng lời.
+ 1. Cổ phiếu / Giá / Giao dịch 
+ Giá trong phiên, giá theo ngày, thống kê giá, top tăng/giảm, biên độ giá, danh sách mã theo sàn.
+ Ví dụ hỏi: "Giá SSI hôm nay thế nào? Top 10 cổ phiếu tăng mạnh nhất sàn HOSE tuần này?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_stock_infor | Lấy dữ liệu giao dịch trong phiên (intraday) của cổ phiếu — bản đầy đủ, gồm phân trang liên tục (sysToken) và giá gốc chưa điều chỉnh (Raw) | symbol , range | toDate , sysToken | 
+ marketdata_list_intraday_stock_infor | Lấy dữ liệu giao dịch trong phiên (intraday) của cổ phiếu (chọn range kèm toDate , hoặc latest=true ; không dùng cả hai) | symbol | range , toDate , latest | 
+ marketdata_list_stock_performance | Lấy biến động giá cổ phiếu theo ngày (thay đổi 1 ngày, % thay đổi, % thay đổi luỹ kế) | symbol , range | toDate | 
+ marketdata_list_stock_statistic_by_range | Lấy thống kê giá cổ phiếu theo khoảng thời gian (cao/thấp nhất, khối lượng, giá trị khớp lệnh bình quân) | symbol , range | toDate | 
+ marketdata_list_stock_daily_data | Lấy dữ liệu giao dịch cổ phiếu theo ngày | range | symbol , toDate , exchange , pageSize , pageIndex | 
+ marketdata_list_daily_stock_infor | Lấy dữ liệu giao dịch cổ phiếu chi tiết theo ngày (bản đầy đủ: giá, khớp lệnh/thỏa thuận, khối ngoại khi nguồn có dữ liệu — không có khối nội) | range | symbol , toDate , exchange , pageSize , pageIndex | 
+ marketdata_list_stock_statistics | Lấy thống kê chỉ số tài chính cổ phiếu — P/E, P/B, ROE, ROA, biến động giá (bắt buộc ít nhất một trong symbol , industryCode , exchange ) | — | industryCode , symbol , exchange , language , pageIndex , pageSize | 
+ marketdata_list_top_stocks | Lấy top cổ phiếu theo tiêu chí (tăng/giảm giá trị, tăng/giảm %, khối lượng, giá trị giao dịch) | criteria , exchange , range | toDate , limit | 
+ marketdata_list_symbols_by_exchange | Lấy danh sách mã chứng khoán theo sàn | exchange | stockType | 
+ marketdata_list_market_master_data | Lấy dữ liệu biên độ giá (trần/sàn/tham chiếu) toàn bộ mã trên thị trường trong ngày | — | — | 
+ marketdata_list_adjusted_rate | Lấy danh sách tỷ lệ điều chỉnh giá do sự kiện doanh nghiệp, theo khoảng ngày | range | toDate | 
+ 2. Chỉ số thị trường 
+ VNINDEX, VN30, HNX30, chỉ số thế giới, % thay đổi VNINDEX theo tháng, chỉ số tài chính theo rổ chỉ số.
+ Ví dụ hỏi: "VNINDEX 6 tháng gần đây diễn biến ra sao?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_index_daily_data | Lấy dữ liệu chỉ số thị trường theo ngày (VNINDEX, VN30, HNX30...) | indexCode , range | to , includeToday | 
+ marketdata_list_vn_index_performance | Lấy % thay đổi VNINDEX theo tháng (month-over-month, year-over-year) | range | toDate | 
+ marketdata_list_world_index | Lấy dữ liệu chỉ số thị trường thế giới theo ngày (KOSPI, SET.BK...) | range | worldIndexCode , toDate , pageIndex , pageSize | 
+ marketdata_list_ratio_index | Lấy chỉ số tài chính theo rổ chỉ số (VNINDEX, VNSML...) | range | id , toDate , pageNumber , pageSize , indexName , dateType , order , orderBy | 
+ 3. Trái phiếu / Chứng quyền 
+ Giao dịch và hồ sơ trái phiếu doanh nghiệp, thông tin và danh sách chứng quyền có đảm bảo (CW), giao dịch tự doanh CW.
+ Ví dụ hỏi: "Trái phiếu mã X đang giao dịch giá bao nhiêu?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_corporate_bond_profile | Lấy hồ sơ trái phiếu doanh nghiệp theo mã | symbol , range | toDate | 
+ marketdata_list_private_corporate_bond | Lấy thông tin và giao dịch trái phiếu doanh nghiệp riêng lẻ theo mã | symbol , range | toDate | 
+ marketdata_list_covered_warrant_information | Lấy thông tin chi tiết 1 chứng quyền có đảm bảo (Covered Warrant) theo mã | symbol , range | toDate | 
+ marketdata_list_corporate_cw | Lấy danh sách chứng quyền có đảm bảo (Covered Warrant) đã phát hành | range | toDate , pageIndex , pageSize , dateType | 
+ marketdata_list_cw_proprietary_trading | Lấy dữ liệu giao dịch tự doanh chứng quyền (Covered Warrant) theo mã CW | range | symbol , toDate , pageIndex , pageSize | 
+ 4. ETF / Quỹ đầu tư 
+ iNAV quỹ ETF (mới nhất và theo thời gian), thông tin quỹ đầu tư.
+ Ví dụ hỏi: "iNAV mới nhất của quỹ E1VFVN30 là bao nhiêu?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_etf_inav_index_latest | Lấy iNAV (Indicative NAV) mới nhất của quỹ ETF theo mã | etfSymbol | — | 
+ marketdata_list_etf_inav_chart | Lấy dữ liệu biểu đồ iNAV (Indicative NAV) của quỹ ETF theo thời gian | etfSymbol , range | toDate | 
+ marketdata_get_fund_information | Lấy thông tin quỹ đầu tư theo tên quỹ | fundName | — | 
+ 5. Hồ sơ doanh nghiệp / Cổ đông / Lãnh đạo 
+ Hồ sơ công ty niêm yết, ban lãnh đạo, cổ đông lớn, cơ cấu sở hữu, công ty con/liên kết, lịch sử vốn hoá và cổ tức.
+ Ví dụ hỏi: "Ai đang lãnh đạo công ty SSI? Cổ đông lớn của VNM là ai?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_company_profile | Lấy hồ sơ công ty niêm yết | symbol | language , updateDate | 
+ marketdata_list_company_leaderships | Lấy danh sách ban lãnh đạo công ty niêm yết | symbol | language , order , orderBy , pageSize , pageIndex | 
+ marketdata_list_share_holder_summary | Lấy tổng hợp tỷ lệ sở hữu theo nhóm (nước ngoài/nhà nước/khác) của 1 mã cổ phiếu | symbol | — | 
+ marketdata_list_share_holder_detail | Lấy danh sách cổ đông lớn theo mã cổ phiếu | symbol | language , order , orderBy , type , pageSize , pageIndex | 
+ marketdata_get_latest_cap_and_dividend | Lấy lịch sử vốn hoá, tài sản và cổ tức tiền mặt của cổ phiếu theo năm | symbol | — | 
+ marketdata_list_sub_companies | Lấy danh sách công ty con và công ty liên kết của một công ty mẹ | symbol | language , pageIndex , pageSize | 
+ 6. Tài chính doanh nghiệp 
+ Bảng cân đối kế toán, kết quả kinh doanh, lưu chuyển tiền tệ, chỉ số tài chính (P/E, P/B, ROE, ROA, EPS...). Ba báo cáo tài chính có range = 1y (khoảng 4 quý gần nhất) hoặc max_range (khoảng 8 quý).
+ Ví dụ hỏi: "Báo cáo kết quả kinh doanh 4 quý gần nhất của SSI? P/E, P/B của VNM?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_finance_balance_sheet | Lấy bảng cân đối kế toán (Balance Sheet) theo kỳ báo cáo | symbol , range | yearReport , lengthReport , to , isAudit , pageSize , pageNumber | 
+ marketdata_list_finance_income_statement | Lấy báo cáo kết quả kinh doanh (Income Statement) theo kỳ báo cáo | symbol , range | yearReport , lengthReport , to , isAudit , pageSize , pageNumber | 
+ marketdata_list_finance_cash_flow | Lấy báo cáo lưu chuyển tiền tệ (Cash Flow) theo kỳ báo cáo | symbol , range | yearReport , lengthReport , to , isAudit , pageSize , pageNumber | 
+ marketdata_list_finance_indicator | Lấy chỉ số tài chính cổ phiếu theo kỳ báo cáo (P/E, P/B, ROE, ROA, EPS...) | symbol | yearReport , lengthReport , pageSize , pageIndex , orderBy , order | 
+ marketdata_list_corp_finance_finance_indicator | Lấy chỉ số tài chính cổ phiếu — bản tóm tắt nhanh (lợi nhuận ròng, P/E, P/B theo kỳ báo cáo; xem marketdata_list_finance_indicator để có đầy đủ chỉ số ROE/ROA/EPS...) | symbols | — | 
+ marketdata_list_fundamental_ratio_history | Lấy lịch sử chỉ số P/E, P/B theo mã cổ phiếu | symbol , range | toDate , pageSize , pageIndex | 
+ marketdata_list_fundamental_analysis_index | Lấy chỉ số phân tích cơ bản (Fundamental Analysis) của cổ phiếu theo thời gian | symbol , range | toDate | 
+ 7. Tin tức / Sự kiện doanh nghiệp 
+ Tin tức công ty (danh sách và chi tiết), sự kiện doanh nghiệp: chia cổ tức, họp ĐHCĐ, giao dịch nội bộ...
+ Ví dụ hỏi: "Có tin gì mới về công ty X không? Lịch chia cổ tức của SSI?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_company_news | Lấy tin tức công ty theo mã cổ phiếu | range | isWorldNews , symbol , to , orderBy , order , language , searchText , newsType , pageSize , pageIndex | 
+ marketdata_get_company_news_detail | Lấy chi tiết 1 tin tức công ty theo NewsId | newsId , language | — | 
+ marketdata_list_corporate_actions | Lấy sự kiện doanh nghiệp (chia cổ tức, họp ĐHCĐ, giao dịch nội bộ...) theo mã cổ phiếu | range | eventCode , symbol , toDate , pageIndex , pageSize , orderBy , order , dateType , exchange , language | 
+ marketdata_list_share_issue | Lấy danh sách các đợt chia cổ tức, cổ phiếu thưởng, phát hành thêm/quyền mua của toàn thị trường theo khoảng ngày | range | toDate , dateType | 
+ 8. Ngành / Phân loại doanh nghiệp 
+ Danh sách công ty theo ngành ICB, công ty cùng ngành, chỉ số bình quân ngành.
+ Ví dụ hỏi: "Ngành nào đang có P/E thấp nhất? Những công ty nào cùng ngành với VNM?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_icb_industry | Lấy chỉ số tài chính bình quân theo ngành ICB (P/E, P/B, ROE, ROA, biến động giá...) | — | icbCode , icbLevel , exchange , pageIndex , pageSize | 
+ marketdata_list_sectors_data | Lấy danh sách ngành (ICB) kèm công ty thuộc từng ngành | level | icbCode , language , pageSize , pageIndex | 
+ marketdata_list_company_in_same_industry | Lấy danh sách công ty cùng ngành với mã cổ phiếu chỉ định | symbol | pageSize , pageIndex , language , similarLevel | 
+ 9. Vĩ mô / Lãi suất / Ngoại tệ 
+ Lãi suất ngân hàng, tỷ giá ngoại tệ.
+ Ví dụ hỏi: "Lãi suất tiết kiệm ngân hàng BIDV hiện nay?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ marketdata_list_bank_interest_rate | Lấy lãi suất ngân hàng theo tên ngân hàng | bankName , range | toDate | 
+ marketdata_list_foreign_currency_converter | Lấy tỷ giá ngoại tệ theo ngân hàng/loại tiền | range | bank , toDate | 
+ 10. SSI Research (rổ SSI100) 
+ Điểm đánh giá, nhận định và khuyến nghị do SSI Research công bố cho các mã trong rổ SSI100 và theo ngành. Nội dung do SSI Research soạn, AI trình bày lại nguyên văn. Điểm FA và TA là thứ hạng (phân vị) tương đối trong tập cổ phiếu được chấm cùng ngày, không phải số phần trăm và không phải xác suất sinh lời: điểm thấp không có nghĩa doanh nghiệp yếu tuyệt đối, điểm cao không đảm bảo giá tăng. Các cột điểm ( fa_rating_score , rating_ta ...) là điểm thang 100, còn fa_rating , rate và 6 chỉ tiêu kỹ thuật là số sao từ 1 đến 5; riêng tool research_list_fa_rating thì fa_rating là điểm FA tổng hợp thang 100. AI đọc thêm Resource ssi://research/reference/rating-guide để hiểu đúng (xem Tài nguyên tra cứu ).
+ Ví dụ hỏi: "SSI Research nhận định gì về FPT? Các mã SSI100 ngành ngân hàng mã nào điểm cơ bản cao nhất?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ research_list_ssi100_stocks | Liệt kê các mã SSI100 của một ngành kèm điểm tóm tắt từng mã, hoặc kiểm tra một mã có thuộc SSI100 không (truyền industry hoặc symbol ) | — | industry , symbol | 
+ research_get_ssi100_industry_assessment | Lấy nhận định của SSI Research về một ngành trong SSI100 (truyền mã ngành, hoặc mã cổ phiếu để lấy ngành của mã đó) | — | industry , symbol | 
+ research_get_ssi100_stock_ratings | Lấy toàn bộ điểm đánh giá của SSI Research cho một mã SSI100: nhóm phân tích cơ bản (FA) và kỹ thuật (TA) | symbol | — | 
+ research_get_ssi100_stock_commentary | Lấy lời nhận định bằng văn bản của SSI Research về một mã SSI100 | symbol | — | 
+ research_get_ssi100_stock_recommendation | Lấy khuyến nghị đầu tư do SSI Research công bố cho một mã SSI100, nguyên văn | symbol | — | 
+ research_list_fa_rating | Lấy điểm xếp hạng phân tích cơ bản (FA) của SSI theo thời gian cho một cổ phiếu | symbol , range | toDate | 
+ 11. Phân tích cơ bản (bản gọn) 
+ Bản gọn của các tool báo cáo tài chính và định giá: cùng nguồn dữ liệu với nhóm 6 (Tài chính doanh nghiệp) nhưng chỉ trả các chỉ tiêu chính, nhẹ và dễ đọc hơn cho AI. Tool đầy đủ vẫn giữ nguyên, dùng khi cần chi tiết từng khoản mục.
+ Với ngân hàng, bảo hiểm, chứng khoán
+ Các tool bản gọn dùng được cho mọi loại hình doanh nghiệp, nhưng chỉ tiêu không áp dụng cho loại hình đó được nguồn dữ liệu trả về là 0 (VD doanh số và lãi gộp của ngân hàng, bảo hiểm). Số 0 này không phải số thật; AI sẽ bỏ qua và chỉ chuyển sang tool đầy đủ marketdata_list_finance_* khi bạn cần chỉ tiêu riêng của ngành (thu nhập lãi thuần, phí bảo hiểm...). Một số mã (VD bảo hiểm) có thể chưa có báo cáo lưu chuyển tiền tệ trong khoảng đã chọn. Khi đọc báo cáo, AI tự sắp theo năm và kỳ để chọn kỳ mới nhất; kỳ có length_report là 6 hoặc 9 là lũy kế 6 hoặc 9 tháng, không phải quý. Chỉ số sinh lời của dòng quý (ROE, ROA, biên lợi nhuận) tính trên 12 tháng gần nhất (TTM); debt_to_equity là tổng nợ phải trả chia vốn chủ sở hữu; tiền trên bảng cân đối của ngân hàng chỉ gồm tiền mặt, vàng bạc; các khoản chi trong dòng tiền là số âm; chuỗi P/E, P/B sắp theo ngày tăng dần. Chi tiết trong Resource ssi://fundamental/reference/financial-data-notes .
+ Ví dụ hỏi: "Doanh thu và lợi nhuận quý 2/2026 của FPT?", "ROE và P/E các kỳ gần nhất của FPT?", "Xu hướng P/E của FPT một năm qua?"
+ Tool | Chức năng | Bắt buộc | Tuỳ chọn | 
+ fundamental_list_income_summary | Kết quả kinh doanh bản gọn theo quý/năm: doanh thu, lợi nhuận gộp, lợi nhuận trước/sau thuế, EPS | symbol , range | to , yearReport , lengthReport , isAudit , pageSize , pageNumber | 
+ fundamental_list_balance_sheet_summary | Bảng cân đối kế toán bản gọn theo quý/năm: tổng tài sản, nợ phải trả, vốn chủ sở hữu, tiền, vay nợ | symbol , range | to , yearReport , lengthReport , isAudit , pageSize , pageNumber | 
+ fundamental_list_cash_flow_summary | Lưu chuyển tiền tệ bản gọn theo quý/năm: dòng tiền kinh doanh, đầu tư, tài chính, tiền cuối kỳ | symbol , range | to , yearReport , lengthReport , isAudit , pageSize , pageNumber | 
+ fundamental_list_financial_ratios | Chỉ số tài chính chính theo kỳ báo cáo: P/E, P/B, EPS, ROE, ROA, biên lợi nhuận, nợ/vốn chủ, thanh toán hiện hành, giá trị sổ sách ( book_value ) | symbol | yearReport , lengthReport , orderBy , order , pageSize , pageIndex | 
+ fundamental_list_valuation_history | Lịch sử P/E, P/B theo ngày để xem xu hướng định giá | symbol , range | toDate , pageSize , pageIndex | 
+ Khung thời gian của từng tool ( range ) 
+ Các tool dữ liệu theo thời gian chỉ nhận range (và toDate tuỳ chọn), không có fromDate : hệ thống tự tính từ ngày = toDate − range . Chọn khung nhỏ nhất đủ dùng; muốn xem giai đoạn dài hơn khung lớn nhất thì AI gọi nhiều lần với toDate lùi dần.
+ Tool | Giá trị range hợp lệ | 
+ marketdata_list_bank_interest_rate | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_corporate_bond_profile | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_private_corporate_bond | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_covered_warrant_information | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày | 
+ marketdata_list_etf_inav_chart | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_foreign_currency_converter | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_fundamental_analysis_index | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_index_daily_data | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_intraday_stock_infor | 1d = cả ngày toDate , 1w = 7 ngày, 1m = 30 ngày | 
+ marketdata_list_stock_infor | 1d = cả ngày toDate , 1w = 7 ngày, 1m = 30 ngày | 
+ marketdata_list_stock_performance | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_stock_statistic_by_range | 1d = 1 ngày, 1m = 30 ngày | 
+ marketdata_list_vn_index_performance | 3m = 3 tháng, 6m = 6 tháng, 1y = 12 tháng, max_range = 24 tháng | 
+ marketdata_list_adjusted_rate | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_company_news | 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày | 
+ marketdata_list_corporate_actions | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_share_issue | 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_corporate_cw | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_cw_proprietary_trading | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_daily_stock_infor | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_finance_balance_sheet | 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_finance_cash_flow | 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_finance_income_statement | 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_fundamental_ratio_history | 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_ratio_index | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_stock_daily_data | 1d = 1 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ marketdata_list_top_stocks | 1d = 1 ngày, 1w = 7 ngày, 1m = 30 ngày, 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày | 
+ marketdata_list_world_index | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ research_list_fa_rating | 3m = 90 ngày, 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ fundamental_list_income_summary | 1y = 365 ngày, max_range = 730 ngày | 
+ fundamental_list_balance_sheet_summary | 1y = 365 ngày, max_range = 730 ngày | 
+ fundamental_list_cash_flow_summary | 1y = 365 ngày, max_range = 730 ngày | 
+ fundamental_list_valuation_history | 6m = 180 ngày, 1y = 365 ngày, max_range = 730 ngày | 
+ Ví dụ: "quý 1/2026" → toDate=31/03/2026 , range=3m ; "6 tháng gần đây" → range=6m , bỏ toDate .
+ Khi Tool không trả về kết quả 
+ Tình huống | Nguyên nhân thường gặp | Cách xử lý | 
+ AI báo thiếu thông tin | Câu hỏi chưa nêu mã cổ phiếu, khoảng ngày hoặc loại dữ liệu bắt buộc | Bổ sung thông tin AI hỏi lại | 
+ Yêu cầu bị từ chối do ngày | toDate sai định dạng, ở tương lai hoặc cũ hơn 730 ngày; hoặc range không có trong danh sách của tool | AI đọc lỗi (có nêu khoảng hợp lệ) rồi chỉnh lại toDate / range | 
+ Kết quả rỗng | Mã không tồn tại, hoặc không có dữ liệu trong khoảng đã chọn | Kiểm tra lại mã, mở rộng khoảng ngày | 
+ Lỗi kết nối tạm thời | Hệ thống dữ liệu phía SSI bận hoặc đang bảo trì | Thử lại sau; nếu kéo dài, liên hệ đội hỗ trợ SSI | 
+ Lưu ý về dữ liệu
+ Dữ liệu chỉ mang tính tham khảo, không phải khuyến nghị đầu tư. Với giá và chỉ số theo thời gian thực,
+hãy đối chiếu thêm nguồn công bố chính thức (SSI iBoard, HOSE, HNX, UBCKNN) trước khi ra quyết định.
+ Bước tiếp theo 
+ Hướng dẫn sử dụng prompts
+ Tài nguyên tra cứu (resources)
+ Grok
+ Hướng dẫn từng bước kết nối SSI MCP với Grok.
+ Hướng dẫn sử dụng prompts
+ Cách chọn và dùng 55 kịch bản dựng sẵn (Prompt) của SSI MCP cho các nhu cầu thường gặp.
+ 

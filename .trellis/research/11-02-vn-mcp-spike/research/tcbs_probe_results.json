@@ -1,0 +1,202 @@
+{
+  "probes": [
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/",
+      "method": "GET",
+      "ua": "python-httpx",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a2ec171787-HKG",
+      "latency_s": 0.351,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/",
+      "method": "GET",
+      "ua": "claude-desktop",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a36d811787-HKG",
+      "latency_s": 0.08,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/",
+      "method": "GET",
+      "ua": "browser",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a3eef41787-HKG",
+      "latency_s": 0.078,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/",
+      "method": "POST",
+      "ua": "python-httpx",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a468a71787-HKG",
+      "latency_s": 0.087,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/",
+      "method": "POST",
+      "ua": "claude-desktop",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a4fadc1787-HKG",
+      "latency_s": 0.075,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/",
+      "method": "POST",
+      "ua": "browser",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a56c771787-HKG",
+      "latency_s": 0.078,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/oauth-authorization-server",
+      "method": "GET",
+      "ua": "python-httpx",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a5fe781787-HKG",
+      "latency_s": 0.079,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/oauth-authorization-server",
+      "method": "GET",
+      "ua": "claude-desktop",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a6682c1787-HKG",
+      "latency_s": 0.08,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/oauth-authorization-server",
+      "method": "GET",
+      "ua": "browser",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a6ea0f1787-HKG",
+      "latency_s": 0.08,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/openid-configuration",
+      "method": "GET",
+      "ua": "python-httpx",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a76c371787-HKG",
+      "latency_s": 0.081,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/openid-configuration",
+      "method": "GET",
+      "ua": "claude-desktop",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a7fdfb1787-HKG",
+      "latency_s": 0.078,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/openid-configuration",
+      "method": "GET",
+      "ua": "browser",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a86eff1787-HKG",
+      "latency_s": 0.08,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/oauth-protected-resource",
+      "method": "GET",
+      "ua": "python-httpx",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a8e84c1787-HKG",
+      "latency_s": 0.084,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/oauth-protected-resource",
+      "method": "GET",
+      "ua": "claude-desktop",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a9798e1787-HKG",
+      "latency_s": 0.082,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/.well-known/oauth-protected-resource",
+      "method": "GET",
+      "ua": "browser",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799a9fb291787-HKG",
+      "latency_s": 0.076,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/.well-known/oauth-protected-resource",
+      "method": "GET",
+      "ua": "python-httpx",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799aa6c6d1787-HKG",
+      "latency_s": 0.054,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/.well-known/oauth-protected-resource",
+      "method": "GET",
+      "ua": "claude-desktop",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799aabd331787-HKG",
+      "latency_s": 0.11,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    },
+    {
+      "url": "https://mcp.tcbs.com.vn/mcp/tcinvest/.well-known/oauth-protected-resource",
+      "method": "GET",
+      "ua": "browser",
+      "status_code": 302,
+      "redirect_location": "https://www.tcbs.com.vn/",
+      "server": "cloudflare",
+      "cf_ray": "a54799ab7f6e1787-HKG",
+      "latency_s": 0.064,
+      "body_preview": "<html>\r <head><title>302 Found</title></head>\r <body>\r <center><h1>302 Found</h1></center>\r <hr><center>cloudflare</center>\r </body>\r </html>\r "
+    }
+  ]
+}
